@@ -1,0 +1,39 @@
+class A_Maze:
+    """Docstring for A_Maze."""
+
+    def __init__(self, cfg: dict):
+        """TODO: to be defined."""
+        self.config = cfg
+
+    def startup(self):
+        self.grid = Grid(self.width, self.height)
+
+    @classmethod
+    def cfg_from_file(cls, filename: str):
+        """TODO: Docstring for from_fil.
+
+        Args:
+            s (str): TODO
+
+        Returns: TODO
+
+        """
+        c_dct = {"FILENAME": filename}
+        with open(filename, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#'):
+                    k, v = line.split('=')
+                    try:
+                        if ',' in v:
+                            v = v.split(',')
+                            v = tuple(int(i) for i in v)
+                        elif v.lower() in ("true", "false"):
+                            v = v.lower() == "true"
+                        elif v.isnumeric():
+                            v = int(v)
+                    except ValueError as ve:
+                        print(f"Error: {ve} something's not right with config\
+                              {k}:{v} ")
+                    c_dct.update({k: v})
+        return cls(c_dct)
