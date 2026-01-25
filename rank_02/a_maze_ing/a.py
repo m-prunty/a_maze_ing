@@ -7,11 +7,13 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/24 07:55:50 by maprunty         #+#    #+#              #
-#    Updated: 2026/01/25 07:10:24 by maprunty        ###   ########.fr        #
+#    Updated: 2026/01/25 12:14:11 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """First attempts at the A-Maze-ing project."""
 from math import sqrt
+import random as random
+import time
 import sys
 
 
@@ -41,6 +43,11 @@ class Vec2():
                     self.y - other.y,
                     )
 
+    def __eq__(self, other):
+        """Equate a vec2 instance with another."""
+        return (self.x == other.x and 
+                self.y == other.y)
+    
     def __abs__(self):
         """Return magnitude of a vector."""
         return sqrt(self.x**2 + self.y**2)
@@ -101,7 +108,6 @@ class Vec2():
         Returns: TODO
 
         """
-        print(len(lst), lst)
         try:
             if len(lst) > 3:
                 raise ValueError
@@ -146,17 +152,31 @@ class Cell():
     N = 1 << 0
     E = 1 << 1
     S = 1 << 2
-    W = 1 << 4
+    W = 1 << 3
+    
+    DIRS = {
+        N: (0, -1),
+        E: (1, 0),
+        S: (0, 1),
+        W: (-1, 0),
+    }
+    
+    OPPS = {
+        N: S,
+        E: W,
+        S: N,
+        W: E,
+    }
     
     def __init__(self, loc: Vec2):
         """TODO: to be defined."""
-        self.wall = int(b'1111')
+        self.wall = 0b1111
         self.loc = loc
-        print(self.loc)
+        self.visited = False 
 
     def __str__(self):
-        r_str = f"{self.loc}"
-        r_str += f"{self.wall}"
+        r_str = f"{self.loc} "
+        r_str += f"{bin(self.wall)}"
         return r_str
    
     @property
@@ -167,7 +187,16 @@ class Cell():
     @loc.setter
     def loc(self, value: Vec2):
         self._loc = value
-
+    
+    @property
+    def visited(self) -> bool:
+        """doc"""
+        return self._visited
+    
+    @visited.setter
+    def visited(self, value: bool):
+        self._visited = value
+    
     def has_wall(self, direction):
         return self.wall & direction
 
@@ -175,7 +204,7 @@ class Cell():
         self.wall |= direction
 
     def rm_wall(self, direction):
-        self.wall &= direction
+        self.wall &= ~direction
 
 
 class Grid(object):
@@ -187,21 +216,25 @@ class Grid(object):
                      for y in range(height)]
         self.width = width
         self.height = height
-
+    
     def __getitem__(self, key):
         try:
-            x, y = tuple(key)
-            if 0 <= x < self.width and  0 <= y < self.height:
+            x, y = key
+            if (0 <= x < self.width and  0 <= y < self.height):
                 return self.grid[y][x]
             else:
                 raise ValueError(f"\
-{x} or {y} is out of range {self.height},{self.width}")
+{x} or {y} is out of range {self.width},{self.height}")
+                return None
         except ValueError as ve:
             print(f"Grid key error:{key} not a valid tuple {ve}")
-
-    def __str__(self):
-        r_str = "+"
-        r_str += '+'.join("---" for x in range(self.width))
+    
+    def __str__(self, cursor=None):
+        r_str = ""
+        for x in range(self.width):
+            cell = self[x, 0]
+            r_str += "+"
+            r_str += "---" if cell.has_wall(Cell.N) else "   "
         r_str += "+\n"
         for y in range(self.height):
             for x in range(self.width):
@@ -210,8 +243,11 @@ class Grid(object):
                     r_str += "|"
                 else:
                     r_str += " "
-                r_str += "   "
-            r_str += "|\n"
+                if cursor == cell.loc:
+                    r_str += " @ "
+                else:
+                    r_str += "   "
+            r_str += "|\n" if cell.has_wall(Cell.E) else " \n"
             for x in range(self.width):
                 cell = self[x, y]
                 r_str += "+"
@@ -222,17 +258,6 @@ class Grid(object):
             r_str += "+\n"
         return r_str
 
-    @staticmethod
-    def gen_rand(grid, cfg: dict):
-        """TODO: Docstring for gen_rand.
-
-        Args:
-            arg1 (TODO): TODO
-
-        Returns: TODO
-
-        """
-        pass
 
 class A_Maze:
     """Docstring for A_Maze."""
@@ -241,7 +266,65 @@ class A_Maze:
         """TODO: to be defined."""
         self.config = cfg
         self.startup()
-        print(self.grid)
+        self.animate(self.grid, 0.02)
+    
+    @staticmethod
+    def gen_rand(grid: Grid, cfg: dict, pos: tuple = (0,0)):
+        """TODO: Docstring for gen_rand.
+
+        Args:
+            arg1 (TODO): TODO
+
+        Returns: TODO
+
+        """
+        cell = grid[pos]
+        cell.visited = True
+        directions = list(Cell.DIRS.items())
+        random.shuffle(directions)
+        def open_entry_exit(cell):
+            print("EXIT\n\n>>>>>", cell.loc, grid.width, grid.height, "\n",
+                  cell.loc.x == grid.width - 1,  cell.loc.y == grid.height - 1)
+            if cell.loc.x == 0:
+                cell.rm_wall(Cell.W)
+            elif cell.loc.x == grid.width - 1:
+                cell.rm_wall(Cell.E)
+            elif cell.loc.y == 0:
+                cell.rm_wall(Cell.N)
+            elif cell.loc.y == grid.height - 1:
+                cell.rm_wall(Cell.S)
+
+        if (cell.loc == grid[cfg["ENTRY"]].loc):
+            print(">>>>>", cell)
+            open_entry_exit(cell)
+        if (cell.loc == grid[cfg["EXIT"]].loc): 
+            print("EXIT\n\n>>>>>", cell)
+            open_entry_exit(cell)
+
+        for direction, (dx, dy) in directions:
+            neighbour = grid[cell.loc + Vec2(dx, dy)]
+            if not neighbour or neighbour.visited:
+                continue
+            cell.rm_wall(direction)
+            neighbour.rm_wall(Cell.OPPS[direction])
+            yield (neighbour.loc)  # yield after carving a passage
+            yield from A_Maze.gen_rand(grid, cfg, neighbour.loc)
+
+    @staticmethod
+    def open_entry_exit(cell: Cell, directions: dict):
+        for direction, (dx, dy) in directions:
+            neighbour = grid[cell.loc + Vec2(dx, dy)]
+            if not neighbour:
+                cell.rm_wall(direction)
+                return
+
+    def animate(self, grid, delay=0.01):
+        # ANSI clear screen + cursor home
+        CLEAR = "\x1b[2J\x1b[H"
+        for pos in self.gen_rand(self.grid, self.config, self.config["ENTRY"]):
+            print(CLEAR, end="")
+            print(self.grid.__str__(pos))
+            time.sleep(delay)
 
     def startup(self):
         self.grid = Grid(self.width, self.height)
