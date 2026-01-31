@@ -7,18 +7,20 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/24 07:55:50 by maprunty         #+#    #+#              #
-#    Updated: 2026/01/25 12:14:11 by maprunty        ###   ########.fr        #
+#    Updated: 2026/01/31 01:03:36 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """First attempts at the A-Maze-ing project."""
-from math import sqrt
+
 import random as random
-from graphics.render import Render
-import time
 import sys
+import time
+from math import sqrt
+
+from graphics.render import Render
 
 
-class Vec2():
+class Vec2:
     """Class for storing 2D Coords."""
 
     def __init__(self, x: int = 0, y: int = 0):
@@ -34,21 +36,22 @@ class Vec2():
 
     def __add__(self, other):
         """Add a vec2 instance with another."""
-        return Vec2(self.x + other.x,
-                    self.y + other.y,
-                    )
+        return Vec2(
+            self.x + other.x,
+            self.y + other.y,
+        )
 
     def __sub__(self, other):
         """Sub a vec2 instance with another."""
-        return Vec2(self.x - other.x,
-                    self.y - other.y,
-                    )
+        return Vec2(
+            self.x - other.x,
+            self.y - other.y,
+        )
 
     def __eq__(self, other):
         """Equate a vec2 instance with another."""
-        return (self.x == other.x and 
-                self.y == other.y)
-    
+        return self.x == other.x and self.y == other.y
+
     def __abs__(self):
         """Return magnitude of a vector."""
         return sqrt(self.x**2 + self.y**2)
@@ -81,13 +84,12 @@ class Vec2():
             lst = cls.parse_args(len(lst), lst)
             return cls(lst[0], lst[1])
         except Exception as e:
-            r_str = (f"Error details - Type: {e.__class__.__name__}")
-            r_str += (f", Args: (\"{e.args[0]}\",)")
+            r_str = f"Error details - Type: {e.__class__.__name__}"
+            r_str += f', Args: ("{e.args[0]}",)'
             raise ValueError(r_str)
 
 
-
-class Cell():
+class Cell:
     """Docstring for Cell.
 
     wall is a 4-bit represantaion. i.e
@@ -99,50 +101,50 @@ class Cell():
     E = 1 << 1
     S = 1 << 2
     W = 1 << 3
-    
+
     DIRS = {
         N: (0, -1),
         E: (1, 0),
         S: (0, 1),
         W: (-1, 0),
     }
-    
+
     OPPS = {
         N: S,
         E: W,
         S: N,
         W: E,
     }
-    
+
     def __init__(self, loc: Vec2):
         """TODO: to be defined."""
         self.wall = 0b1111
         self.loc = loc
-        self.visited = False 
+        self.visited = False
 
     def __str__(self):
         r_str = f"{self.loc} "
         r_str += f"{bin(self.wall)}"
         return r_str
-   
+
     @property
     def loc(self) -> Vec2:
-        """doc"""
+        """Doc"""
         return self._loc
-    
+
     @loc.setter
     def loc(self, value: Vec2):
         self._loc = value
-    
+
     @property
     def visited(self) -> bool:
-        """doc"""
+        """Doc"""
         return self._visited
-    
+
     @visited.setter
     def visited(self, value: bool):
         self._visited = value
-    
+
     def has_wall(self, direction):
         return self.wall & direction
 
@@ -153,28 +155,31 @@ class Cell():
         self.wall &= ~direction
 
 
-class Grid(object):
+class Grid:
     """Docstring for Grid."""
-    
+
     def __init__(self, width, height):
         """TODO: to be defined."""
-        self.grid = [[Cell(Vec2(x, y)) for x in range(width)]
-                     for y in range(height)]
+        self.grid = [
+            [Cell(Vec2(x, y)) for x in range(width)] for y in range(height)
+        ]
         self.width = width
         self.height = height
-    
+
     def __getitem__(self, key):
         try:
             x, y = key
-            if (0 <= x < self.width and  0 <= y < self.height):
+            if 0 <= x < self.width and 0 <= y < self.height:
                 return self.grid[y][x]
             else:
-                raise ValueError(f"\
-{x} or {y} is out of range {self.width},{self.height}")
+                raise ValueError(
+                    f"\
+{x} or {y} is out of range {self.width},{self.height}"
+                )
                 return None
         except ValueError as ve:
             print(f"Grid key error:{key} not a valid tuple {ve}")
-    
+
     def __str__(self, cursor=None):
         r_str = ""
         for x in range(self.width):
@@ -189,7 +194,7 @@ class Grid(object):
                     r_str += "|"
                 else:
                     r_str += " "
-                if cursor == cell.loc:
+                if cursor and cursor == cell.loc:
                     r_str += " @ "
                 else:
                     r_str += "   "
@@ -212,13 +217,13 @@ class A_Maze:
         """TODO: to be defined."""
         self.config = cfg
         self.startup()
-        rend.init_grid(Vec2(self.width, self.height ))
+        rend.init_grid(Vec2(self.width, self.height))
         rend.generate_grid_sprits()
         # self.gen_rand()
-        self.animate(self.grid, 0.02)
-    
+        self.animate(self.grid, 0.0001)
+
     @staticmethod
-    def gen_rand(grid: Grid, cfg: dict, pos: tuple = (0,0)):
+    def gen_rand(grid: Grid, cfg: dict, pos: tuple = (0, 0)):
         """TODO: Docstring for gen_rand.
 
         Args:
@@ -231,45 +236,36 @@ class A_Maze:
         cell.visited = True
         directions = list(Cell.DIRS.items())
         random.shuffle(directions)
-        def open_entry_exit(cell):
-            print("EXIT\n\n>>>>>", cell.loc, grid.width, grid.height, "\n",
-                  cell.loc.x == grid.width - 1,  cell.loc.y == grid.height - 1)
-            if cell.loc.x == 0:
-                cell.rm_wall(Cell.W)
-            elif cell.loc.x == grid.width - 1:
-                cell.rm_wall(Cell.E)
-            elif cell.loc.y == 0:
-                cell.rm_wall(Cell.N)
-            elif cell.loc.y == grid.height - 1:
-                cell.rm_wall(Cell.S)
-
-        if (cell.loc == grid[cfg["ENTRY"]].loc):
-            print(">>>>>", cell)
-            open_entry_exit(cell)
-        if (cell.loc == grid[cfg["EXIT"]].loc): 
-            print("EXIT\n\n>>>>>", cell)
-            open_entry_exit(cell)
 
         for direction, (dx, dy) in directions:
             neighbour = grid[cell.loc + Vec2(dx, dy)]
             if not neighbour or neighbour.visited:
                 continue
             cell.rm_wall(direction)
-            yield (neighbour.loc)  # yield after carving a passage
+            neighbour.rm_wall(Cell.OPPS[direction])
+            yield neighbour.loc  # yield after carving a passage
             yield from A_Maze.gen_rand(grid, cfg, neighbour.loc)
 
-
-    @staticmethod
-    def open_entry_exit(cell: Cell, directions: dict):
-        for direction, (dx, dy) in directions:
-            neighbour = Grid[cell.loc + Vec2(dx, dy)]
-            if not neighbour:
-                cell.rm_wall(direction)
-                return
+    def open_entry_exit(cell: Cell, grid: Grid):
+        if cell.loc.x == 0:
+            cell.rm_wall(Cell.W)
+        elif cell.loc.x == grid.width - 1:
+            cell.rm_wall(Cell.E)
+        elif cell.loc.y == 0:
+            cell.rm_wall(Cell.N)
+        elif cell.loc.y == grid.height - 1:
+            cell.rm_wall(Cell.S)
 
     def animate(self, grid, delay=0.10):
         # ANSI clear screen + cursor home
         CLEAR = "\x1b[2J\x1b[H"
+        A_Maze.open_entry_exit(grid[self.config["ENTRY"]], grid)
+        A_Maze.open_entry_exit(grid[self.config["EXIT"]], grid)
+        pos = grid[self.config["ENTRY"]].loc
+        rend.render_cell(
+            self.grid[pos.x, pos.y].wall,
+            self.grid.grid[pos.y][pos.x].loc,
+        )
         for pos in self.gen_rand(self.grid, self.config, self.config["ENTRY"]):
             print(CLEAR, end="")
             print(self.grid.__str__(pos))
@@ -277,14 +273,16 @@ class A_Maze:
             print(pos)
             # print(self.grid.grid[pos.x - 1][pos.y - 1].wall)
             # print(self.grid.grid[pos.y - 1][pos.x - 1].wall)
-            rend.render_cell(self.grid.grid[pos.y][pos.x].wall, self.grid.grid[pos.y][pos.x].loc)
+            rend.render_cell(
+                self.grid[pos.x, pos.y].wall,
+                self.grid.grid[pos.y][pos.x].loc,
+            )
             # print(pos.x, pos.y)
             time.sleep(delay)
 
     def startup(self):
         self.grid = Grid(self.width, self.height)
         rend.init_grid(Vec2(self.width, self.height))
-        
 
     @property
     def width(self):
@@ -305,27 +303,32 @@ class A_Maze:
 
         """
         c_dct = {"FILENAME": filename}
-        with open(filename, 'r') as f:
+        with open(filename) as f:
             for line in f:
                 line = line.strip()
-                if line and not line.startswith('#'):
-                    k, v = line.split('=')
+                if line and not line.startswith("#"):
+                    k, v = line.split("=")
                     k = k.strip().upper()
                     try:
-                        if ',' in v:
-                            v = v.split(',')
+                        if "," in v:
+                            v = v.split(",")
                             v = tuple(int(i) for i in v)
                         elif v.lower() in ("true", "false"):
                             v = v.lower() == "true"
                         elif v.isnumeric():
                             v = int(v)
                     except ValueError as ve:
-                        print(f"Error: {ve} something's not right with config\
-                              {k}:{v} ")
+                        print(
+                            f"Error: {ve} something's not right with config\
+                              {k}:{v} "
+                        )
                     c_dct.update({k: v})
         return cls(c_dct)
 
+
 rend = Render()
+
+
 def main():
     """Drive the main loop."""
     av = sys.argv
@@ -340,6 +343,7 @@ def main():
         print(a.config)
         print("yay")
     rend.launch()
+
 
 if __name__ == "__main__":
     main()
