@@ -1,10 +1,14 @@
+"""TODO: Short module summary.
+
+Optional longer description.
+"""
+
 import os
 
 from mlx import Mlx
 from PIL import Image
-from helper import Grid, Cell
 
-
+from helper import Cell, Grid
 from helper.vector import Vec2
 
 
@@ -34,25 +38,34 @@ class Render:
         return ret
 
     def render_image(self, image: int, place: Vec2):
-        img_ptr = self.m.mlx_png_file_to_image(self.mlx_ptr, self.images[image][1])
+        img_ptr = self.m.mlx_png_file_to_image(
+            self.mlx_ptr, self.images[image][1]
+        )
         self.m.mlx_put_image_to_window(
             self.mlx_ptr, self.win_ptr, img_ptr[0], place.x, place.y
         )
 
     def generate_grid_sprits(self) -> tuple:
-        path = os.path.dirname(os.path.abspath(__file__)) + "/includes/sprits/grid/"
+        path = (
+            os.path.dirname(os.path.abspath(__file__))
+            + "/includes/sprits/grid/"
+        )
         sprits = list(filter(lambda f: f.endswith(".png"), os.listdir(path)))
         ret = []
         for sprit in sprits:
             ret.append(
                 (
-                    self.generate_sprit(path, sprit, self.tile_siz, (0, 90, 180, 270)),
+                    self.generate_sprit(
+                        path, sprit, self.tile_siz, (0, 90, 180, 270)
+                    ),
                     sprit,
                 )
             )
         return ret
 
-    def generate_sprit(self, path: str, sprit: str, siz: Vec2, degs: tuple) -> list:
+    def generate_sprit(
+        self, path: str, sprit: str, siz: Vec2, degs: tuple
+    ) -> list:
         # print(degs)
         ret = []
         for deg in degs:
@@ -84,7 +97,7 @@ class Render:
     def render_cell(self, pos: Vec2, grid: Grid):
         # img_siz = Vec2(self.cell_siz.x / 3, self.cell_siz.y / 3)
         hex = grid[pos].wall
-        
+
         n = grid.neighbour(pos)
         print(f"neighbors {n}")
         for i in range(3):
@@ -94,16 +107,28 @@ class Render:
                         self.render_image(
                             1 * 4 + 1,
                             Vec2(
-                                int(pos.x * self.tile_siz.x * 2 + i * self.tile_siz.x),
-                                int(pos.y * self.tile_siz.y * 2 + y * self.tile_siz.y),
+                                int(
+                                    pos.x * self.tile_siz.x * 2
+                                    + i * self.tile_siz.x
+                                ),
+                                int(
+                                    pos.y * self.tile_siz.y * 2
+                                    + y * self.tile_siz.y
+                                ),
                             ),
                         )
                     else:
                         self.render_image(
                             0,
                             Vec2(
-                                int(pos.x * self.tile_siz.x * 2 + i * self.tile_siz.x),
-                                int(pos.y * self.tile_siz.y * 2 + y * self.tile_siz.y),
+                                int(
+                                    pos.x * self.tile_siz.x * 2
+                                    + i * self.tile_siz.x
+                                ),
+                                int(
+                                    pos.y * self.tile_siz.y * 2
+                                    + y * self.tile_siz.y
+                                ),
                             ),
                         )
 
@@ -112,24 +137,42 @@ class Render:
                         self.render_image(
                             1 * 4,
                             Vec2(
-                                int(pos.x * self.tile_siz.x * 2 + i * self.tile_siz.x),
-                                int(pos.y * self.tile_siz.y * 2 + y * self.tile_siz.y),
+                                int(
+                                    pos.x * self.tile_siz.x * 2
+                                    + i * self.tile_siz.x
+                                ),
+                                int(
+                                    pos.y * self.tile_siz.y * 2
+                                    + y * self.tile_siz.y
+                                ),
                             ),
                         )
                     else:
                         self.render_image(
                             0,
                             Vec2(
-                                int(pos.x * self.tile_siz.x * 2 + i * self.tile_siz.x),
-                                int(pos.y * self.tile_siz.y * 2 + y * self.tile_siz.y),
+                                int(
+                                    pos.x * self.tile_siz.x * 2
+                                    + i * self.tile_siz.x
+                                ),
+                                int(
+                                    pos.y * self.tile_siz.y * 2
+                                    + y * self.tile_siz.y
+                                ),
                             ),
                         )
                 elif y % 2 == 1 and i % 2 == 1:
                     self.render_image(
                         0,
                         Vec2(
-                            int(pos.x * self.tile_siz.x * 2 + i * self.tile_siz.x),
-                            int(pos.y * self.tile_siz.y * 2 + y * self.tile_siz.y),
+                            int(
+                                pos.x * self.tile_siz.x * 2
+                                + i * self.tile_siz.x
+                            ),
+                            int(
+                                pos.y * self.tile_siz.y * 2
+                                + y * self.tile_siz.y
+                            ),
                         ),
                     )
                 else:
@@ -178,8 +221,14 @@ class Render:
                     self.render_image(
                         tile * 4 + ori,
                         Vec2(
-                            int(pos.x * self.tile_siz.x * 2 + i * self.tile_siz.x),
-                            int(pos.y * self.tile_siz.y * 2 + y * self.tile_siz.y),
+                            int(
+                                pos.x * self.tile_siz.x * 2
+                                + i * self.tile_siz.x
+                            ),
+                            int(
+                                pos.y * self.tile_siz.y * 2
+                                + y * self.tile_siz.y
+                            ),
                         ),
                     )
 

@@ -6,7 +6,7 @@
 #    By: sdeppe <sdeppe@student.42heilbronn.de>    +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:26:52 by sdeppe           #+#    #+#              #
-#    Updated: 2026/01/31 04:21:50 by maprunty        ###   ########.fr        #
+#    Updated: 2026/01/31 13:15:27 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """TODO: Short module summary.
@@ -21,12 +21,14 @@ from a_maze import A_Maze
 from graphics import Render
 from helper import Vec2
 
+sys.setrecursionlimit(2000)
 
 
 def print_image(button, x, y, mystuff):
     """TODO: Docstring."""
     print(
-        f"Got mouse event! button {button} at x: {int((x / rend.width) * rend.gridx)}, y: {int(y / rend.width * rend.gridy)}"
+        f"Got mouse event! button {button} at x: \
+{int((x / rend.width) * rend.gridx)}, y: {int(y / rend.width * rend.gridy)}"
     )
     if button == 1:
         hex = random.randrange(0, 15)

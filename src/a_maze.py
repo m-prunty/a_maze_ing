@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/24 07:55:50 by maprunty         #+#    #+#              #
-#    Updated: 2026/01/31 03:30:14 by maprunty        ###   ########.fr        #
+#    Updated: 2026/01/31 13:19:29 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """First attempts at the A-Maze-ing project."""
@@ -39,15 +39,36 @@ class A_Maze:
         self.rend.launch()
 
     def startup(self):
+        """TODO: Summary line.
+
+        Args:
+            param (type): Description.
+
+        Returns:
+            type: Description.
+
+        Raises:
+            ExceptionType: When this is raised.
+        """
         self.grid = Grid(self.width, self.height)
         self.rend.init_grid(Vec2(self.width, self.height))
 
     @property
     def width(self):
+        """TODO: Summary of the property.
+
+        Returns:
+            type: Description.
+        """
         return self.config["WIDTH"]
 
     @property
     def height(self):
+        """TODO: Summary of the property.
+
+        Returns:
+            type: Description.
+        """
         return self.config["HEIGHT"]
 
     @classmethod
@@ -55,7 +76,7 @@ class A_Maze:
         """TODO: Docstring for from_fil.
 
         Args:
-            s (str): TODO
+            filename (str): TODO
 
         Returns: TODO
 
@@ -84,5 +105,5 @@ class A_Maze:
         return cls(c_dct)
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#    main()

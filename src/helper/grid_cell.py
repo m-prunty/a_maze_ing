@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:38:19 by maprunty         #+#    #+#              #
-#    Updated: 2026/01/31 02:46:32 by maprunty        ###   ########.fr        #
+#    Updated: 2026/01/31 13:22:58 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """TODO: Short module summary.
@@ -49,19 +49,18 @@ class Cell:
         """TODO: to be defined."""
         self.wall = 0b1111
         self.loc = loc
+        self.is42 = 0
         self.visited = False
-         
-	
- 	# @property 
-	# def scale_factor(self, tile_siz):
+
+    # @property
+    # def scale_factor(self, tile_siz):
     #     return tile_siz.x * 2 + i * tile_siz.x
 
-
     def __str__(self):
+        """TODO: Docstring."""
         r_str = f"{self.loc} "
         r_str += f"{bin(self.wall)}"
         return r_str
-
 
     @property
     def loc(self) -> Vec2:
@@ -79,15 +78,19 @@ class Cell:
 
     @visited.setter
     def visited(self, value: bool):
+        """TODO: Docstring."""
         self._visited = value
 
     def has_wall(self, direction):
+        """TODO: Docstring."""
         return self.wall & direction
 
     def add_wall(self, direction):
+        """TODO: Docstring."""
         self.wall |= direction
 
     def rm_wall(self, direction):
+        """TODO: Docstring."""
         self.wall &= ~direction
 
 
@@ -101,17 +104,19 @@ class Grid:
         ]
         self.width = width
         self.height = height
-    
+
     def neighbour(self, pos: Vec2) -> dict[list[Cell]]:
+        """TODO: Docstring."""
         neighbours: dict[list[Cell]] = {}
         for k, v in Cell.DIRS.items():
             try:
-                neighbours.update({k : self[v + pos].wall})
+                neighbours.update({k: self[v + pos].wall})
             except AttributeError:
                 print("is none")
         return neighbours
 
     def __getitem__(self, key):
+        """TODO: Docstring."""
         try:
             x, y = key
             if 0 <= x < self.width and 0 <= y < self.height:
@@ -120,12 +125,13 @@ class Grid:
                 raise ValueError(
                     f"\
 {x} or {y} is out of range {self.width},{self.height}"
-                )                
+                )
         except ValueError as ve:
             print(f"Grid key error:{key} not a valid tuple {ve}")
             return None
 
     def __str__(self, cursor=None):
+        """TODO: Docstring."""
         r_str = ""
         for x in range(self.width):
             cell = self[x, 0]
@@ -142,7 +148,7 @@ class Grid:
                 if cursor and cursor == cell.loc:
                     r_str += " @ "
                 else:
-                    r_str += "   "
+                    r_str += "   " if not cell.is42 else " X "
             r_str += "|\n" if cell.has_wall(Cell.E) else " \n"
             for x in range(self.width):
                 cell = self[x, y]
@@ -153,3 +159,8 @@ class Grid:
                     r_str += "   "
             r_str += "+\n"
         return r_str
+
+    def reset(self):
+        """TODO: Docstring."""
+        for cell in self.grid:
+            cell.visited = False

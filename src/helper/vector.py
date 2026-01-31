@@ -6,7 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:37:00 by maprunty         #+#    #+#              #
-#    Updated: 2026/01/31 02:58:38 by maprunty        ###   ########.fr        #
+#    Updated: 2026/01/31 11:39:48 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """TODO: Short module summary.
@@ -41,6 +41,13 @@ class Vec2:
         return Vec2(
             self.x - other.x,
             self.y - other.y,
+        )
+
+    def __mul__(self, scaler: int):
+        """Multiply a vec2 instance by a scalar."""
+        return Vec2(
+            self.x * scaler,
+            self.y * scaler,
         )
 
     def __eq__(self, other):
