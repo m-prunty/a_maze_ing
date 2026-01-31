@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:38:19 by maprunty         #+#    #+#              #
-#    Updated: 2026/01/31 13:22:58 by maprunty        ###   ########.fr        #
+#    Updated: 2026/01/31 14:10:53 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """TODO: Short module summary.
@@ -97,23 +97,13 @@ class Cell:
 class Grid:
     """Docstring for Grid."""
 
-    def __init__(self, width, height):
+    def __init__(self, cfg: dict[str], width, height):
         """TODO: to be defined."""
+        self.config = cfg
         self.grid = [
-            [Cell(Vec2(x, y)) for x in range(width)] for y in range(height)
+            [Cell(Vec2(x, y)) for x in range(self.width)]
+            for y in range(self.height)
         ]
-        self.width = width
-        self.height = height
-
-    def neighbour(self, pos: Vec2) -> dict[list[Cell]]:
-        """TODO: Docstring."""
-        neighbours: dict[list[Cell]] = {}
-        for k, v in Cell.DIRS.items():
-            try:
-                neighbours.update({k: self[v + pos].wall})
-            except AttributeError:
-                print("is none")
-        return neighbours
 
     def __getitem__(self, key):
         """TODO: Docstring."""
@@ -159,6 +149,26 @@ class Grid:
                     r_str += "   "
             r_str += "+\n"
         return r_str
+
+    @property
+    def width(self):
+        """Get WIDTH from config file."""
+        return self.config["WIDTH"]
+
+    @property
+    def height(self):
+        """Get HEIGHT from config file."""
+        return self.config["HEIGHT"]
+
+    def neighbour(self, pos: Vec2) -> dict[list[Cell]]:
+        """TODO: Docstring."""
+        neighbours: dict[list[Cell]] = {}
+        for k, v in Cell.DIRS.items():
+            try:
+                neighbours.update({k: self[v + pos].wall})
+            except AttributeError:
+                print("is none")
+        return neighbours
 
     def reset(self):
         """TODO: Docstring."""

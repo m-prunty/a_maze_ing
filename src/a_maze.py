@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/24 07:55:50 by maprunty         #+#    #+#              #
-#    Updated: 2026/01/31 13:19:29 by maprunty        ###   ########.fr        #
+#    Updated: 2026/01/31 14:11:59 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """First attempts at the A-Maze-ing project."""
@@ -50,25 +50,17 @@ class A_Maze:
         Raises:
             ExceptionType: When this is raised.
         """
-        self.grid = Grid(self.width, self.height)
+        self.grid = Grid(self.config, self.width, self.height)
         self.rend.init_grid(Vec2(self.width, self.height))
 
     @property
     def width(self):
-        """TODO: Summary of the property.
-
-        Returns:
-            type: Description.
-        """
+        """Get WIDTH from config file."""
         return self.config["WIDTH"]
 
     @property
     def height(self):
-        """TODO: Summary of the property.
-
-        Returns:
-            type: Description.
-        """
+        """Get HEIGHT from config file."""
         return self.config["HEIGHT"]
 
     @classmethod
