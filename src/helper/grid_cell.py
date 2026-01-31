@@ -1,0 +1,139 @@
+#!/usr/bin/env python3
+# *************************************************************************** #
+#                                                                             #
+#                                                        :::      ::::::::    #
+#    grid_cell.py                                      :+:      :+:    :+:    #
+#                                                    +:+ +:+         +:+      #
+#    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
+#                                                +#+#+#+#+#+   +#+            #
+#    Created: 2026/01/31 01:38:19 by maprunty         #+#    #+#              #
+#    Updated: 2026/01/31 02:46:32 by maprunty        ###   ########.fr        #
+#                                                                             #
+# *************************************************************************** #
+"""TODO: Short module summary.
+
+Optional longer description.
+"""
+
+from .vector import Vec2
+
+
+class Cell:
+    """Docstring for Cell.
+
+    wall is a 4-bit represantaion. i.e
+    0000 has all walls
+    0100 has one opening to south
+    """
+
+    N = 1 << 0
+    E = 1 << 1
+    S = 1 << 2
+    W = 1 << 3
+
+    DIRS = {
+        N: (0, -1),
+        E: (1, 0),
+        S: (0, 1),
+        W: (-1, 0),
+    }
+
+    OPPS = {
+        N: S,
+        E: W,
+        S: N,
+        W: E,
+    }
+
+    def __init__(self, loc: Vec2):
+        """TODO: to be defined."""
+        self.wall = 0b1111
+        self.loc = loc
+        self.visited = False
+
+    def __str__(self):
+        r_str = f"{self.loc} "
+        r_str += f"{bin(self.wall)}"
+        return r_str
+
+    @property
+    def loc(self) -> Vec2:
+        """Doc"""
+        return self._loc
+
+    @loc.setter
+    def loc(self, value: Vec2):
+        self._loc = value
+
+    @property
+    def visited(self) -> bool:
+        """Doc"""
+        return self._visited
+
+    @visited.setter
+    def visited(self, value: bool):
+        self._visited = value
+
+    def has_wall(self, direction):
+        return self.wall & direction
+
+    def add_wall(self, direction):
+        self.wall |= direction
+
+    def rm_wall(self, direction):
+        self.wall &= ~direction
+
+
+class Grid:
+    """Docstring for Grid."""
+
+    def __init__(self, width, height):
+        """TODO: to be defined."""
+        self.grid = [
+            [Cell(Vec2(x, y)) for x in range(width)] for y in range(height)
+        ]
+        self.width = width
+        self.height = height
+
+    def __getitem__(self, key):
+        try:
+            x, y = key
+            if 0 <= x < self.width and 0 <= y < self.height:
+                return self.grid[y][x]
+            else:
+                raise ValueError(
+                    f"\
+{x} or {y} is out of range {self.width},{self.height}"
+                )
+                return None
+        except ValueError as ve:
+            print(f"Grid key error:{key} not a valid tuple {ve}")
+
+    def __str__(self, cursor=None):
+        r_str = ""
+        for x in range(self.width):
+            cell = self[x, 0]
+            r_str += "+"
+            r_str += "---" if cell.has_wall(Cell.N) else "   "
+        r_str += "+\n"
+        for y in range(self.height):
+            for x in range(self.width):
+                cell = self[x, y]
+                if cell.has_wall(Cell.W):
+                    r_str += "|"
+                else:
+                    r_str += " "
+                if cursor and cursor == cell.loc:
+                    r_str += " @ "
+                else:
+                    r_str += "   "
+            r_str += "|\n" if cell.has_wall(Cell.E) else " \n"
+            for x in range(self.width):
+                cell = self[x, y]
+                r_str += "+"
+                if cell.has_wall(Cell.S):
+                    r_str += "---"
+                else:
+                    r_str += "   "
+            r_str += "+\n"
+        return r_str
