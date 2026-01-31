@@ -1,0 +1,6 @@
+__pycache__/
+build/
+.*.sw*
+uv.lock
+.DS_Store
+.png

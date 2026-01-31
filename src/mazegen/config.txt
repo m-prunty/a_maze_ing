@@ -6,11 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.de  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/24 07:55:17 by maprunty          #+#    #+#              #
-<<<<<<< HEAD
 #    Updated: 2026/01/25 12:11:17 by maprunty        ###   ########.fr        #
-=======
-#    Updated: 2026/01/31 14:19:32 by maprunty        ###   ########.fr        #
->>>>>>> vog/cleanup
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,16 +18,9 @@
 # OUTPUT_FILE Output filename OUTPUT_FILE=maze.txt
 # PERFECT Is the maze perfect? PERFECT=True
 
-<<<<<<< HEAD
 WIDTH=20
 HEIGHT=15
 ENTRY=0,0
 EXIT=19,14
-=======
-WIDTH=50
-HEIGHT=100
-ENTRY=0,0
-EXIT=19,10
->>>>>>> vog/cleanup
 OUTPUT_FILE=maze.txt 
 PERFECT=True
