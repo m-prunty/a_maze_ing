@@ -2,6 +2,8 @@ import os
 
 from mlx import Mlx
 from PIL import Image
+from helper import Grid, Cell
+
 
 from helper.vector import Vec2
 
@@ -32,34 +34,25 @@ class Render:
         return ret
 
     def render_image(self, image: int, place: Vec2):
-        img_ptr = self.m.mlx_png_file_to_image(
-            self.mlx_ptr, self.images[image][1]
-        )
+        img_ptr = self.m.mlx_png_file_to_image(self.mlx_ptr, self.images[image][1])
         self.m.mlx_put_image_to_window(
             self.mlx_ptr, self.win_ptr, img_ptr[0], place.x, place.y
         )
 
     def generate_grid_sprits(self) -> tuple:
-        path = (
-            os.path.dirname(os.path.abspath(__file__))
-            + "/includes/sprits/grid/"
-        )
+        path = os.path.dirname(os.path.abspath(__file__)) + "/includes/sprits/grid/"
         sprits = list(filter(lambda f: f.endswith(".png"), os.listdir(path)))
         ret = []
         for sprit in sprits:
             ret.append(
                 (
-                    self.generate_sprit(
-                        path, sprit, self.tile_siz, (0, 90, 180, 270)
-                    ),
+                    self.generate_sprit(path, sprit, self.tile_siz, (0, 90, 180, 270)),
                     sprit,
                 )
             )
         return ret
 
-    def generate_sprit(
-        self, path: str, sprit: str, siz: Vec2, degs: tuple
-    ) -> list:
+    def generate_sprit(self, path: str, sprit: str, siz: Vec2, degs: tuple) -> list:
         # print(degs)
         ret = []
         for deg in degs:
@@ -82,15 +75,18 @@ class Render:
     def init_grid(self, siz: Vec2):
         self.gridx = siz.x
         self.gridy = siz.y
-        self.grid = [[0 for _ in range(siz.y)] for _ in range(siz.x)]
+        # self.grid = [[0 for _ in range(siz.y)] for _ in range(siz.x)]
         self.tile_siz = Vec2(
             self.width / (siz.x * 2 + 1), self.height / (siz.y * 2 + 1)
         )
         # self.cell_siz = Vec2(self.width / (siz.x + 4), self.height / (self.gridy) + (self.height / (self.gridy) / 3) - 1)
 
-    def render_cell(self, hex: int, pos: Vec2):
+    def render_cell(self, pos: Vec2, grid: Grid):
         # img_siz = Vec2(self.cell_siz.x / 3, self.cell_siz.y / 3)
-        self.grid[pos.x][pos.y] = hex
+        hex = grid[pos].wall
+        
+        n = grid.neighbour(pos)
+        print(f"neighbors {n}")
         for i in range(3):
             for y in range(3):
                 if y == 1 and i % 2 == 0:
@@ -98,28 +94,16 @@ class Render:
                         self.render_image(
                             1 * 4 + 1,
                             Vec2(
-                                int(
-                                    pos.x * self.tile_siz.x * 2
-                                    + i * self.tile_siz.x
-                                ),
-                                int(
-                                    pos.y * self.tile_siz.y * 2
-                                    + y * self.tile_siz.y
-                                ),
+                                int(pos.x * self.tile_siz.x * 2 + i * self.tile_siz.x),
+                                int(pos.y * self.tile_siz.y * 2 + y * self.tile_siz.y),
                             ),
                         )
                     else:
                         self.render_image(
                             0,
                             Vec2(
-                                int(
-                                    pos.x * self.tile_siz.x * 2
-                                    + i * self.tile_siz.x
-                                ),
-                                int(
-                                    pos.y * self.tile_siz.y * 2
-                                    + y * self.tile_siz.y
-                                ),
+                                int(pos.x * self.tile_siz.x * 2 + i * self.tile_siz.x),
+                                int(pos.y * self.tile_siz.y * 2 + y * self.tile_siz.y),
                             ),
                         )
 
@@ -128,76 +112,52 @@ class Render:
                         self.render_image(
                             1 * 4,
                             Vec2(
-                                int(
-                                    pos.x * self.tile_siz.x * 2
-                                    + i * self.tile_siz.x
-                                ),
-                                int(
-                                    pos.y * self.tile_siz.y * 2
-                                    + y * self.tile_siz.y
-                                ),
+                                int(pos.x * self.tile_siz.x * 2 + i * self.tile_siz.x),
+                                int(pos.y * self.tile_siz.y * 2 + y * self.tile_siz.y),
                             ),
                         )
                     else:
                         self.render_image(
                             0,
                             Vec2(
-                                int(
-                                    pos.x * self.tile_siz.x * 2
-                                    + i * self.tile_siz.x
-                                ),
-                                int(
-                                    pos.y * self.tile_siz.y * 2
-                                    + y * self.tile_siz.y
-                                ),
+                                int(pos.x * self.tile_siz.x * 2 + i * self.tile_siz.x),
+                                int(pos.y * self.tile_siz.y * 2 + y * self.tile_siz.y),
                             ),
                         )
                 elif y % 2 == 1 and i % 2 == 1:
                     self.render_image(
                         0,
                         Vec2(
-                            int(
-                                pos.x * self.tile_siz.x * 2
-                                + i * self.tile_siz.x
-                            ),
-                            int(
-                                pos.y * self.tile_siz.y * 2
-                                + y * self.tile_siz.y
-                            ),
+                            int(pos.x * self.tile_siz.x * 2 + i * self.tile_siz.x),
+                            int(pos.y * self.tile_siz.y * 2 + y * self.tile_siz.y),
                         ),
                     )
                 else:
                     top = (
                         (hex >> (2 * (i == 0) + 1)) & 1
                         if y > 0
-                        else (
-                            self.grid[pos.x][pos.y - 1] >> (2 * (i == 0) + 1)
-                        )
-                        & 1
+                        else (n[Cell.N] >> (2 * (i == 0) + 1)) & 1
                         if pos.y > 0
                         else 0
                     )
                     bot = (
                         (hex >> (2 * (i == 0) + 1)) & 1
                         if y == 0
-                        else (
-                            self.grid[pos.x][pos.y + 1] >> (2 * (i == 0) + 1)
-                        )
-                        & 1
+                        else (n[Cell.S] >> (2 * (i == 0) + 1)) & 1
                         if pos.y < self.gridy - 1
                         else 0
                     )
                     left = (
                         (hex >> y) & 1
                         if i > 0
-                        else (self.grid[pos.x - 1][pos.y] >> y) & 1
+                        else (n[Cell.W] >> y) & 1
                         if pos.x > 0
                         else 0
                     )
                     right = (
                         (hex >> y) & 1
                         if i == 0
-                        else (self.grid[pos.x + 1][pos.y] >> y) & 1
+                        else (n[Cell.E] >> y) & 1
                         if pos.x < self.gridx - 1
                         else 0
                     )
@@ -218,19 +178,15 @@ class Render:
                     self.render_image(
                         tile * 4 + ori,
                         Vec2(
-                            int(
-                                pos.x * self.tile_siz.x * 2
-                                + i * self.tile_siz.x
-                            ),
-                            int(
-                                pos.y * self.tile_siz.y * 2
-                                + y * self.tile_siz.y
-                            ),
+                            int(pos.x * self.tile_siz.x * 2 + i * self.tile_siz.x),
+                            int(pos.y * self.tile_siz.y * 2 + y * self.tile_siz.y),
                         ),
                     )
 
-                    # corner
-                # self.render_image(hex, Vec2(int(pos.x * self.cell_siz.x + img_siz * i), int(pos.y * self.cell_siz.y + img_siz * y)))
+    # if (pos.y > 0)
+    # 	render
+    # corner
+    # self.render_image(hex, Vec2(int(pos.x * self.cell_siz.x + img_siz * i), int(pos.y * self.cell_siz.y + img_siz * y)))
 
     def add_hook(self, func: callable, event: int, param):
         self.m.mlx_hook(self.win_ptr, event, 0, func, None)

@@ -19,6 +19,8 @@ import sys
 
 from a_maze import A_Maze
 from graphics import Render
+from helper import Vec2
+
 
 
 def print_image(button, x, y, mystuff):

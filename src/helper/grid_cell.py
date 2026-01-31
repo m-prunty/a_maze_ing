@@ -32,10 +32,10 @@ class Cell:
     W = 1 << 3
 
     DIRS = {
-        N: (0, -1),
-        E: (1, 0),
-        S: (0, 1),
-        W: (-1, 0),
+        N: Vec2(0, -1),
+        E: Vec2(1, 0),
+        S: Vec2(0, 1),
+        W: Vec2(-1, 0),
     }
 
     OPPS = {
@@ -50,11 +50,18 @@ class Cell:
         self.wall = 0b1111
         self.loc = loc
         self.visited = False
+         
+	
+ 	# @property 
+	# def scale_factor(self, tile_siz):
+    #     return tile_siz.x * 2 + i * tile_siz.x
+
 
     def __str__(self):
         r_str = f"{self.loc} "
         r_str += f"{bin(self.wall)}"
         return r_str
+
 
     @property
     def loc(self) -> Vec2:
@@ -94,6 +101,15 @@ class Grid:
         ]
         self.width = width
         self.height = height
+    
+    def neighbour(self, pos: Vec2) -> dict[list[Cell]]:
+        neighbours: dict[list[Cell]] = {}
+        for k, v in Cell.DIRS.items():
+            try:
+                neighbours.update({k : self[v + pos].wall})
+            except AttributeError:
+                print("is none")
+        return neighbours
 
     def __getitem__(self, key):
         try:
@@ -104,10 +120,10 @@ class Grid:
                 raise ValueError(
                     f"\
 {x} or {y} is out of range {self.width},{self.height}"
-                )
-                return None
+                )                
         except ValueError as ve:
             print(f"Grid key error:{key} not a valid tuple {ve}")
+            return None
 
     def __str__(self, cursor=None):
         r_str = ""

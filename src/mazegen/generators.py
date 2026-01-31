@@ -56,26 +56,34 @@ class Generators:
         elif cell.loc.y == grid.height - 1:
             cell.rm_wall(Cell.S)
 
-    def animate(self, rend, delay=0.10):
+    def animate(self, rend, delay=0.00):
         # ANSI clear screen + cursor home
         CLEAR = "\x1b[2J\x1b[H"
         Generators.open_entry_exit(self.grid[self.config["ENTRY"]], self.grid)
         Generators.open_entry_exit(self.grid[self.config["EXIT"]], self.grid)
         pos = self.grid[self.config["ENTRY"]].loc
         rend.render_cell(
-            self.grid[pos.x, pos.y].wall,
-            self.grid.grid[pos.y][pos.x].loc,
+        	pos,
+			self.grid
         )
+        # tmp
         for pos in self.gen_rand(self.grid, self.config, self.config["ENTRY"]):
             print(CLEAR, end="")
             print(self.grid.__str__(pos))
             # hex_walls = cell.wall
-            print(pos)
-            # print(self.grid.grid[pos.x - 1][pos.y - 1].wall)
-            # print(self.grid.grid[pos.y - 1][pos.x - 1].wall)
+            # print(pos)
             rend.render_cell(
-                self.grid[pos.x, pos.y].wall,
-                self.grid.grid[pos.y][pos.x].loc,
-            )
-            # print(pos.x, pos.y)
-            time.sleep(delay)
+				pos,
+				self.grid
+			)
+            # for dir in (Cell.DIRS.items()):
+            #     neighbour = pos + dir[1]
+            #     print(neighbour)
+            #     try:
+            #         rend.render_cell(
+			# 			self.grid[neighbour].wall,
+			# 			self.grid[neighbour].loc,
+			# 		)
+            #     except AttributeError :
+            #         print("out of grid")
+        time.sleep(delay)
