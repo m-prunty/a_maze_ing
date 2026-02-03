@@ -67,10 +67,10 @@ class Generators:
         Returns: TODO
 
         """
+        directions = list(Cell.DIRS.items())
         for cell in grid:
-            cell = grid[pos]
+            # cell = grid[pos]
             cell.visited = True
-            directions = list(Cell.DIRS.items())
             random.shuffle(directions)
             for direction, (dx, dy) in directions:
                 neighbour = grid[cell.loc + Vec2(dx, dy)]
@@ -78,6 +78,7 @@ class Generators:
                     continue
                 cell.rm_wall(direction)
                 neighbour.rm_wall(Cell.OPPS[direction])
+                cell = neighbour
                 yield neighbour.loc  # yield after carving a passage
 
     def gen_42(self):
@@ -159,7 +160,7 @@ class Generators:
                 print("is none")
         return neighbours
 
-    def animate(self, rend, current=(0, 0), delay=0.0):
+    def animate(self, rend, current, delay=0.0):
         """TODO: Docstring."""
         # ANSI clear screen + cursor home
         CLEAR = "\x1b[2J\x1b[H"
@@ -171,19 +172,19 @@ class Generators:
         # t wmp
         #        print(sys.getrecursionlimit())
         # for pos in self.gen_rand(self.grid, self.config, self.config["ENTRY"]):
-        for pos in self.gen_rand_iter(
+        for pos in self.gen_rand(
             self.grid, self.config, self.config["ENTRY"]
         ):
             #            print(CLEAR, end="")
-            #            print(self.grid.__str__(pos))
             # hex_walls = cell.wall
             # print(pos)
             try:
                 rend.render_cell(pos, self.grid)
+                print(self.grid.__str__(pos))
                 time.sleep(delay)
             except Exception:
                 print(
                     ">>>>>>>>>>>>>>>>>>\n\n\n\n\n\nrend, pos\n\n\n<<<<<<<<<<<<<<<<<<<<<<<<<<"
                 )
                 self.animate(rend, pos)
-        self.grid.reset
+        #self.grid.reset

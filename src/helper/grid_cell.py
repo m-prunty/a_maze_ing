@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:38:19 by maprunty         #+#    #+#              #
-#    Updated: 2026/01/31 14:10:53 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/02 10:38:44 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """TODO: Short module summary.
@@ -49,7 +49,7 @@ class Cell:
         """TODO: to be defined."""
         self.wall = 0b1111
         self.loc = loc
-        self.is42 = 0
+        self.is42 = False
         self.visited = False
 
     # @property
@@ -64,7 +64,7 @@ class Cell:
 
     @property
     def loc(self) -> Vec2:
-        """Doc"""
+        """TODO: Docstring."""
         return self._loc
 
     @loc.setter
@@ -73,7 +73,7 @@ class Cell:
 
     @property
     def visited(self) -> bool:
-        """Doc"""
+        """TODO: Docstring."""
         return self._visited
 
     @visited.setter
@@ -100,6 +100,8 @@ class Grid:
     def __init__(self, cfg: dict[str], width, height):
         """TODO: to be defined."""
         self.config = cfg
+        if not cfg.items():
+            self.set_def_cfg( width, height)     
         self.grid = [
             [Cell(Vec2(x, y)) for x in range(self.width)]
             for y in range(self.height)
@@ -119,6 +121,17 @@ class Grid:
         except ValueError as ve:
             print(f"Grid key error:{key} not a valid tuple {ve}")
             return None
+    
+    def set_def_cfg(self, width, height):
+        self.config = {'FILENAME': 'config.txt',
+                       'WIDTH': 20 if not width else width, 
+                       'HEIGHT': 10 if not height else height, 
+                       'ENTRY': (0, 0), 
+                       'EXIT': (19, 9), 
+                       'OUTPUT_FILE': 'maze.txt', 
+                       'PERFECT': True
+                       } 
+        
 
     def __str__(self, cursor=None):
         """TODO: Docstring."""

@@ -50,7 +50,8 @@ class Render:
             os.path.dirname(os.path.abspath(__file__))
             + "/includes/sprits/grid/"
         )
-        sprits = list(filter(lambda f: f.endswith(".png"), os.listdir(path)))
+        sprits = sorted(list(filter(lambda f: f.endswith(".png"), os.listdir(path))))
+        print(sprits)
         ret = []
         for sprit in sprits:
             ret.append(
@@ -97,7 +98,6 @@ class Render:
     def render_cell(self, pos: Vec2, grid: Grid):
         # img_siz = Vec2(self.cell_siz.x / 3, self.cell_siz.y / 3)
         hex = grid[pos].wall
-
         n = grid.neighbour(pos)
         print(f"neighbors {n}")
         for i in range(3):

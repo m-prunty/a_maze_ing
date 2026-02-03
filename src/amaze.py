@@ -2,36 +2,44 @@
 # *************************************************************************** #
 #                                                                             #
 #                                                        :::      ::::::::    #
-#    a_maze.py                                         :+:      :+:    :+:    #
+#    amaze.py                                          :+:      :+:    :+:    #
 #                                                    +:+ +:+         +:+      #
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/24 07:55:50 by maprunty         #+#    #+#              #
-#    Updated: 2026/02/01 15:59:58 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/03 14:37:08 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """First attempts at the A-Maze-ing project."""
 
-from amaze import Render, Grid, Vec2, Generators
+from .graphics.render import Render
+from .helper.grid_cell import Grid
+from .helper.vector import Vec2
+from .mazegen.generators import Generators
 
 
 class AMaze:
-    """Docstring for AMaze."""
+    """Docstring for AMaze.
 
-    def __init__(self, cfg: dict):
+    generate maze - extend
+    solve maze - mulitple methods
+    output text
+        
+
+    """
+
+    def __init__(self, cfg: dict, render: Render):
         """TODO: to be defined."""
-        self.rend = Render()
+        self.rend = render
         self.config = cfg
-        self.rend.init_window(900, 900, "hello")
-        self.rend.add_hook(self.rend.close, 33, None)
         self.startup()
-        self.rend.generate_grid_sprits()
-        # self.gen_rand()
-        g = Generators(self.grid, self.config)
-        # self.animate(self.grid, 0.0001)
-        g.animate(self.rend)
-        print("aaaaa")
-        self.rend.launch()
+        g = Generators(self.grid, self.config, "rng")
+        g.animate(self.rend, Vec2(0, 0))
+#         self.rend.launch()
+    
+    def __repr__(self):
+        cls = self.__class__.__name__()
+        return (f"{cls}({self.config})")
 
     def startup(self):
         """TODO: Summary line.
@@ -89,7 +97,7 @@ class AMaze:
                               {k}:{v} "
                         )
                     c_dct.update({k: v})
-        return cls(c_dct)
+        return cls(c_dct, None)
 
 
 # if __name__ == "__main__":
