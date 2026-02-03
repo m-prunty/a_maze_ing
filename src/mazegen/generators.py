@@ -3,6 +3,7 @@ import random
 import time
 
 from helper import *
+import asyncio
 
 
 class Generators:
@@ -176,7 +177,7 @@ class Generators:
             # print(self.grid.__str__(pos))
             rend.render_cell(pos, self.grid, 2, 0)
             time.sleep(delay)
-
+        rend.render_grid(self.grid)
         pos = self.grid[self.config["EXIT"]].loc
         rend.render_cell(pos, self.grid, 2, 2)
 
