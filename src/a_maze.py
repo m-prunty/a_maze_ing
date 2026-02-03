@@ -19,7 +19,6 @@ from helper.grid_cell import Grid
 from helper.vector import Vec2
 from mazegen.generators import Generators
 
-
 class A_Maze:
     """Docstring for A_Maze."""
 

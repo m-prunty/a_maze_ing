@@ -18,9 +18,9 @@
 # OUTPUT_FILE Output filename OUTPUT_FILE=maze.txt
 # PERFECT Is the maze perfect? PERFECT=True
 
-WIDTH=40
-HEIGHT=40
+WIDTH=20
+HEIGHT=20
 ENTRY=0,0
-EXIT=33,39
+EXIT=19,19
 OUTPUT_FILE=maze.txt 
 PERFECT=True
