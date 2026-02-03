@@ -169,22 +169,32 @@ class Generators:
         Generators.open_entry_exit(self.grid[self.config["EXIT"]], self.grid)
         self.gen_42()
         pos = self.grid[current].loc
-        rend.render_cell(pos, self.grid)
-        # t wmp
-        #        print(sys.getrecursionlimit())
-        # for pos in self.gen_rand(self.grid, self.config, self.config["ENTRY"]):
+        rend.render_cell(pos, self.grid, 2, 1)
+
         for pos in self.gen_rand(self.grid, self.config, self.config["ENTRY"]):
-            #            print(CLEAR, end="")
-            #            print(self.grid.__str__(pos))
-            # hex_walls = cell.wall
-            # print(pos)
-            try:
-                rend.render_cell(pos, self.grid)
-                print(self.grid.__str__(pos))
-                time.sleep(delay)
-            except Exception:
-                print(
-                    ">>>>>>>>>>>>>>>>>>\n\n\n\n\n\nrend, pos\n\n\n<<<<<<<<<<<<<<<<<<<<<<<<<<"
-                )
-                self.animate(rend, pos)
-        self.grid.reset
+            # print(CLEAR, end="")
+            # print(self.grid.__str__(pos))
+            rend.render_cell(pos, self.grid, 2, 0)
+            time.sleep(delay)
+
+        pos = self.grid[self.config["EXIT"]].loc
+        rend.render_cell(pos, self.grid, 2, 2)
+
+        #       # t wmp
+        #       #        print(sys.getrecursionlimit())
+        #       # for pos in self.gen_rand(self.grid, self.config, self.config["ENTRY"]):
+        #       for pos in self.gen_rand(self.grid, self.config, self.config["ENTRY"]):
+        #           #            print(CLEAR, end="")
+        #           #            print(self.grid.__str__(pos))
+        #           # hex_walls = cell.wall
+        #           # print(pos)
+        #           try:
+        #               rend.render_cell(pos, self.grid)
+        #               print(self.grid.__str__(pos))
+        #               time.sleep(delay)
+        #           except Exception:
+        #               print(
+        #                   ">>>>>>>>>>>>>>>>>>\n\n\n\n\n\nrend, pos\n\n\n<<<<<<<<<<<<<<<<<<<<<<<<<<"
+        #               )
+        #               self.animate(rend, pos)
+        # self.grid.reset()
