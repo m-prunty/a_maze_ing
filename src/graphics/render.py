@@ -34,7 +34,7 @@ class Render:
         ret = self.generate_sprit(path, image, siz)
         return ret
 
-    async def render_image(self, image: int, place: Vec2):
+    def render_image(self, image: int, place: Vec2):
         # img_ptr = self.m.mlx_png_file_to_image(self.mlx_ptr, self.images[image][1])
         self.m.mlx_put_image_to_window(
             self.mlx_ptr, self.win_ptr, self.images[image + 1][1][0], place.x, place.y
@@ -118,46 +118,46 @@ class Render:
             for y in range(3):
                 if y == 1 and i % 2 == 0:
                     if (hex >> 2 * (i == 0) + 1) & 1:
-                        asyncio.run(self.render_image(
+                        self.render_image(
                             1 * 4 + 1 + color * 28,
                             Vec2(
                                 int(pos.x * self.tile_siz.x * 2 + i * self.tile_siz.x),
                                 int(pos.y * self.tile_siz.y * 2 + y * self.tile_siz.y),
                             ),
-                        ))
+						)
                     else:
-                        asyncio.run(self.render_image(
+                        self.render_image(
                             0 + color * 28,
                             Vec2(
                                 int(pos.x * self.tile_siz.x * 2 + i * self.tile_siz.x),
                                 int(pos.y * self.tile_siz.y * 2 + y * self.tile_siz.y),
                             ),
-                        ))
+                        )
                 elif i == 1 and y % 2 == 0:
                     if (hex >> y) & 1:
-                        asyncio.run(self.render_image(
+                        self.render_image(
                             1 * 4 + color * 28,
                             Vec2(
                                 int(pos.x * self.tile_siz.x * 2 + i * self.tile_siz.x),
                                 int(pos.y * self.tile_siz.y * 2 + y * self.tile_siz.y),
                             ),
-                        ))
+                        )
                     else:
-                        asyncio.run(self.render_image(
+                        self.render_image(
                             0 + color * 28,
                             Vec2(
                                 int(pos.x * self.tile_siz.x * 2 + i * self.tile_siz.x),
                                 int(pos.y * self.tile_siz.y * 2 + y * self.tile_siz.y),
                             ),
-                        ))
+                        )
                 elif y % 2 == 1 and i % 2 == 1:
-                    asyncio.run(self.render_image(
+                    self.render_image(
                         0 + (special == 1) * 24 + (special == 2) * 20  + color * 28,
                         Vec2(
                             int(pos.x * self.tile_siz.x * 2 + i * self.tile_siz.x),
                             int(pos.y * self.tile_siz.y * 2 + y * self.tile_siz.y),
                         ),
-                    ))
+                    )
                 else:
                     top = (
                         (hex >> (2 * (i == 0) + 1)) & 1
@@ -199,13 +199,13 @@ class Render:
                     elif tile == 3:
                         ori = 6 - (bot * 3 + left * 2 + top * 1)
                     # print(ori, tile)
-                    asyncio.run(self.render_image(
+                    self.render_image(
                         (tile * 4 + ori) + color * 28,
                         Vec2(
                             int(pos.x * self.tile_siz.x * 2 + i * self.tile_siz.x),
                             int(pos.y * self.tile_siz.y * 2 + y * self.tile_siz.y),
                         ),
-                    ))
+                    )
 
     def add_hook(self, func: callable, event: int, param):
         self.m.mlx_hook(self.win_ptr, event, 0, func, None)
