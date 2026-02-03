@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/24 07:55:50 by maprunty         #+#    #+#              #
-#    Updated: 2026/02/03 16:58:15 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/03 18:12:37 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """First attempts at the A-Maze-ing project."""
@@ -105,5 +105,5 @@ class AMaze:
         return cls(c_dct, None)
 
 
-# if __name__ == "__main__":
-#    main()
+if __name__ == "__main__":
+    main()

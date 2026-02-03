@@ -1,12 +1,12 @@
 # **************************************************************************** #
 #                                                                              #
 #                                                         :::      ::::::::    #
-#    config.txt                                         :+:      :+:    :+:    #
+#    config.txt                                        :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
 #    By: maprunty <maprunty@student.42heilbronn.de  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/24 07:55:17 by maprunty          #+#    #+#              #
-#    Updated: 2026/02/03 18:07:21 by maprunty         ###   ########.fr        #
+#    Updated: 2026/01/31 01:01:06 by maprunty        ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,9 +18,9 @@
 # OUTPUT_FILE Output filename OUTPUT_FILE=maze.txt
 # PERFECT Is the maze perfect? PERFECT=True
 
-WIDTH=20
-HEIGHT=11
+WIDTH=40
+HEIGHT=40
 ENTRY=0,0
-EXIT=19,10
+EXIT=33,39
 OUTPUT_FILE=maze.txt 
 PERFECT=True

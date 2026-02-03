@@ -1,14 +1,10 @@
-"""TODO: Short module summary.
-
-Optional longer description.
-"""
-
 import os
 
 from mlx import Mlx
 from PIL import Image
+from helper import Grid, Cell
 
-from helper import Cell, Grid
+
 from helper.vector import Vec2
 
 

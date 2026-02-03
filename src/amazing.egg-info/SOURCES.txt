@@ -7,5 +7,10 @@ src/amazing.egg-info/requires.txt
 src/amazing.egg-info/top_level.txt
 src/graphics/__init__.py
 src/graphics/render.py
+src/helper/__init__.py
+src/helper/grid_cell.py
+src/helper/vector.py
 src/mazegen/__init__.py
-src/mazegen/a.py
+src/mazegen/generators.py
+src/options/__init__.py
+src/options/options.py

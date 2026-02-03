@@ -6,7 +6,7 @@
 #    By: sdeppe <sdeppe@student.42heilbronn.de>    +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:26:52 by sdeppe           #+#    #+#              #
-#    Updated: 2026/02/03 16:46:20 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/03 18:22:36 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """TODO: Short module summary.
@@ -43,6 +43,18 @@ def print_image(button, x, y):
         print(hex)
         rend.render_cell(vec, grid)
     #     # rend.render_cell(0, Vec2(1, 9))
+
+
+class Start:
+    def __init__(self):
+        # self.options = Options(1000, 1000)
+        self.rend = Render()
+        self.render_start()
+
+    def render_start(self):
+        rend.init_window(
+            self.options.height, self.options.width, " -- A-maze-ing -- "
+        )
 
 
 rend = Render()
@@ -108,4 +120,4 @@ def main2():
 
 
 if __name__ == "__main__":
-    main2()
+    main()
