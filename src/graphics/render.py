@@ -3,7 +3,6 @@ import os
 from mlx import Mlx
 from PIL import Image
 from helper import Grid, Cell
-import asyncio
 
 
 from helper.vector import Vec2
