@@ -14,50 +14,29 @@
 Optional longer description.
 """
 
-import random
+# import random
 import sys
 
-from a_maze import A_Maze
 from graphics import Render
-from helper import Vec2
+# from options import Options
+from src.a_maze import A_Maze
+# from helper import Vec2
 
-
-
-def print_image(button, x, y, mystuff):
-    """TODO: Docstring."""
-    print(
-        f"Got mouse event! button {button} at x: {int((x / rend.width) * rend.gridx)}, y: {int(y / rend.width * rend.gridy)}"
-    )
-    if button == 1:
-        hex = random.randrange(0, 15)
-        print(hex)
-        rend.render_cell(
-            hex,
-            Vec2(
-                int((x / rend.height) * rend.gridx),
-                int(y / rend.width * rend.gridy),
-            ),
-        )
-    #     # rend.render_cell(0, Vec2(1, 9))
-
+class Start():
+    def __init__(self):
+        # self.options = Options(1000, 1000)
+        self.rend = Render()
+        self.render_start()
+  
+    def render_start(self):
+        rend.init_window(self.options.height, self.options.width, " -- A-maze-ing -- ")
+        
+        
 
 rend = Render()
 
 
 def main():
-    """TODO: Docstring."""
-    rend.init_window(700, 700, "hello")
-    rend.init_grid(Vec2(3, 3))
-    print(rend.generate_grid_sprits())
-    # print(rend.cell_siz)
-    rend.add_hook(rend.close, 33, None)
-    rend.add_mous_hook(print_image, [1, 2])
-
-    rend.launch()
-    print("Hello from amazing!")
-
-
-def main2():
     """Drive the main loop."""
     av = sys.argv
     ac = len(av)
@@ -71,4 +50,4 @@ def main2():
 
 
 if __name__ == "__main__":
-    main2()
+    main()

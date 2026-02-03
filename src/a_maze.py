@@ -27,7 +27,7 @@ class A_Maze:
         """TODO: to be defined."""
         self.rend = Render()
         self.config = cfg
-        self.rend.init_window(900, 900, "hello")
+        self.rend.init_window(1200, 1900, "hello")
         self.rend.add_hook(self.rend.close, 33, None)
         self.startup()
         self.rend.generate_grid_sprits()
@@ -35,7 +35,6 @@ class A_Maze:
         g = Generators(self.grid, self.config)
         # self.animate(self.grid, 0.0001)
         g.animate(self.rend)
-        print("aaaaa")
         self.rend.launch()
 
     def startup(self):
@@ -84,5 +83,5 @@ class A_Maze:
         return cls(c_dct)
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

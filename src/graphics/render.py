@@ -12,7 +12,7 @@ class Render:
     def __init__(self):
         self.m = Mlx()
         self.mlx_ptr = self.m.mlx_init()
-        self.images = []
+        self.images = [[]]
 
     def generate_window(self):
         self.win_ptr = self.m.mlx_new_window(
@@ -34,14 +34,15 @@ class Render:
         return ret
 
     def render_image(self, image: int, place: Vec2):
-        img_ptr = self.m.mlx_png_file_to_image(self.mlx_ptr, self.images[image][1])
+        # img_ptr = self.m.mlx_png_file_to_image(self.mlx_ptr, self.images[image][1])
         self.m.mlx_put_image_to_window(
-            self.mlx_ptr, self.win_ptr, img_ptr[0], place.x, place.y
+            self.mlx_ptr, self.win_ptr, self.images[image + 1][1][0], place.x, place.y
         )
 
     def generate_grid_sprits(self) -> tuple:
         path = os.path.dirname(os.path.abspath(__file__)) + "/includes/sprits/grid/"
         sprits = list(filter(lambda f: f.endswith(".png"), os.listdir(path)))
+        sprits.sort()
         ret = []
         for sprit in sprits:
             ret.append(
@@ -67,7 +68,8 @@ class Render:
             except OSError:
                 print(f"cannot create {sprit}")
             self.images.append(
-                (len(self.images), path + "resized/" + f"{deg}_" + sprit)
+                [(len(self.images), path + "resized/" + f"{deg}_" + sprit),
+                self.m.mlx_png_file_to_image(self.mlx_ptr, path + "resized/" + f"{deg}_" + sprit)]
             )
             ret.append(len(self.images) - 1)
         return ret
@@ -81,18 +83,22 @@ class Render:
         )
         # self.cell_siz = Vec2(self.width / (siz.x + 4), self.height / (self.gridy) + (self.height / (self.gridy) / 3) - 1)
 
-    def render_cell(self, pos: Vec2, grid: Grid):
+	
+    def render_cell(self, pos: Vec2, grid: Grid, color: int, special: int):
+        """" Sepcial: 0 none, 1 home, 2 arival """
         # img_siz = Vec2(self.cell_siz.x / 3, self.cell_siz.y / 3)
         hex = grid[pos].wall
-        
+        if (color > 2):
+            color = 0
+        if special > 2:
+            special = 0
         n = grid.neighbour(pos)
-        print(f"neighbors {n}")
         for i in range(3):
             for y in range(3):
                 if y == 1 and i % 2 == 0:
                     if (hex >> 2 * (i == 0) + 1) & 1:
                         self.render_image(
-                            1 * 4 + 1,
+                            1 * 4 + 1 + color * 28,
                             Vec2(
                                 int(pos.x * self.tile_siz.x * 2 + i * self.tile_siz.x),
                                 int(pos.y * self.tile_siz.y * 2 + y * self.tile_siz.y),
@@ -100,17 +106,16 @@ class Render:
                         )
                     else:
                         self.render_image(
-                            0,
+                            0 + color * 28,
                             Vec2(
                                 int(pos.x * self.tile_siz.x * 2 + i * self.tile_siz.x),
                                 int(pos.y * self.tile_siz.y * 2 + y * self.tile_siz.y),
                             ),
                         )
-
                 elif i == 1 and y % 2 == 0:
                     if (hex >> y) & 1:
                         self.render_image(
-                            1 * 4,
+                            1 * 4 + color * 28,
                             Vec2(
                                 int(pos.x * self.tile_siz.x * 2 + i * self.tile_siz.x),
                                 int(pos.y * self.tile_siz.y * 2 + y * self.tile_siz.y),
@@ -118,7 +123,7 @@ class Render:
                         )
                     else:
                         self.render_image(
-                            0,
+                            0 + color * 28,
                             Vec2(
                                 int(pos.x * self.tile_siz.x * 2 + i * self.tile_siz.x),
                                 int(pos.y * self.tile_siz.y * 2 + y * self.tile_siz.y),
@@ -126,7 +131,7 @@ class Render:
                         )
                 elif y % 2 == 1 and i % 2 == 1:
                     self.render_image(
-                        0,
+                        0 + (special == 1) * 24 + (special == 2) * 20  + color * 28,
                         Vec2(
                             int(pos.x * self.tile_siz.x * 2 + i * self.tile_siz.x),
                             int(pos.y * self.tile_siz.y * 2 + y * self.tile_siz.y),
@@ -162,8 +167,6 @@ class Render:
                         else 0
                     )
                     tile = top + bot + left + right
-                    # print(f"i {i}, y {y} => left:{left}, right:{right}, top:{top}, bottom:{bot} => {tile}")
-                    print(right, bot)
                     if tile == 2:
                         if top + bot == 2 or right + left == 2:
                             tile -= 1
@@ -176,17 +179,12 @@ class Render:
                         ori = 6 - (bot * 3 + left * 2 + top * 1)
                     # print(ori, tile)
                     self.render_image(
-                        tile * 4 + ori,
+                        (tile * 4 + ori) + color * 28,
                         Vec2(
                             int(pos.x * self.tile_siz.x * 2 + i * self.tile_siz.x),
                             int(pos.y * self.tile_siz.y * 2 + y * self.tile_siz.y),
                         ),
                     )
-
-    # if (pos.y > 0)
-    # 	render
-    # corner
-    # self.render_image(hex, Vec2(int(pos.x * self.cell_siz.x + img_siz * i), int(pos.y * self.cell_siz.y + img_siz * y)))
 
     def add_hook(self, func: callable, event: int, param):
         self.m.mlx_hook(self.win_ptr, event, 0, func, None)
@@ -203,40 +201,3 @@ class Render:
     def launch(self):
         self.m.mlx_loop(self.mlx_ptr)
 
-    # def add_event(self, type, ):
-
-
-# def mymouse(button, x, y, mystuff):
-#     print(f"Got mouse event! button {button} at {x},{y}.")
-
-# def mykey(keynum, mystuff):
-#     print(f"Got key {keynum}, and got my stuff back:")
-#     print(mystuff)
-#     if keynum == 32:
-#         m.mlx_mouse_hook(win_ptr, None, None)
-
-# def gere_close(dummy):
-#     m.mlx_loop_exit(mlx_ptr)
-#     print("Window closed")
-
-
-# include_dir = os.path.dirname(os.path.abspath(__file__)) + "/includes/"
-# print(include_dir + "walls.png")
-# img_ptr = m.mlx_new_image(mlx_ptr, 200, 2000)
-# img_ptr = m.mlx_png_file_to_image(mlx_ptr, include_dir + "image.png")
-# print(img_ptr)
-# ret = m.mlx_put_image_to_window(mlx_ptr, win_ptr, img_ptr[0], 0, 0)
-# if (ret == None):
-# 	print("error")
-# print(ret)
-# (ret, w, h) = m.mlx_get_screen_size(mlx_ptr)
-# print(f"Got screen size: {w} x {h} .")
-
-# stuff = [1, 2]
-# m.mlx_mouse_hook(win_ptr, mymouse, None)
-# m.mlx_key_hook(win_ptr, mykey, stuff)
-# m.mlx_hook(win_ptr, 33, 0, gere_close, None)
-
-# print("hello ")
-
-# m.mlx_loop(mlx_ptr)
