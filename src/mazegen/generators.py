@@ -3,7 +3,6 @@ import random
 import time
 
 from helper import *
-import asyncio
 
 
 class Generators:
