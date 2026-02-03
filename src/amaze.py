@@ -2,41 +2,48 @@
 # *************************************************************************** #
 #                                                                             #
 #                                                        :::      ::::::::    #
-#    a_maze.py                                         :+:      :+:    :+:    #
+#    amaze.py                                          :+:      :+:    :+:    #
 #                                                    +:+ +:+         +:+      #
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/24 07:55:50 by maprunty         #+#    #+#              #
-#    Updated: 2026/01/31 14:11:59 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/03 16:58:15 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """First attempts at the A-Maze-ing project."""
 
-import random as random
-
-from graphics.render import Render
-from helper.grid_cell import Grid
-from helper.vector import Vec2
-from mazegen.generators import Generators
+from . import Generators, Grid, Render, Vec2
 
 
-class A_Maze:
-    """Docstring for A_Maze."""
+class AMaze:
+    """Docstring for AMaze.
 
-    def __init__(self, cfg: dict):
+    generate maze - extend
+    solve maze - mulitple methods
+    output text
+
+    """
+
+    def __init__(self, cfg: dict, render: Render):
         """TODO: to be defined."""
-        self.rend = Render()
         self.config = cfg
-        self.rend.init_window(900, 900, "hello")
-        self.rend.add_hook(self.rend.close, 33, None)
+        if render is None:
+            self.genrend()
+        else:
+            self.rend = render
         self.startup()
-        self.rend.generate_grid_sprits()
-        # self.gen_rand()
-        g = Generators(self.grid, self.config)
-        # self.animate(self.grid, 0.0001)
-        g.animate(self.rend)
-        print("aaaaa")
         self.rend.launch()
+
+    def __repr__(self):
+        cls = self.__class__.__name__()
+        return f"{cls}({self.config})"
+
+    def genrend(self):
+        self.rend = Render()
+        self.rend.init_window(900, 900, "A_maze_ing")
+        self.rend.init_grid(Vec2(self.width, self.height))
+        self.rend.add_hook(self.rend.close, 33, None)
+        self.rend.generate_grid_sprits()
 
     def startup(self):
         """TODO: Summary line.
@@ -51,7 +58,8 @@ class A_Maze:
             ExceptionType: When this is raised.
         """
         self.grid = Grid(self.config, self.width, self.height)
-        self.rend.init_grid(Vec2(self.width, self.height))
+        g = Generators(self.grid, self.config)
+        g.animate(self.rend, Vec2(0, 0))
 
     @property
     def width(self):
@@ -94,7 +102,7 @@ class A_Maze:
                               {k}:{v} "
                         )
                     c_dct.update({k: v})
-        return cls(c_dct)
+        return cls(c_dct, None)
 
 
 # if __name__ == "__main__":

@@ -6,7 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.de  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/24 07:55:17 by maprunty          #+#    #+#              #
-#    Updated: 2026/01/31 14:19:32 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/03 17:00:30 by maprunty        ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,8 +18,8 @@
 # OUTPUT_FILE Output filename OUTPUT_FILE=maze.txt
 # PERFECT Is the maze perfect? PERFECT=True
 
-WIDTH=50
-HEIGHT=100
+WIDTH=20
+HEIGHT=11
 ENTRY=0,0
 EXIT=19,10
 OUTPUT_FILE=maze.txt 

@@ -6,13 +6,15 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:37:00 by maprunty         #+#    #+#              #
-#    Updated: 2026/01/31 11:39:48 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/03 16:06:34 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """TODO: Short module summary.
 
 Optional longer description.
 """
+
+from math import sqrt
 
 
 class Vec2:
@@ -68,7 +70,7 @@ class Vec2:
 
     def __iter__(self):
         """Return a tuple iterable  represantation of a Vec2 instance."""
-        return iter(self.__repr__())
+        return iter((self.x, self.y))
 
     @classmethod
     def from_str(cls, coord: str) -> "Vec2":
