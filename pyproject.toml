@@ -7,6 +7,7 @@ requires-python = ">=3.10"
 dependencies = [
   	"Pillow>=10.0.0",
   	"Mlx",
+	"pydantic"
 ]
 
 [tool.setuptools.packages.find]

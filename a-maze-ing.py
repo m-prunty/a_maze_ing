@@ -6,7 +6,7 @@
 #    By: sdeppe <sdeppe@student.42heilbronn.de>    +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:26:52 by sdeppe           #+#    #+#              #
-#    Updated: 2026/02/03 18:39:26 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/04 21:26:44 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """TODO: Short module summary.
@@ -17,7 +17,7 @@ Optional longer description.
 import random
 import sys
 
-from src.amaze import AMaze, Grid, Render, Vec2
+from src.amaze import AMaze, Config, Grid, Render, Vec2
 
 # from src.graphics import Render
 # from src.helper import *
@@ -40,7 +40,7 @@ def print_image(button, x, y):
         )
         grid[vec].wall = hex
         print(grid)
-        print(hex)
+        # print(hex)
         rend.render_cell(vec, grid)
     #     # rend.render_cell(0, Vec2(1, 9))
 
@@ -58,39 +58,6 @@ class Start:
 
 
 rend = Render()
-
-
-def cfg_from_file(filename: str):
-    """TODO: Docstring for from_fil.
-
-    Args:
-        filename (str): TODO
-
-    Returns: TODO
-
-    """
-    c_dct = {"FILENAME": filename}
-    with open(filename) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#"):
-                k, v = line.split("=")
-                k = k.strip().upper()
-                try:
-                    if "," in v:
-                        v = v.split(",")
-                        v = tuple(int(i) for i in v)
-                    elif v.lower() in ("true", "false"):
-                        v = v.lower() == "true"
-                    elif v.isnumeric():
-                        v = int(v)
-                except ValueError as ve:
-                    print(
-                        f"Error: {ve} something's not right with config\
-                          {k}:{v} "
-                    )
-                c_dct.update({k: v})
-    return c_dct
 
 
 def main():
@@ -114,10 +81,17 @@ def main2():
     # print(rend.generate_grid_sprits())
     # print(rend.cell_siz)
     if 1 <= ac <= 2:
-        a = AMaze.cfg_from_file("config.txt")
-        print(a.config)
-        print("yay")
+        cfg = Config.cfg_from_file("config.txt")
+        # print("____________", cfg.entry, cfg.exit)
+        a = AMaze(cfg)
+        a.startup()
+
+
+def main3():
+    a = AMaze.maze_fromfile("maze.txt")
+    a.startup()
+    print(a)
 
 
 if __name__ == "__main__":
-    main2()
+    main3()

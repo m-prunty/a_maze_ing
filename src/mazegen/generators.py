@@ -2,7 +2,8 @@ import math
 import random
 import time
 
-from helper import *
+from config import Config
+from helper import Cell, Grid, Vec2
 
 
 class Generators:
@@ -14,7 +15,7 @@ class Generators:
         attr (type): Description.
     """
 
-    def __init__(self, grid: Grid, cfg: dict[str, int]) -> None:
+    def __init__(self, grid: Grid, cfg: Config) -> None:
         """TODO: init summary for Generators.
 
         Args:
@@ -26,15 +27,15 @@ class Generators:
     @property
     def width(self):
         """Get WIDTH from config file."""
-        return self.config["WIDTH"]
+        return self.config.width
 
     @property
     def height(self):
         """Get HEIGHT from config file."""
-        return self.config["HEIGHT"]
+        return self.config.height
 
     @staticmethod
-    def gen_rand(grid: Grid, cfg: dict, pos: tuple = (0, 0)):
+    def gen_rand(grid: Grid, cfg: Config, pos: tuple = (0, 0)):
         """TODO: Docstring for gen_rand.
 
         Args:
@@ -57,58 +58,32 @@ class Generators:
             yield neighbour.loc  # yield after carving a passage
             yield from Generators.gen_rand(grid, cfg, neighbour.loc)
 
-    @staticmethod
-    def gen_rand_iter(grid: Grid, cfg: dict, pos: tuple = (0, 0)):
-        """TODO: Docstring for gen_rand.
-
-        Args:
-            arg1 (TODO): TODO
-
-        Returns: TODO
-
-        """
-        directions = list(Cell.DIRS.items())
-        for cell in grid:
-            cell = grid[pos]
-            cell.visited = True
-            directions = list(Cell.DIRS.items())
-            random.shuffle(directions)
-            for direction, (dx, dy) in directions:
-                neighbour = grid[cell.loc + Vec2(dx, dy)]
-                if not neighbour or neighbour.visited:
-                    continue
-                cell.rm_wall(direction)
-                neighbour.rm_wall(Cell.OPPS[direction])
-                cell = neighbour
-                yield neighbour.loc  # yield after carving a passage
-
-    def gen_42(self):
+    def gen_42(self, pic: list[bin], pic_scalar: int):
         """Prep for 42pic Check pic dimension against h / w.
 
-        Calculate tleft and bright and passes to pic_lst
+        Calculate topleft and botright and passes to pic_lst
 
         Raises:
             ExceptionType: When this is raised.
         """
-        pic = [
-            0b1010111,
-            0b1010001,
-            0b1110111,
-            0b0010100,
-            0b0010111,
-        ]
-        wpic = int(math.log2(pic[0])) + 1
-        hpic = len(pic)
+        self.config.get_pic(1)
+        pic = self.config.pic
+        # print(pic)
+        wpic = int((math.log2(pic[0])) * (pic_scalar))
+        hpic = int(len(pic) * pic_scalar)
         if self.width >= wpic + 2 and self.height >= hpic + 2:
-            i = 0
             tleft = self.grid[
-                int((self.width - wpic) / 2), int((self.height - hpic) / 2)
+                int((self.width - wpic) / 2),
+                int((self.height - hpic) / 2),
             ]
             bright = self.grid[tleft.loc + Vec2(wpic, hpic)]
             self.pic_lst(tleft, bright, pic)
 
     def pic_lst(self, tleft: Vec2, bright: Vec2, pic: list[bin]) -> list[Cell]:
-        """Check and set if elements of subgrid from tleft to bright are is42.
+        """Check and set if elements of subgrid from tleft to bright are ispic.
+
+        gets a list of cells that will be ispic and steps through marking ispic
+        as 1 for every 1 in the bitmask (self.pic)
 
         Args:
             tleft (Vec2): topleft coordinates of subgroup
@@ -122,6 +97,7 @@ class Generators:
             ExceptionType: When this is raised.
         """
         delta = bright.loc - tleft.loc
+        # print(tleft, bright, delta, self.config.width, self.config.height)
         r_lst: list[list[Cell]] = [[] for x in range(delta.y)]
         j = 0
         while j < delta.y:
@@ -134,22 +110,27 @@ class Generators:
                     + (Cell.DIRS[Cell.S] * j)
                 )
                 cell = self.grid[curr]
-                cell.is42 = pic[j] & (1 << (delta.x - i))
-                cell.visited = cell.is42
+                cell.ispic = pic[int(j / self.config.pic_scalar)] & (
+                    1 << int((delta.x - i) / self.config.pic_scalar)
+                )
+                cell.visited = cell.ispic
                 i += 1
             j += 1
         return r_lst
 
     def open_entry_exit(cell: Cell, grid: Grid):
         """Open entry/exits gaps on border."""
-        if cell.loc.x == 0:
-            cell.rm_wall(Cell.W)
-        elif cell.loc.x == grid.width - 1:
-            cell.rm_wall(Cell.E)
-        elif cell.loc.y == 0:
-            cell.rm_wall(Cell.N)
-        elif cell.loc.y == grid.height - 1:
-            cell.rm_wall(Cell.S)
+        if cell:
+            if cell.loc.x == 0:
+                cell.rm_wall(Cell.W)
+            elif cell.loc.x == grid.width - 1:
+                cell.rm_wall(Cell.E)
+            if cell.loc.y == 0:
+                cell.rm_wall(Cell.N)
+            elif cell.loc.y == grid.height - 1:
+                cell.rm_wall(Cell.S)
+        else:
+            print(Exception(f"cell={cell}; dosent exist"))
 
     def neighbour(self, pos: Vec2) -> dict[list[Cell]]:
         """TODO: Docstring."""
@@ -165,19 +146,22 @@ class Generators:
         """TODO: Docstring."""
         # ANSI clear screen + cursor home
         CLEAR = "\x1b[2J\x1b[H"
-        Generators.open_entry_exit(self.grid[self.config["ENTRY"]], self.grid)
-        Generators.open_entry_exit(self.grid[self.config["EXIT"]], self.grid)
-        self.gen_42()
+        print(self.grid)
+        print(self.config.exit)
+        Generators.open_entry_exit(self.grid[self.config.entry], self.grid)
+        Generators.open_entry_exit(self.grid[self.config.exit], self.grid)
+        self.gen_42(self.config.pic, self.config.pic_scalar)
         pos = self.grid[current].loc
         rend.render_cell(pos, self.grid, 2, 1)
+        random.seed(42)
+        ##>>>>>>>>>^^^^<<set seed here BEFORE calls to random will determinethe starting seed
 
-        for pos in self.gen_rand(self.grid, self.config, self.config["ENTRY"]):
-            # print(CLEAR, end="")
-            # print(self.grid.__str__(pos))
+        for pos in self.gen_rand(self.grid, self.config, pos):
             rend.render_cell(pos, self.grid, 2, 0)
             time.sleep(delay)
 
-        pos = self.grid[self.config["EXIT"]].loc
+        print(self.config.exit)
+        pos = self.grid[self.config.exit].loc
         rend.render_cell(pos, self.grid, 2, 2)
 
         #       # t wmp
@@ -197,4 +181,4 @@ class Generators:
         #                   ">>>>>>>>>>>>>>>>>>\n\n\n\n\n\nrend, pos\n\n\n<<<<<<<<<<<<<<<<<<<<<<<<<<"
         #               )
         #               self.animate(rend, pos)
-        # self.grid.reset()
+        self.grid.reset()

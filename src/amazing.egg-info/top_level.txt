@@ -1,5 +1,0 @@
-graphics
-helper
-mazegen
-options
-solving
