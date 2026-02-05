@@ -1,3 +1,26 @@
-from .a_maze import A_Maze
+# *************************************************************************** #
+#                                                                             #
+#                                                        :::      ::::::::    #
+#    __init__.py                                       :+:      :+:    :+:    #
+#                                                    +:+ +:+         +:+      #
+#    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
+#                                                +#+#+#+#+#+   +#+            #
+#    Created: 2026/02/01 13:57:24 by maprunty         #+#    #+#              #
+#    Updated: 2026/02/04 04:47:51 by maprunty        ###   ########.fr        #
+#                                                                             #
+# *************************************************************************** #
 
-__all__ = ["A_Maze"]
+from mlx import Mlx
+
+from config import Config
+from graphics import Render
+from helper import Cell, Grid, Vec2
+from mazegen import Generators
+
+from .amaze import AMaze
+
+__all__ = ["AMaze", "Mlx"]
+__all__ += ["Config"]
+__all__ += ["Cell", "Grid", "Vec2"]
+__all__ += ["Generators"]
+__all__ += ["Render"]

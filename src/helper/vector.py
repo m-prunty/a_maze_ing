@@ -6,7 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:37:00 by maprunty         #+#    #+#              #
-#    Updated: 2026/01/31 02:58:38 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/04 13:31:05 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """TODO: Short module summary.
@@ -14,20 +14,21 @@
 Optional longer description.
 """
 
+from math import sqrt
 
+from pydantic import Field
+from pydantic.dataclasses import dataclass
+
+
+@dataclass
 class Vec2:
     """Class for storing 2D Coords."""
 
-    def __init__(self, x: int = 0, y: int = 0):
-        """TODO: to be defined."""
-        self.x = 0
-        self.y = 0
-        try:
-            self.x = x
-            self.y = y
-        except Exception as e:
-            print(e)
-            # raise ValueError(e)
+    x: int | float | None = Field(default=0)
+    y: int | float | None = Field(default=0)
+    # except Exception as e:
+    #    print(e)
+    # raise ValueError(e)
 
     def __add__(self, other):
         """Add a vec2 instance with another."""
@@ -43,9 +44,24 @@ class Vec2:
             self.y - other.y,
         )
 
+    def __mul__(self, scaler: int):
+        """Multiply a vec2 instance by a scalar."""
+        return Vec2(
+            self.x * scaler,
+            self.y * scaler,
+        )
+
     def __eq__(self, other):
         """Equate a vec2 instance with another."""
         return self.x == other.x and self.y == other.y
+
+    def __gt__(self, other):
+        """Equate a vec2 instance with another."""
+        return self.x >= other.x and self.y >= other.y
+
+    def __lt__(self, other):
+        """Equate a vec2 instance with another."""
+        return self.x <= other.x and self.y <= other.y
 
     def __abs__(self):
         """Return magnitude of a vector."""
@@ -53,15 +69,17 @@ class Vec2:
 
     def __repr__(self):
         """Return a tuple represantation of a Vec2 instance."""
-        return (self.x, self.y)
+        cls = self.__class__.__name__
+        return f"{cls}(x={self.x}, y={self.y})"
 
     def __str__(self):
         """Return a str tuple represantation of a Vec2 instance."""
-        return f"{self.__repr__()}"
+        return f"{self.x},{self.y}"
+
 
     def __iter__(self):
         """Return a tuple iterable  represantation of a Vec2 instance."""
-        return iter(self.__repr__())
+        return iter((self.x, self.y))
 
     @classmethod
     def from_str(cls, coord: str) -> "Vec2":

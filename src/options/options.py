@@ -1,16 +1,19 @@
-from a_maze import A_Maze
+# from config import Config
 
-class Options():
+
+class Options:
     def __init__(self, width: int, height: int):
         self.width = width
         self.height = height
-        
+
     def parse_config(self):
-    	print(A_Maze.cfg_from_file("config.txt"))
-     
+        self.cfg = Config().cfg_from_file("config.txt")
+
     # def reset_siz(self, width: int, height: int):
-	# 	self.width = width
-	# 	self.height = height
+
+
+# 	self.width = width
+# 	self.height = height
 
 
 # def reset_grid()

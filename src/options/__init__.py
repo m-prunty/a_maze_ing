@@ -1,3 +1,3 @@
 from .options import Options
 
-__all__ = ["Options"]
+__all__ = ["Options", "Config"]

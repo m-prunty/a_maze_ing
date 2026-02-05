@@ -5,12 +5,14 @@
 #                                                    +:+ +:+         +:+      #
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
-#    Created: 2026/02/01 14:12:03 by maprunty         #+#    #+#              #
-#    Updated: 2026/02/03 16:08:56 by maprunty        ###   ########.fr        #
+#    Created: 2026/02/03 23:51:48 by maprunty         #+#    #+#              #
+#    Updated: 2026/02/04 04:40:03 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
 
-from .generators import Generators
+# from helper import Vec2
 
-__all__ = ["Generators"]
+from .config import Config
+
+__all__ = ["Config"]
