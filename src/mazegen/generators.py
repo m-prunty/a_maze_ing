@@ -142,7 +142,7 @@ class Generators:
                 print("is none")
         return neighbours
 
-    def animate(self, rend, current, delay=0.01):
+    def animate(self, rend, current, delay=0.0):
         """TODO: Docstring."""
         # ANSI clear screen + cursor home
         CLEAR = "\x1b[2J\x1b[H"
@@ -152,17 +152,19 @@ class Generators:
         Generators.open_entry_exit(self.grid[self.config.exit], self.grid)
         self.gen_42(self.config.pic, self.config.pic_scalar)
         pos = self.grid[current].loc
-        rend.render_cell(pos, self.grid, 1, 1)
+        print("pos is")
+        print(pos)
+        rend.render_cell(pos, self.grid, 2, 1)
         random.seed(42)
         ##>>>>>>>>>^^^^<<set seed here BEFORE calls to random will determinethe starting seed
 
         for pos in self.gen_rand(self.grid, self.config, pos):
-            rend.render_cell(pos, self.grid, 1, 0)
+            rend.render_cell(pos, self.grid, 2, 0)
             time.sleep(delay)
 
         print(self.config.exit)
         pos = self.grid[self.config.exit].loc
-        rend.render_cell(pos, self.grid, 1, 2)
+        rend.render_cell(pos, self.grid, 2, 2)
 
         #       # t wmp
         #       #        print(sys.getrecursionlimit())

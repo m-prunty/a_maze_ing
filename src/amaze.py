@@ -37,7 +37,7 @@ class AMaze:
         return f"{cls}({self.config})"
 
     def genrend(self):
-        self.rend = Render()
+        # self.rend = Render()
         self.rend.init_window(900, 900, "A_maze_ing")
         self.rend.init_grid(Vec2(self.width, self.height))
         self.rend.add_hook(self.rend.close, 33, None)
@@ -57,6 +57,8 @@ class AMaze:
         """
         if self.rend is None:
             self.genrend()
+        self.rend.init_grid(Vec2(self.width, self.height))
+        self.rend.generate_grid_sprits()
         g = Generators(self.grid, self.config)
         g.animate(self.rend, Vec2(0, 0))
         self.rend.launch()

@@ -16,6 +16,7 @@ Optional longer description.
 
 import random
 import sys
+import os
 
 from src import AMaze, Config, Grid, Render, Vec2, Options
 
@@ -49,13 +50,50 @@ class Start:
     def __init__(self):
         # self.options = Options(1000, 1000)
         self.rend = Render()
+        self.rend.init_window(
+            900, 900, " -- A-maze-ing -- "
+        )
+        self.on_start = True
+        self.opt = Options(self.rend)
+        self.a = AMaze(self.opt.cfg, self.rend)
         self.render_start()
 
     def render_start(self):
-        rend.init_window(
-            self.options.height, self.options.width, " -- A-maze-ing -- "
-        )
+        start_btn = self.rend.generate_sprit(os.path.dirname(os.path.abspath(__file__)) + "/includes/", "start_button.png", Vec2(300, 90), (0,))
+        opt_logo = self.rend.generate_sprit(os.path.dirname(os.path.abspath(__file__)) + "/includes/", "options_logo.png", Vec2(90, 90), (0,))
+        self.rend.render_text("A-MAZE-ING", Vec2(400, 50))
+        self.rend.render_image(opt_logo[0], Vec2(650, 650))
+        self.rend.render_image(start_btn[0], Vec2(300, 150))
+        self.rend.m.mlx_do_sync(self.rend.mlx_ptr)
+        self.add_hooks()
+        self.rend.launch()
+        
+    def add_hooks(self):
+        self.rend.add_mous_hook(self.mouse_func, None)
+        self.rend.add_hook(self.rend.close, 33, None)
+        
+    
+    def mouse_func(self, button, x, y, _):
+        if (self.on_start):
+            if (button == 1 and
+                x > 650 and x < 760 and
+                y > 650 and y < 760):
+                self.opt.render()
+                self.on_start = False
+            if (button == 1 and
+                x > 300 and x < 600 and
+                y > 150 and y < 240):
+                self.rend.clear_window()
+                self.on_start = False
+                self.a.startup()
+        
+        
 
+
+def main4():
+    start = Start()
+    start.render_start()
+    
 
 rend = Render()
 
@@ -92,10 +130,8 @@ def main3():
     a.startup()
     print(a)
     
-def main4():
-    opt = Options()
-    rend
+
 
 
 if __name__ == "__main__":
-    main3()
+    main4()
