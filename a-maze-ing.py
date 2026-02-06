@@ -17,7 +17,7 @@ Optional longer description.
 import random
 import sys
 
-from src.amaze import AMaze, Config, Grid, Render, Vec2
+from src import AMaze, Config, Grid, Render, Vec2, Options
 
 # from src.graphics import Render
 # from src.helper import *
@@ -91,6 +91,10 @@ def main3():
     a = AMaze.maze_fromfile("maze.txt")
     a.startup()
     print(a)
+    
+def main4():
+    opt = Options()
+    rend
 
 
 if __name__ == "__main__":

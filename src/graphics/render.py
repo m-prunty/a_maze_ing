@@ -42,8 +42,19 @@ class Render:
             self.mlx_ptr,
             self.win_ptr,
             self.images[image + 1][1][0],
-            place.x,
-            place.y,
+            int(place.x),
+            int(place.y),
+        )
+    
+    def render_text(self, text: str, place: Vec2):
+        # img_ptr = self.m.mlx_png_file_to_image(self.mlx_ptr, self.images[image][1])
+        self.m.mlx_string_put(
+            self.mlx_ptr,
+            self.win_ptr,
+            int(place.x),
+            int(place.y),
+            100,
+            text
         )
 
     def generate_grid_sprits(self) -> tuple:
@@ -78,14 +89,14 @@ class Render:
                 new_im = im_rot.resize(
                     (int(siz.x) + 1, int(siz.y) + 1), Image.Resampling.NEAREST
                 )
-                new_im.save(path + "resized/" + f"{deg}_" + sprit, "png")
+                new_im.save(path + "/resized/" + f"{deg}_" + sprit, "png")
             except OSError:
                 print(f"cannot create {sprit}")
             self.images.append(
                 [
-                    (len(self.images), path + "resized/" + f"{deg}_" + sprit),
+                    (len(self.images), path + "/resized/" + f"{deg}_" + sprit),
                     self.m.mlx_png_file_to_image(
-                        self.mlx_ptr, path + "resized/" + f"{deg}_" + sprit
+                        self.mlx_ptr, path + "/resized/" + f"{deg}_" + sprit
                     ),
                 ]
             )
@@ -241,6 +252,7 @@ class Render:
                             ),
                         ),
                     )
+                
 
     def add_hook(self, func: callable, event: int, param):
         self.m.mlx_hook(self.win_ptr, event, 0, func, None)

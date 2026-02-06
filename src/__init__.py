@@ -16,6 +16,7 @@ from config import Config
 from graphics import Render
 from helper import Cell, Grid, Vec2
 from mazegen import Generators
+from options import Options
 
 from .amaze import AMaze
 
@@ -24,3 +25,4 @@ __all__ += ["Config"]
 __all__ += ["Cell", "Grid", "Vec2"]
 __all__ += ["Generators"]
 __all__ += ["Render"]
+__all__ += ["Options"]

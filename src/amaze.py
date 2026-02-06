@@ -98,5 +98,3 @@ class AMaze:
         return self.config.height
 
 
-if __name__ == "__main__":
-    main()
