@@ -6,8 +6,8 @@
 - ([x]) ~~ make~~
 - ([x]) ~~42 grid element~~
 - ([x]) ~~Colors with differents assets~~
-- ([]) Keyhooks and event handelin
-- ([]) Start screen
+- ([x]) ~~Keyhooks and event handelin~~
+- ([x]) ~~Start screen~~
 - ([x]) ~~File output~~
 - ([]) Other mazegen 
 - ([x]) ~~Seeding~~
