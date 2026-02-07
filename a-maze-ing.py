@@ -6,7 +6,7 @@
 #    By: sdeppe <sdeppe@student.42heilbronn.de>    +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:26:52 by sdeppe           #+#    #+#              #
-#    Updated: 2026/02/04 21:26:44 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/06 21:34:38 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """TODO: Short module summary.
@@ -94,4 +94,4 @@ def main3():
 
 
 if __name__ == "__main__":
-    main3()
+    main2()
