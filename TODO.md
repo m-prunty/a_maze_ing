@@ -6,10 +6,10 @@
 - ([x]) ~~ make~~
 - ([x]) ~~42 grid element~~
 - ([x]) ~~Colors with differents assets~~
-- ([x]) ~~Keyhooks and event handelin~~
+- ([x]) ~~Keyhooks and event handelin~~ 
 - ([x]) ~~Start screen~~
 - ([x]) ~~File output~~
-- ([]) Other mazegen 
+- ([]) Other mazegen
 - ([x]) ~~Seeding~~
 - ([]) Path finding
 - ([]) Character animation
@@ -20,7 +20,7 @@
 - all
 
 
-##Notes:
+## Notes:
 SORRY: didnt save the note that was here^^^^
 from memmory:
 Start screen 

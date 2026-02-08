@@ -2,6 +2,7 @@ import math
 import random
 import time
 
+from graphics import Render
 from config import Config
 from helper import Cell, Grid, Vec2
 
@@ -142,7 +143,7 @@ class Generators:
                 print("is none")
         return neighbours
 
-    def animate(self, rend, current, delay=0.0):
+    def animate(self, rend: Render, current, delay=0.0):
         """TODO: Docstring."""
         # ANSI clear screen + cursor home
         CLEAR = "\x1b[2J\x1b[H"
@@ -162,6 +163,7 @@ class Generators:
             rend.render_cell(pos, self.grid, 2, 0)
             time.sleep(delay)
 
+        # rend.render()
         print(self.config.exit)
         pos = self.grid[self.config.exit].loc
         rend.render_cell(pos, self.grid, 2, 2)

@@ -64,7 +64,7 @@ class Options_render:
         self.sids_padding = rend.width * 0.2
         self.top_padding = rend.height * 0.03
         self.bar_width = rend.width - self.sids_padding * 2
-        self.bar_height = self.top_padding / 4 # padding times 4
+        self.bar_height = self.top_padding / 3 # padding times 4
         self.text_siz = self.top_padding
 
         self.fields = {}
@@ -79,8 +79,8 @@ class Options_render:
                                                       self.bar_height),
                         						  (0,))
         self.imgs["Cursor"] = rend.generate_sprit(path, "cursor.png",
-                                                 Vec2(self.bar_height,
-                        						 self.bar_width / 100), (0,))
+                                                 Vec2(self.bar_width / 100,
+                        						 self.bar_height), (0,))
         self.imgs["Save"] = rend.generate_sprit(path, "save_button.png",
                                                  Vec2(rend.width * 0.4,
                         						 rend.height * 0.1), (0,))

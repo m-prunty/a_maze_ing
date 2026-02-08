@@ -67,6 +67,7 @@ class Start:
         self.rend.m.mlx_do_sync(self.rend.mlx_ptr)
         self.add_hooks()
         self.rend.launch()
+        # self.rend.render()
         
     def add_hooks(self):
         self.rend.add_mous_hook(self.mouse_func, None)

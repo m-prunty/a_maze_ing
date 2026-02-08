@@ -16,6 +16,7 @@ class Render:
         self.m = Mlx()
         self.mlx_ptr = self.m.mlx_init()
         self.images = [[]]
+        self.events = []
 
     def generate_window(self):
         self.win_ptr = self.m.mlx_new_window(
@@ -37,7 +38,7 @@ class Render:
         return ret
 
     def render_image(self, image: int, place: Vec2):
-        self.m.mlx_loop_hook(self.mlx_ptr, self.render_image_event(image, place), None)
+        self.events.append((self.render_image_event, (image, place)))
 
 
     
@@ -56,7 +57,7 @@ class Render:
     #     self.m.mlx
 
     def render_text(self, text: str, place: Vec2):
-        self.m.mlx_loop_hook(self.mlx_ptr, self.render_text_event(text, place), None)
+        self.events.append((self.render_text_event, (text, place)))
 
     def render_text_event(self, text: str, place: Vec2):
         # img_ptr = self.m.mlx_png_file_to_image(self.mlx_ptr, self.images[image][1])
@@ -127,11 +128,11 @@ class Render:
         )
         # self.cell_siz = Vec2(self.width / (siz.x + 4), self.height / (self.gridy) + (self.height / (self.gridy) / 3) - 1)
     
+    # def render_cell(self, pos: Vec2, grid: Grid, color: int, special: int):
+    #     self.events.append((self.render_cell_event, (pos, grid, color, special)))
+
+
     def render_cell(self, pos: Vec2, grid: Grid, color: int, special: int):
-        self.m.mlx_loop_hook(self.mlx_ptr, self.render_cell_event(pos, grid, color, special), None)
-
-
-    def render_cell_event(self, pos: Vec2, grid: Grid, color: int, special: int):
         """ " Sepcial: 0 none, 1 home, 2 arival"""
         # img_siz = Vec2(self.cell_siz.x / 3, self.cell_siz.y / 3)
         hex = grid[pos].wall
@@ -270,7 +271,8 @@ class Render:
                             ),
                         ),
                     )
-        self.m.mlx_do_sync(self.mlx_ptr)
+        # self.render()
+        # self.m.mlx_do_sync(self.mlx_ptr)
                 
 
     def add_hook(self, func: callable, event: int, param):
@@ -287,4 +289,18 @@ class Render:
         self.m.mlx_loop_exit(self.mlx_ptr)
 
     def launch(self):
+        self.m.mlx_loop_hook(self.mlx_ptr, self.render_event, None)
         self.m.mlx_loop(self.mlx_ptr)
+
+    def render_event(self, params):
+        # i = 0
+        self.m.mlx_do_sync(self.mlx_ptr)
+        for event in self.events:
+            event[0](*event[1])
+            # if (i == 15):
+            #     self.m.mlx_do_sync(self.mlx_ptr)
+        self.events = []
+
+    # def render(self):
+    #     self.m.mlx_loop_hook(self.mlx_ptr, self.render_event, None)
+        
