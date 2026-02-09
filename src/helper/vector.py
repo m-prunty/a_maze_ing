@@ -6,7 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:37:00 by maprunty         #+#    #+#              #
-#    Updated: 2026/02/04 13:31:05 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/07 18:14:01 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """TODO: Short module summary.
@@ -59,9 +59,17 @@ class Vec2:
         """Equate a vec2 instance with another."""
         return self.x >= other.x and self.y >= other.y
 
+    def __ge__(self, other):
+        """Equate a vec2 instance with another."""
+        return self > other or self == other
+
     def __lt__(self, other):
         """Equate a vec2 instance with another."""
         return self.x <= other.x and self.y <= other.y
+
+    def __le__(self, other):
+        """Equate a vec2 instance with another."""
+        return self < other or self == other
 
     def __abs__(self):
         """Return magnitude of a vector."""
@@ -75,7 +83,6 @@ class Vec2:
     def __str__(self):
         """Return a str tuple represantation of a Vec2 instance."""
         return f"{self.x},{self.y}"
-
 
     def __iter__(self):
         """Return a tuple iterable  represantation of a Vec2 instance."""

@@ -5,6 +5,7 @@
 ## Add
 - ([x]) ~~ make~~
 - ([x]) ~~42 grid element~~
+    - ([]) Colourrising 42
 - ([x]) ~~Colors with differents assets~~
 - ([x]) ~~Keyhooks and event handelin~~ 
 - ([x]) ~~Start screen~~
@@ -13,6 +14,8 @@
 - ([x]) ~~Seeding~~
 - ([]) Path finding
 - ([]) Character animation
+    
+- ([]) (Add visibilily?) 
 
  
 

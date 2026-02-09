@@ -6,7 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/01 13:57:24 by maprunty         #+#    #+#              #
-#    Updated: 2026/02/04 04:47:51 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/07 05:01:24 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
@@ -14,7 +14,7 @@ from mlx import Mlx
 
 from config import Config
 from graphics import Render
-from helper import Cell, Grid, Vec2
+from helper import Cell, Dir, Grid, Vec2
 from mazegen import Generators
 from options import Options
 

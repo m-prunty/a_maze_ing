@@ -6,7 +6,7 @@
 #    By: sdeppe <sdeppe@student.42heilbronn.de>    +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:26:52 by sdeppe           #+#    #+#              #
-#    Updated: 2026/02/04 21:26:44 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/09 18:32:15 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """TODO: Short module summary.
@@ -14,14 +14,11 @@
 Optional longer description.
 """
 
+import os
 import random
 import sys
-import os
 
-from src import AMaze, Config, Grid, Render, Vec2, Options
-
-# from src.graphics import Render
-# from src.helper import *
+from src import AMaze, Config, Grid, Options, Render, Vec2
 
 sys.setrecursionlimit(2000)
 
@@ -50,17 +47,25 @@ class Start:
     def __init__(self):
         # self.options = Options(1000, 1000)
         self.rend = Render()
-        self.rend.init_window(
-            900, 900, " -- A-maze-ing -- "
-        )
+        self.rend.init_window(900, 900, " -- A-maze-ing -- ")
         self.on_start = True
         self.opt = Options(self.rend)
         self.a = AMaze(self.opt.cfg, self.rend)
         self.render_start()
 
     def render_start(self):
-        start_btn = self.rend.generate_sprit(os.path.dirname(os.path.abspath(__file__)) + "/includes/", "start_button.png", Vec2(300, 90), (0,))
-        opt_logo = self.rend.generate_sprit(os.path.dirname(os.path.abspath(__file__)) + "/includes/", "options_logo.png", Vec2(90, 90), (0,))
+        start_btn = self.rend.generate_sprit(
+            os.path.dirname(os.path.abspath(__file__)) + "/includes/",
+            "start_button.png",
+            Vec2(300, 90),
+            (0,),
+        )
+        opt_logo = self.rend.generate_sprit(
+            os.path.dirname(os.path.abspath(__file__)) + "/includes/",
+            "options_logo.png",
+            Vec2(90, 90),
+            (0,),
+        )
         self.rend.render_text("A-MAZE-ING", Vec2(400, 50))
         self.rend.render_image(opt_logo[0], Vec2(650, 650))
         self.rend.render_image(start_btn[0], Vec2(300, 150))
@@ -68,33 +73,26 @@ class Start:
         self.add_hooks()
         self.rend.launch()
         # self.rend.render()
-        
+
     def add_hooks(self):
         self.rend.add_mous_hook(self.mouse_func, None)
         self.rend.add_hook(self.rend.close, 33, None)
-        
-    
+
     def mouse_func(self, button, x, y, _):
-        if (self.on_start):
-            if (button == 1 and
-                x > 650 and x < 760 and
-                y > 650 and y < 760):
+        if self.on_start:
+            if button == 1 and x > 650 and x < 760 and y > 650 and y < 760:
                 self.opt.render()
                 self.on_start = False
-            if (button == 1 and
-                x > 300 and x < 600 and
-                y > 150 and y < 240):
+            if button == 1 and x > 300 and x < 600 and y > 150 and y < 240:
                 self.rend.clear_window()
                 self.on_start = False
                 self.a.startup()
-        
-        
 
 
 def main4():
     start = Start()
     start.render_start()
-    
+
 
 rend = Render()
 
@@ -130,8 +128,6 @@ def main3():
     a = AMaze.maze_fromfile("maze.txt")
     a.startup()
     print(a)
-    
-
 
 
 if __name__ == "__main__":

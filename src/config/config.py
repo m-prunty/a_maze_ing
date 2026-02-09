@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/03 21:19:22 by maprunty         #+#    #+#              #
-#    Updated: 2026/02/04 20:33:39 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/07 20:22:02 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
@@ -28,6 +28,7 @@ class Config:
     height: int
     entry: Vec2
     exit: Vec2
+    seed: int | None = None
     perfect: bool | None = None
     pic: list[int] | None = None
     pic_scalar: float | None = 1
@@ -35,8 +36,12 @@ class Config:
     output_file: str | None = Field(default="maze.txt")
     model_config = ConfigDict(revalidate_instances="always")
 
-    def is_grid(self, vec: Vec2) -> Vec2:
-        """Check if a vector lives in the grid.
+    def is_grid(self, vec: Vec2) -> bool:
+        maxv = Vec2(self.width, self.height)
+        return  (Vec2() <= vec < maxv)
+
+    def is_grid_border(self, vec: Vec2) -> Vec2:
+        """Check if a vector lives in the grid and return a border value if not.
 
         Args:
             vec (Vec2): the coordinates to check if exist in grid
@@ -47,17 +52,14 @@ class Config:
         rx = random.randint(0, 1)
         ry = random.randint(0, 1)
         tst = (self.width, self.height)
-        print(
-            f"test{tst} {vec} {not 0 <= vec.x < tst[0]} or {not 0 <= vec.y < tst[1]}\
- == {not 0 <= vec.x < tst[0] or not 0 <= vec.y < tst[1]}"
-        )
-        print("aa", vec, tst)
-        if not (0 <= vec.x < tst[0]) or not (0 <= vec.y < tst[1]):
+        print(">>>>>",tst)
+        if not (self.is_grid(vec)):
             print(f"Wont fit on the grid...{tst} {vec}")
             return Vec2(
-                ((tst[0] * rx) - 1 + rx) % (self.width - 1),
-                ((tst[1] * ry) - 1 + ry) % (self.height - 1),
-            )
+                    ((tst[0] - 1 * rx) - 1 + rx),
+                    ((tst[1] - 1 * ry) - 1 + ry),
+                    )
+        print(vec)
         return vec
 
     @field_validator("width", "height", mode="before")
@@ -82,10 +84,10 @@ class Config:
     @model_validator(mode="after")
     def is_valid(self):
         try:
-            print(self.is_grid(self.entry))
-            self.exit = self.is_grid(self.exit)
-            print("height", self.entry)
-            print("width", self.exit)
+            print(self.is_grid_border(self.entry))
+            self.exit = self.is_grid_border(self.exit)
+            print("entry", self.entry)
+            print("exit", self.exit)
 
         except Exception as e:
             # print(ingrid.index(v), "Out of grid bounds", v, e)
@@ -157,7 +159,7 @@ class Config:
                                         {k}:{v} "
                         )
                     c_dct.update({k: v})
-                    print(c_dct)
+        print(c_dct)
         return cls(**c_dct)
 
     def cfg_to_file(self):

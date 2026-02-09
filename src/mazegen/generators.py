@@ -1,16 +1,29 @@
+#!/usr/bin/env python3
+# *************************************************************************** #
+#                                                                             #
+#                                                        :::      ::::::::    #
+#    generators.py                                     :+:      :+:    :+:    #
+#                                                    +:+ +:+         +:+      #
+#    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
+#                                                +#+#+#+#+#+   +#+            #
+#    Created: 2026/02/07 03:02:45 by maprunty         #+#    #+#              #
+#    Updated: 2026/02/09 18:30:39 by maprunty        ###   ########.fr        #
+#                                                                             #
+# *************************************************************************** #
+
 import math
 import random
 import time
 
-from graphics import Render
 from config import Config
-from helper import Cell, Grid, Vec2
+from graphics import Render
+from helper import Cell, Dir, Grid, Vec2
 
 
 class Generators:
     """TODO: Summary of the class.
 
-    Optional longer description.
+    Optional longer descrgiption.
 
     Attributes:
         attr (type): Description.
@@ -47,17 +60,23 @@ class Generators:
         """
         cell = grid[pos]
         cell.visited = True
-        directions = list(Cell.DIRS.items())
+        directions = list(cell.neighbours.items())
         random.shuffle(directions)
 
-        for direction, (dx, dy) in directions:
-            neighbour = grid[cell.loc + Vec2(dx, dy)]
+        for direction, neighbour in directions:
             if not neighbour or neighbour.visited:
                 continue
             cell.rm_wall(direction)
-            neighbour.rm_wall(Cell.OPPS[direction])
-            yield neighbour.loc  # yield after carving a passage
+            grid.path_add(direction)
+            neighbour.rm_wall(direction.opps())
+            yield neighbour.loc
             yield from Generators.gen_rand(grid, cfg, neighbour.loc)
+
+    def animate_path(self):
+        pos = self.config.entry
+        self.grid.path_mk(pos)
+        # for dir_ in self.grid.path_yd():
+        #    print(dir_.name)
 
     def gen_42(self, pic: list[bin], pic_scalar: int):
         """Prep for 42pic Check pic dimension against h / w.
@@ -69,7 +88,6 @@ class Generators:
         """
         self.config.get_pic(1)
         pic = self.config.pic
-        # print(pic)
         wpic = int((math.log2(pic[0])) * (pic_scalar))
         hpic = int(len(pic) * pic_scalar)
         if self.width >= wpic + 2 and self.height >= hpic + 2:
@@ -105,11 +123,7 @@ class Generators:
             r_lst[j]: list[Cell] = []
             i = 0
             while i <= delta.x:
-                curr = (
-                    tleft.loc
-                    + (Cell.DIRS[Cell.E] * i)
-                    + (Cell.DIRS[Cell.S] * j)
-                )
+                curr = tleft.loc + (Dir.E.v() * i) + (Dir.S.v() * j)
                 cell = self.grid[curr]
                 cell.ispic = pic[int(j / self.config.pic_scalar)] & (
                     1 << int((delta.x - i) / self.config.pic_scalar)
@@ -123,13 +137,13 @@ class Generators:
         """Open entry/exits gaps on border."""
         if cell:
             if cell.loc.x == 0:
-                cell.rm_wall(Cell.W)
+                cell.rm_wall(Dir.W)
             elif cell.loc.x == grid.width - 1:
-                cell.rm_wall(Cell.E)
+                cell.rm_wall(Dir.E)
             if cell.loc.y == 0:
-                cell.rm_wall(Cell.N)
+                cell.rm_wall(Dir.N)
             elif cell.loc.y == grid.height - 1:
-                cell.rm_wall(Cell.S)
+                cell.rm_wall(Dir.S)
         else:
             print(Exception(f"cell={cell}; dosent exist"))
 
@@ -140,49 +154,27 @@ class Generators:
             try:
                 neighbours.update({k: self[v + pos].wall})
             except AttributeError:
-                print("is none")
+                print("Not a neighbour:{k}, {v}: {ae}")
         return neighbours
 
     def animate(self, rend: Render, current, delay=0.0):
         """TODO: Docstring."""
-        # ANSI clear screen + cursor home
-        CLEAR = "\x1b[2J\x1b[H"
-        print(self.grid)
-        print(self.config.exit)
+        # print(self.grid)
+        # print(self.config.exit)
         Generators.open_entry_exit(self.grid[self.config.entry], self.grid)
         Generators.open_entry_exit(self.grid[self.config.exit], self.grid)
         self.gen_42(self.config.pic, self.config.pic_scalar)
+        random.seed(self.config.seed)
         pos = self.grid[current].loc
         print("pos is")
         print(pos)
         rend.render_cell(pos, self.grid, 2, 1)
-        random.seed(42)
-        ##>>>>>>>>>^^^^<<set seed here BEFORE calls to random will determinethe starting seed
-
         for pos in self.gen_rand(self.grid, self.config, pos):
             rend.render_cell(pos, self.grid, 2, 0)
             time.sleep(delay)
-
-        # rend.render()
-        print(self.config.exit)
         pos = self.grid[self.config.exit].loc
+        # print(f"{self.grid.path_rd()}")
         rend.render_cell(pos, self.grid, 2, 2)
-
-        #       # t wmp
-        #       #        print(sys.getrecursionlimit())
-        #       # for pos in self.gen_rand(self.grid, self.config, self.config["ENTRY"]):
-        #       for pos in self.gen_rand(self.grid, self.config, self.config["ENTRY"]):
-        #           #            print(CLEAR, end="")
-        #           #            print(self.grid.__str__(pos))
-        #           # hex_walls = cell.wall
-        #           # print(pos)
-        #           try:
-        #               rend.render_cell(pos, self.grid)
-        #               print(self.grid.__str__(pos))
-        #               time.sleep(delay)
-        #           except Exception:
-        #               print(
-        #                   ">>>>>>>>>>>>>>>>>>\n\n\n\n\n\nrend, pos\n\n\n<<<<<<<<<<<<<<<<<<<<<<<<<<"
-        #               )
-        #               self.animate(rend, pos)
+        self.animate_path()
+        print(self.grid.debug())
         self.grid.reset()
