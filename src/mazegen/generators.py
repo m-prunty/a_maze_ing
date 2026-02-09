@@ -147,17 +147,11 @@ class Generators:
         """TODO: Docstring."""
         # ANSI clear screen + cursor home
         CLEAR = "\x1b[2J\x1b[H"
-<<<<<<< HEAD
-        Generators.open_entry_exit(self.grid[self.config["ENTRY"]], self.grid)
-        Generators.open_entry_exit(self.grid[self.config["EXIT"]], self.grid)
-        self.gen_42()
-=======
         print(self.grid)
         print(self.config.exit)
         Generators.open_entry_exit(self.grid[self.config.entry], self.grid)
         Generators.open_entry_exit(self.grid[self.config.exit], self.grid)
         self.gen_42(self.config.pic, self.config.pic_scalar)
->>>>>>> options
         pos = self.grid[current].loc
         print("pos is")
         print(pos)
@@ -168,15 +162,10 @@ class Generators:
         for pos in self.gen_rand(self.grid, self.config, pos):
             rend.render_cell(pos, self.grid, 2, 0)
             time.sleep(delay)
-<<<<<<< HEAD
-        rend.render_grid(self.grid)
-        pos = self.grid[self.config["EXIT"]].loc
-=======
 
         # rend.render()
         print(self.config.exit)
         pos = self.grid[self.config.exit].loc
->>>>>>> options
         rend.render_cell(pos, self.grid, 2, 2)
 
         #       # t wmp
@@ -196,8 +185,4 @@ class Generators:
         #                   ">>>>>>>>>>>>>>>>>>\n\n\n\n\n\nrend, pos\n\n\n<<<<<<<<<<<<<<<<<<<<<<<<<<"
         #               )
         #               self.animate(rend, pos)
-<<<<<<< HEAD
-        # self.grid.reset()
-=======
         self.grid.reset()
->>>>>>> options
