@@ -1,0 +1,176 @@
+from graphics import Render
+from config import Config
+from helper import Vec2
+
+import time
+import os
+import sys
+
+class Options:
+    def __init__(self, rend: Render):
+        self.rend = rend
+        self.cfg = Config.cfg_from_file("config.txt")
+        self.opt_rend = Options_render(self.rend)
+        self.opt_rend.add_cursor("Grid width", "cells", (2, self.cfg.width, 30))
+        self.opt_rend.add_cursor("Grid height", "cells", (2, self.cfg.width, 30))
+        self.opt_rend.add_cursor("Window height", "pixels", (300, self.cfg.width * 10, 900))
+        self.is_active = False
+    
+    def put_to_config(self, vars: list):
+        """ vars: 0 width, 1 height"""
+        print(vars)
+        if (vars[0]):
+            self.cfg.width = int(vars[0])
+        if (vars[1]):
+            self.cfg.height = int(vars[1])
+        self.cfg.exit = Vec2(self.cfg.width - 1, self.cfg.height - 1)
+        self.cfg.entry = Vec2(0, 0)
+        self.cfg.cfg_to_file()
+            
+
+    def render(self):
+        self.opt_rend.render_options()
+        self.rend.add_hook(self.rend.close, 33, None)
+        self.rend.add_mous_hook(self.mouse_event, None)
+        self.is_active = True
+
+    def save(self):
+        self.rend.close(None)
+        os.execv(sys.executable, [sys.executable] + sys.argv)
+        self.is_active = False
+        self.render()
+    
+    def mouse_event(self, button, x, y, baa):
+        if (self.is_active):
+            if (button == 4):
+                self.opt_rend.scroll -= 10
+                self.opt_rend.render_options()
+            if (button == 5):
+                self.opt_rend.scroll += 10
+                self.opt_rend.render_options()
+            if (button == 1):
+                self.opt_rend.check_click(Vec2(x, y), self)
+        
+
+    # def reset_siz(self, width: int, height: int):
+
+
+
+
+class Options_render:
+    
+    def __init__(self, rend: Render):
+        self.rend = rend
+        self.sids_padding = rend.width * 0.2
+        self.top_padding = rend.height * 0.03
+        self.bar_width = rend.width - self.sids_padding * 2
+        self.bar_height = self.top_padding / 3 # padding times 4
+        self.text_siz = self.top_padding
+
+        self.fields = {}
+        
+        path = os.path.dirname(os.path.abspath(__file__)) + "/"
+        # logo_siz = Vec2(rend.width * (1 - (10 * 0.02)),
+        #                 rend.height * (1 - (10 * 0.02)))
+        
+        self.imgs = {}
+        self.imgs["Bar"] = rend.generate_sprit(path,"bar(1).png",
+                                                 Vec2(self.bar_width * 1.05, 
+                                                      self.bar_height),
+                        						  (0,))
+        self.imgs["Cursor"] = rend.generate_sprit(path, "cursor.png",
+                                                 Vec2(self.bar_width / 100,
+                        						 self.bar_height), (0,))
+        self.imgs["Save"] = rend.generate_sprit(path, "save_button.png",
+                                                 Vec2(rend.width * 0.4,
+                        						 rend.height * 0.1), (0,))
+    
+        self.scroll = 0
+
+    def render_options(self):
+        self.rend.clear_window()
+        self.rend.render_text("OPTIONS", Vec2(self.sids_padding * 2,
+                                    0 + self.scroll))
+        # self.rend.m.mlx_do_sync(self.rend.mlx_ptr)
+        self.rend.render_image(self.imgs["Save"][0], 
+                               Vec2(self.rend.width * 0.3,
+                                    (self.rend.height * 0.02) + ((self.text_siz
+                                    + self.bar_height + self.top_padding) * len(self.fields)) + self.text_siz + self.scroll))
+        # self.rend.m.mlx_do_sync(self.rend.mlx_ptr)
+        for field in self.fields.keys():
+            self.render_cursor(field)
+        # self.rend.m.mlx_do_sync(self.rend.mlx_ptr)
+        
+
+    def add_cursor(self, name: str, unit: str, vals: tuple):
+        """ "vals 0 min, 1 default, 2 max"""
+        self.fields[name] = {
+            "NAME": name,
+            "UNIT": unit,
+            "POS": len(self.fields),
+            "MIN": vals[0],
+            "MAX": vals[2],
+            "VAL": vals[1],
+            "PERCENT": (vals[1] - vals[0]) / (vals[2] - vals[0]),
+            "INDEX": len(self.fields)
+        }
+
+    def change_cursor(self, name: str, new_val: tuple):
+        """" new value: 0 value, 1 percent (from 0 to 1) (if one is not given the other is gesed)"""
+        if name not in self.fields:
+            print("Field not found !")
+        if (new_val[0]):
+            self.fields[name]["VAL"] = new_val[0]
+        else:
+            self.fields[name]["VAL"] = (self.fields[name]["MAX"] - self.fields[name]["MIN"]) * new_val[1] + self.fields[name]["MIN"]
+        if (new_val[1]):
+            self.fields[name]["PERCENT"] = new_val[1]
+        else:
+            self.fields[name]["PERCENT"] = (new_val[0] - self.fields[name]["MIN"]) / (
+				self.fields[name]["MAX"] - self.fields[name]["MIN"]
+			)
+        self.render_options()
+        
+    def render_cursor(self, name: str):
+        if name not in self.fields:
+            print("Field not found !")
+        self.rend.render_text(f'{name}: {int(self.fields[name]["VAL"])} {self.fields[name]["UNIT"]}', Vec2(self.sids_padding * 1.5,
+                                    self.rend.height * 0.02 + ((self.text_siz
+                                    	+ self.bar_height + self.top_padding) * self.fields[name]["INDEX"]) + self.scroll))
+        self.rend.render_image(self.imgs["Bar"][0],
+                               Vec2(int(self.sids_padding * 0.95),
+                                    int(self.rend.height * 0.02 + ((self.text_siz
+                                    	+ self.bar_height + self.top_padding) * self.fields[name]["INDEX"]) + self.text_siz + self.scroll)))
+        print(self.fields[name]["INDEX"])
+        self.rend.render_image(self.imgs["Cursor"][0],
+                               Vec2(self.sids_padding + (self.bar_width * self.fields[name]["PERCENT"]),
+                                    (self.rend.height * 0.02) + ((self.text_siz
+                                    	+ self.bar_height + self.top_padding) * self.fields[name]["INDEX"]) + self.text_siz + self.scroll))
+
+
+    def check_click(self, pos: Vec2, opt: Options):
+        for field_name, field_value in self.fields.items():
+            fpos = Vec2(self.sids_padding,
+                                    (self.rend.height * 0.02) + ((self.text_siz
+                                    	+ self.bar_height + self.top_padding) * self.fields[field_name]["INDEX"]) + self.text_siz + self.scroll)
+            siz = Vec2(self.bar_width, self.bar_height)
+            if (fpos.y < pos.y and fpos.y + siz.y > pos.y):
+                if (fpos.x < pos.x and fpos.x + siz.x > pos.x):
+                    self.change_cursor(field_name, (None , (pos.x - fpos.x) / siz.x))
+        save_pos = Vec2(self.rend.width * 0.3,
+            (self.rend.height * 0.02) + ((self.text_siz
+            + self.bar_height + self.top_padding) * len(self.fields)) + self.text_siz + self.scroll)
+        save_siz = Vec2(self.rend.width * 0.4,
+                        self.rend.height * 0.1)
+        if (save_pos.y < pos.y and save_pos.y + save_siz.y > pos.y):
+            if (save_pos.x < pos.x and save_pos.x + save_siz.x > pos.x):
+                vars = []
+                for field_name, field_value in self.fields.items():
+                    vars.append(field_value["VAL"])
+                opt.put_to_config(vars)
+                opt.save()
+
+if __name__ == "__main__":
+    # rend = Render()
+    # rend
+    opt = Options()

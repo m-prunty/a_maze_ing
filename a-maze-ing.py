@@ -6,7 +6,7 @@
 #    By: sdeppe <sdeppe@student.42heilbronn.de>    +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:26:52 by sdeppe           #+#    #+#              #
-#    Updated: 2026/02/03 18:39:26 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/04 21:26:44 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """TODO: Short module summary.
@@ -16,8 +16,9 @@ Optional longer description.
 
 import random
 import sys
+import os
 
-from src.amaze import AMaze, Grid, Render, Vec2
+from src import AMaze, Config, Grid, Render, Vec2, Options
 
 # from src.graphics import Render
 # from src.helper import *
@@ -40,7 +41,7 @@ def print_image(button, x, y):
         )
         grid[vec].wall = hex
         print(grid)
-        print(hex)
+        # print(hex)
         rend.render_cell(vec, grid)
     #     # rend.render_cell(0, Vec2(1, 9))
 
@@ -49,48 +50,53 @@ class Start:
     def __init__(self):
         # self.options = Options(1000, 1000)
         self.rend = Render()
+        self.rend.init_window(
+            900, 900, " -- A-maze-ing -- "
+        )
+        self.on_start = True
+        self.opt = Options(self.rend)
+        self.a = AMaze(self.opt.cfg, self.rend)
         self.render_start()
 
     def render_start(self):
-        rend.init_window(
-            self.options.height, self.options.width, " -- A-maze-ing -- "
-        )
+        start_btn = self.rend.generate_sprit(os.path.dirname(os.path.abspath(__file__)) + "/includes/", "start_button.png", Vec2(300, 90), (0,))
+        opt_logo = self.rend.generate_sprit(os.path.dirname(os.path.abspath(__file__)) + "/includes/", "options_logo.png", Vec2(90, 90), (0,))
+        self.rend.render_text("A-MAZE-ING", Vec2(400, 50))
+        self.rend.render_image(opt_logo[0], Vec2(650, 650))
+        self.rend.render_image(start_btn[0], Vec2(300, 150))
+        self.rend.m.mlx_do_sync(self.rend.mlx_ptr)
+        self.add_hooks()
+        self.rend.launch()
+        # self.rend.render()
+        
+    def add_hooks(self):
+        self.rend.add_mous_hook(self.mouse_func, None)
+        self.rend.add_hook(self.rend.close, 33, None)
+        
+    
+    def mouse_func(self, button, x, y, _):
+        if (self.on_start):
+            if (button == 1 and
+                x > 650 and x < 760 and
+                y > 650 and y < 760):
+                self.opt.render()
+                self.on_start = False
+            if (button == 1 and
+                x > 300 and x < 600 and
+                y > 150 and y < 240):
+                self.rend.clear_window()
+                self.on_start = False
+                self.a.startup()
+        
+        
 
+
+def main4():
+    start = Start()
+    start.render_start()
+    
 
 rend = Render()
-
-
-def cfg_from_file(filename: str):
-    """TODO: Docstring for from_fil.
-
-    Args:
-        filename (str): TODO
-
-    Returns: TODO
-
-    """
-    c_dct = {"FILENAME": filename}
-    with open(filename) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#"):
-                k, v = line.split("=")
-                k = k.strip().upper()
-                try:
-                    if "," in v:
-                        v = v.split(",")
-                        v = tuple(int(i) for i in v)
-                    elif v.lower() in ("true", "false"):
-                        v = v.lower() == "true"
-                    elif v.isnumeric():
-                        v = int(v)
-                except ValueError as ve:
-                    print(
-                        f"Error: {ve} something's not right with config\
-                          {k}:{v} "
-                    )
-                c_dct.update({k: v})
-    return c_dct
 
 
 def main():
@@ -114,10 +120,19 @@ def main2():
     # print(rend.generate_grid_sprits())
     # print(rend.cell_siz)
     if 1 <= ac <= 2:
-        a = AMaze.cfg_from_file("config.txt")
-        print(a.config)
-        print("yay")
+        cfg = Config.cfg_from_file("config.txt")
+        # print("____________", cfg.entry, cfg.exit)
+        a = AMaze(cfg)
+        a.startup()
+
+
+def main3():
+    a = AMaze.maze_fromfile("maze.txt")
+    a.startup()
+    print(a)
+    
+
 
 
 if __name__ == "__main__":
-    main2()
+    main4()

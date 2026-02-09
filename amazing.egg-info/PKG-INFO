@@ -5,3 +5,5 @@ Summary: Add your description here
 Requires-Python: >=3.10
 Description-Content-Type: text/markdown
 Requires-Dist: Pillow>=10.0.0
+Requires-Dist: Mlx
+Requires-Dist: pydantic

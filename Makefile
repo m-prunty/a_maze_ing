@@ -6,7 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.de  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/01 13:25:26 by maprunty          #+#    #+#              #
-#    Updated: 2026/02/02 09:34:46 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/04 16:39:59 by maprunty        ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 # • install: Install project dependencies using pip, uv, pipx, or any other package
@@ -21,10 +21,15 @@
 # --check-untyped-defs
 # • lint-strict (optional): Execute the commands flake8 . and mypy . --strict
 SHELL := bash
-RMFILES=resized __pycache__ .*.sw* 
+IMG_CACHE :=./src/graphics/includes/sprits/grid/resized
+RMFILES :=__pycache__ .*.sw* *.egg-info dist build $(IMG_CACHE)
+
+CFG := FILENAME=config.txt\\nWIDTH=25\\nHEIGHT=25\\nENTRY=0,0\\nEXIT=0,25\
+\\nOUTPUT_FILE=maze.txt\\nPERFECT=True\\nPIC_SCALAR=1\\nPIC=[87, 81, 119, 20, 23]
+
 
 .PHONY: run
-run:  ## Execute the main script. 
+run: $(IMG_CACHE) ## Execute the main script. 
 	uv run ./a-maze-ing.py
 
 .PHONY: install
@@ -44,6 +49,9 @@ clean: ## Cleans up residual files
 help:  ## Display this help
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make <target>\033[36m\033[0m\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
+.PHONY: mkconfig 
+mkconfig: ## mk config file from defaults defined at top of make 
+	echo -e $(CFG) > config.txt
 
 .PHONY: uv
 uv:  ## Install uv if it's not present.
@@ -52,6 +60,9 @@ uv:  ## Install uv if it's not present.
 .PHONY: dev
 dev: uv ## Install dev dependencies
 	uv sync --dev
+
+$(IMG_CACHE): ##tmp place to store imaages
+	mkdir -p $@
 
 # .PHONY: lock
 # lock: uv ## lock dependencies
