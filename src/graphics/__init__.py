@@ -11,14 +11,18 @@
 # *************************************************************************** #
 
 
-# from mlx import mlx
-# from .mlx_context import Mlx_context
-# from .engine.window import Window
-# from .assets.textures import Textures
+from mlx import Mlx
+from .mlx_context import Mlx_context
+from .assets.textures import Textures
+from .engine.window import Window
+from .engine.renderer import Renderer
+from .engine.event_loop import Event_loop
+from .game_logic.grid_renderer import Render_grid
+from .game_logic.grid_renderer import Render_cell
 
-# __all__ = ["Mlx_context", "Window", "mlx", "Textures"]
+__all__ = ["Mlx_context", "Window", "Mlx", "Textures", "Renderer", "Event_loop", "Render_grid", "Render_cell"]
 
 
-from .render import Render
+# from .render import Render
 
-__all__ = ["Render"]
+# __all__ = ["Render"]

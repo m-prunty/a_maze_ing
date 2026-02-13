@@ -34,6 +34,7 @@ class Config:
     filename: str | None = Field(default="config.txt")
     output_file: str | None = Field(default="maze.txt")
     model_config = ConfigDict(revalidate_instances="always")
+    color = 2
 
     def is_grid(self, vec: Vec2) -> Vec2:
         """Check if a vector lives in the grid.

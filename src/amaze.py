@@ -12,7 +12,7 @@
 """First attempts at the A-Maze-ing project."""
 
 from config import Config
-from graphics import Render
+from graphics import Render_grid
 from helper import Grid, Vec2
 from mazegen import Generators
 
@@ -26,22 +26,22 @@ class AMaze:
 
     """
 
-    def __init__(self, cfg: Config, render: Render = None):
+    def __init__(self, cfg: Config):
         """TODO: to be defined."""
         self.config = cfg
         self.grid = Grid(self.width, self.height)
-        self.rend = render
+        Render_grid.create_grid(self.grid)
 
     def __repr__(self):
         cls = self.__class__.__name__
         return f"{cls}({self.config})"
 
-    def genrend(self):
-        # self.rend = Render()
-        self.rend.init_window(900, 900, "A_maze_ing")
-        self.rend.init_grid(Vec2(self.width, self.height))
-        self.rend.add_hook(self.rend.close, 33, None)
-        self.rend.generate_grid_sprits()
+    # def genrend(self):
+    #     # self.rend = Render()
+    #     self.rend.init_window(900, 900, "A_maze_ing")
+    #     self.rend.init_grid(Vec2(self.width, self.height))
+    #     self.rend.add_hook(self.rend.close, 33, None)
+    #     self.rend.generate_grid_sprits()
 
     def startup(self):
         """TODO: Summary line.
@@ -55,13 +55,11 @@ class AMaze:
         Raises:
             ExceptionType: When this is raised.
         """
-        if self.rend is None:
-            self.genrend()
-        self.rend.init_grid(Vec2(self.width, self.height))
-        self.rend.generate_grid_sprits()
+        # Render_grid.create_grid(Vec2(self.width, self.height))
+        # self.rend.generate_grid_sprits()
         g = Generators(self.grid, self.config)
-        g.animate(self.rend, Vec2(0, 0))
-        self.rend.launch()
+        g.animate(Vec2(0, 0))
+        # .launch()
         self.grid.dump_grid()
         self.maze_tofile(self.config.output_file)
 

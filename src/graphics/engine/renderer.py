@@ -1,10 +1,10 @@
-from graphics import Window, Mlx_context, mlx, Textures
+from graphics import Window, Mlx_context, Textures
 from helper import Vec2
 
 class Renderer:
-    @classmethod
+    @staticmethod
     def render_image(image: int, place: Vec2):
-        mlx.mlx_put_image_to_window(
+        Mlx_context._mlx.mlx_put_image_to_window(
             Mlx_context.get(),
             Window.get(),
             Textures(image),
@@ -12,9 +12,9 @@ class Renderer:
             int(place.y),
         )
         
-    @classmethod
-    def render_text(text: str, place: Vec2, color: int=0):
-        mlx.mlx_string_put(
+    @staticmethod
+    def render_text(text: str, place: Vec2, color: int=0xFFFFFF):
+        Mlx_context._mlx.mlx_string_put(
             Mlx_context.get(),
             Window.get(),
             int(place.x),

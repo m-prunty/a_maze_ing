@@ -1,16 +1,15 @@
-
-
-from graphics import mlx
+from graphics import Mlx
 
 class Mlx_context:
     _mlx_ptr = None
+    _mlx = Mlx()
     _initialized = False
 
     @classmethod
     def create(cls):
         if cls._initialized:
             raise RuntimeError("MlxContext already initialized")
-        cls._mlx_ptr = mlx.mlx_init()
+        cls._mlx_ptr = cls._mlx.mlx_init()
         cls._initialized = True
 
     @classmethod
