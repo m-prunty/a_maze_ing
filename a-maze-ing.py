@@ -14,37 +14,12 @@
 Optional longer description.
 """
 
-import random
 import sys
 import os
 
-from src import AMaze, Config, Grid, Renderer, Vec2, Options, Window, Textures, Event_loop
-
-# from src.graphics import Render
-# from src.helper import *
+from src import AMaze, Config, Renderer, Vec2, Options, Window, Textures, Event_loop
 
 sys.setrecursionlimit(2000)
-
-
-# def print_image(button, x, y):
-#     """TODO: Docstring."""
-#     print(
-#         f"Got mouse event! button {button} at x: \
-# {int((x / rend.width) * rend.gridx)}, y: {int(y / rend.width * rend.gridy)}"
-#     )
-#     if button == 1:
-#         hex = random.randrange(0, 15)
-#         grid = Grid({}, rend.gridx, rend.gridy)
-#         vec = Vec2(
-#             int((x / rend.height) * rend.gridx),
-#             int(y / rend.width * rend.gridy),
-#         )
-#         grid[vec].wall = hex
-#         print(grid)
-#         # print(hex)
-#         rend.render_cell(vec, grid)
-    #     # rend.render_cell(0, Vec2(1, 9))
-
 
 class Start:
     def __init__(self):
@@ -65,10 +40,8 @@ class Start:
         Renderer.render_text("A-MAZE-ING", Vec2(400, 50))
         Renderer.render_image(opt_logo, Vec2(650, 650))
         Renderer.render_image(start_btn, Vec2(300, 150))
-        # self.rend.m.mlx_do_sync(self.rend.mlx_ptr)
         self.add_hooks()
         Event_loop.launch()
-        # self.rend.render()
         
     def add_hooks(self):
         Event_loop.add_mous_hook(self.mouse_func, None)

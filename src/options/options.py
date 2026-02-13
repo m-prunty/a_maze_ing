@@ -60,20 +60,18 @@ class Options_render:
     def __init__(self):
         self.width = Window.get_siz().x
         self.height = Window.get_siz().y
-        self.sids_padding = self.width * 0.2
+        self.sids_padding = self.width * 0.1
         self.top_padding = self.height * 0.03
         self.bar_width = self.width - self.sids_padding * 2
-        self.bar_height = self.top_padding / 3 # padding times 4
+        self.bar_height = self.top_padding / 2
         self.text_siz = self.top_padding
 
         self.fields = {}
         
-        path = os.path.dirname(os.path.abspath(__file__)) + "/"
-        # logo_siz = Vec2(rend.width * (1 - (10 * 0.02)),
-        #                 rend.height * (1 - (10 * 0.02)))
+        path = os.path.dirname(os.path.abspath(__file__)) + "/includes/"
         
         self.imgs = {}
-        self.imgs["Bar"] = Textures.load(path,"bar(1).png",
+        self.imgs["Bar"] = Textures.load(path,"bar.png",
                                                  Vec2(self.bar_width * 1.05, 
                                                       self.bar_height),
                         						  (0,))[0]
