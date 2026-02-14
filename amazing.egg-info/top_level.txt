@@ -1,0 +1,10 @@
+config
+graphics
+helper
+includes
+libs
+mazegen
+options
+out
+solving
+src

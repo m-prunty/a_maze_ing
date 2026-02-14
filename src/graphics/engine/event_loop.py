@@ -30,11 +30,13 @@ class Event_loop:
         # if cls._initialized:
         #     raise RuntimeError("MlxContext already initialized")
         cls._events.append((event, params))
-        cls._initialized = True
-    
+        # cls._initialized = True
+
     @classmethod
     def render_event(cls, params):
-        Mlx_context._mlx.mlx_do_sync(Mlx_context.get()) 
+        Mlx_context._mlx.mlx_do_sync(Mlx_context.get())
+        # Mlx_context._mlx.mlx_do_sync(Mlx_context.get())
         for event in cls._events:
             event[0](*event[1])
         cls._events.clear()
+        

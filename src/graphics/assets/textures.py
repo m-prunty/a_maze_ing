@@ -6,9 +6,14 @@ from PIL import Image
 
 class Textures:
     _textures = []
+    _sizes = []
 
     def __new__(cls, id: int):
         return cls._textures[id]
+
+    @classmethod
+    def get_siz(cls, id: int):
+        return cls._sizes[id]
 
     @classmethod
     def load(cls, path: str, image: str, siz: Vec2, degs: tuple):
@@ -37,5 +42,6 @@ class Textures:
             id = len(cls._textures)
             ptr = Mlx_context._mlx.mlx_png_file_to_image(Mlx_context.get(), img)
             cls._textures.append(ptr[0])
+            cls._sizes.append(siz)
             ret.append(id)
         return ret

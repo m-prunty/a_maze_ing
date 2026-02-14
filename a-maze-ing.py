@@ -17,7 +17,8 @@ Optional longer description.
 import sys
 import os
 
-from src import AMaze, Config, Renderer, Vec2, Options, Window, Textures, Event_loop
+from src import AMaze, Config, Renderer, Vec2, Options, Window, Textures, Event_loop, Render_grid
+from src.graphics import Mlx_context
 
 sys.setrecursionlimit(2000)
 
@@ -60,6 +61,8 @@ class Start:
                 y > 150 and y < 240):
                 Window.clear_window()
                 self.on_start = False
+                Render_grid.render_grid()
+                # Mlx_context._mlx.mlx_do_sync(Mlx_context.get())
                 self.a.startup()
         
         

@@ -48,11 +48,11 @@ class Config:
         rx = random.randint(0, 1)
         ry = random.randint(0, 1)
         tst = (self.width, self.height)
-        print(
-            f"test{tst} {vec} {not 0 <= vec.x < tst[0]} or {not 0 <= vec.y < tst[1]}\
- == {not 0 <= vec.x < tst[0] or not 0 <= vec.y < tst[1]}"
-        )
-        print("aa", vec, tst)
+#         print(
+#             f"test{tst} {vec} {not 0 <= vec.x < tst[0]} or {not 0 <= vec.y < tst[1]}\
+#  == {not 0 <= vec.x < tst[0] or not 0 <= vec.y < tst[1]}"
+#         )
+#         print("aa", vec, tst)
         if not (0 <= vec.x < tst[0]) or not (0 <= vec.y < tst[1]):
             print(f"Wont fit on the grid...{tst} {vec}")
             return Vec2(
@@ -83,10 +83,10 @@ class Config:
     @model_validator(mode="after")
     def is_valid(self):
         try:
-            print(self.is_grid(self.entry))
+            # print(self.is_grid(self.entry))
             self.exit = self.is_grid(self.exit)
-            print("height", self.entry)
-            print("width", self.exit)
+            # print("height", self.entry)
+            # print("width", self.exit)
 
         except Exception as e:
             # print(ingrid.index(v), "Out of grid bounds", v, e)
@@ -104,7 +104,7 @@ class Config:
         c_dct["height"] = i - 3
         c_dct["entry"] = Vec2(vlst[0], vlst[1])
         c_dct["exit"] = Vec2(vlst[2], vlst[3])
-        print(c_dct)
+        # print(c_dct)
         return cls(**c_dct)
 
     def get_pic(self, select: int):
@@ -158,13 +158,13 @@ class Config:
                                         {k}:{v} "
                         )
                     c_dct.update({k: v})
-                    print(c_dct)
+                    # print(c_dct)
         return cls(**c_dct)
 
     def cfg_to_file(self):
         with open(self.filename, "w") as f:
             for k, v in vars(self).items():
                 f.write(f"{k.upper()}={v.__str__()}\n")
-                print(f"{k.upper()}={v.__str__()}\n")
+                # print(f"{k.upper()}={v.__str__()}\n")
         # with open(filename) as f:
         #    for line in f:

@@ -2,7 +2,7 @@ import math
 import random
 import time
 
-from graphics import Render_cell
+from graphics import Render_cell, Render_grid
 from config import Config
 from helper import Cell, Grid, Vec2
 
@@ -67,6 +67,8 @@ class Generators:
         Raises:
             ExceptionType: When this is raised.
         """
+        Render_grid.render_grid()
+        
         self.config.get_pic(1)
         pic = self.config.pic
         # print(pic)
@@ -143,47 +145,27 @@ class Generators:
                 print("is none")
         return neighbours
 
-    def animate(self, current, delay=0.0):
+    def animate(self, current, delay=0.001):
         """TODO: Docstring."""
         # ANSI clear screen + cursor home
         CLEAR = "\x1b[2J\x1b[H"
-        print(self.grid)
-        print(self.config.exit)
+        # print(self.grid)
+        # print(self.config.exit)
         Generators.open_entry_exit(self.grid[self.config.entry], self.grid)
         Generators.open_entry_exit(self.grid[self.config.exit], self.grid)
+        canva = Render_grid.cells_canva(Vec2(self.grid.width, self.grid.height), Vec2())
         self.gen_42(self.config.pic, self.config.pic_scalar)
         pos = self.grid[current].loc
         # print("pos is")
         # print(pos)
-        Render_cell.render(pos)
+        Render_cell.render(pos, canva, delay)
 
         random.seed(42)
-        ##>>>>>>>>>^^^^<<set seed here BEFORE calls to random will determinethe starting seed
 
         for pos in self.gen_rand(self.grid, self.config, pos):
-            Render_cell.render(pos)
-            time.sleep(delay)
+            Render_cell.render(pos, canva, delay)
+            # time.sleep(delay)
 
-        # rend.render()
+        canva.put_canva()
         print(self.config.exit)
-        # pos = self.grid[self.config.exit].loc
-        # rend.render_cell(pos, self.grid, 2, 2)
 
-        #       # t wmp
-        #       #        print(sys.getrecursionlimit())
-        #       # for pos in self.gen_rand(self.grid, self.config, self.config["ENTRY"]):
-        #       for pos in self.gen_rand(self.grid, self.config, self.config["ENTRY"]):
-        #           #            print(CLEAR, end="")
-        #           #            print(self.grid.__str__(pos))
-        #           # hex_walls = cell.wall
-        #           # print(pos)
-        #           try:
-        #               rend.render_cell(pos, self.grid)
-        #               print(self.grid.__str__(pos))
-        #               time.sleep(delay)
-        #           except Exception:
-        #               print(
-        #                   ">>>>>>>>>>>>>>>>>>\n\n\n\n\n\nrend, pos\n\n\n<<<<<<<<<<<<<<<<<<<<<<<<<<"
-        #               )
-        #               self.animate(rend, pos)
-        self.grid.reset()

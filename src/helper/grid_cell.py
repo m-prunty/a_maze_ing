@@ -52,6 +52,7 @@ class Cell:
         self.wall = 0b1111
         self.loc = loc
         self.ispic = False
+        self.ispath = False
         self.visited = False
 
     # @property
