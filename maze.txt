@@ -1,20 +1,13 @@
 
-291395553d11553
-aeac6957c3e83ba
-a96952917c3aac6
-aabc3c6c556ec13
-c683c15555553ea
-93aafafbfffbc52
-aaeafef857f8556
-ac52fffafffa953
-a93ad3fafd52c3a
-aaac52fafffc56a
-aac53c529551396
-ac79693ac396ac3
-c39696aad6c3a96
-96c547c45156ec3
-839539393e93956
-ec47c6c6c56c451
+295153d13
+ac3c3c56a
+afafafffa
+afef857fa
+afffafffa
+c3bfafd52
+baafafffe
+ac43c5553
+c55455550
 
 0,0
-14,15
+8,8

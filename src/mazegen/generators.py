@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/07 03:02:45 by maprunty         #+#    #+#              #
-#    Updated: 2026/02/09 18:30:39 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/10 00:14:08 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
@@ -17,7 +17,7 @@ import time
 
 from config import Config
 from graphics import Render
-from helper import Cell, Dir, Grid, Vec2
+from helper import Cell, Dir, Grid, Path, Vec2
 
 
 class Generators:
@@ -49,7 +49,7 @@ class Generators:
         return self.config.height
 
     @staticmethod
-    def gen_rand(grid: Grid, cfg: Config, pos: tuple = (0, 0)):
+    def gen_rand(grid: Grid, cfg: Config, path: Path, pos: Vec2 = Vec2(0, 0)):
         """TODO: Docstring for gen_rand.
 
         Args:
@@ -67,16 +67,25 @@ class Generators:
             if not neighbour or neighbour.visited:
                 continue
             cell.rm_wall(direction)
-            grid.path_add(direction)
             neighbour.rm_wall(direction.opps())
-            yield neighbour.loc
-            yield from Generators.gen_rand(grid, cfg, neighbour.loc)
 
-    def animate_path(self):
+            if neighbour.loc == cfg.exit:
+                print("p>>>>> = ", grid.path, direction, path)
+                grid.path = path
+            else:
+                path = path.add_rec(direction)
+            yield neighbour.loc
+            yield from Generators.gen_rand(grid, cfg, path, neighbour.loc)
+
+    def animate_path(self, rend):
         pos = self.config.entry
-        self.grid.path_mk(pos)
-        # for dir_ in self.grid.path_yd():
-        #    print(dir_.name)
+        #        print("lkjahskjdhjaslkjdlkj", len(self.grid.path))
+        # self.grid.path_mk(pos)
+        print("hjasgjdgj", self.grid.path)
+        for dir_ in self.grid.path.path_yd_rev():
+            print(">>>", pos)
+            pos += dir_.v()
+            rend.render_cell(pos, self.grid, 3, 1)
 
     def gen_42(self, pic: list[bin], pic_scalar: int):
         """Prep for 42pic Check pic dimension against h / w.
@@ -166,15 +175,17 @@ class Generators:
         self.gen_42(self.config.pic, self.config.pic_scalar)
         random.seed(self.config.seed)
         pos = self.grid[current].loc
-        print("pos is")
-        print(pos)
+        # print("pos is")
+        # print(pos)
         rend.render_cell(pos, self.grid, 2, 1)
-        for pos in self.gen_rand(self.grid, self.config, pos):
+        for pos in self.gen_rand(self.grid, self.config, Path(), pos):
             rend.render_cell(pos, self.grid, 2, 0)
             time.sleep(delay)
         pos = self.grid[self.config.exit].loc
+        print("aaaaa", self.grid.path)
         # print(f"{self.grid.path_rd()}")
         rend.render_cell(pos, self.grid, 2, 2)
-        self.animate_path()
-        print(self.grid.debug())
+
+        self.animate_path(rend)
+        # print(self.grid.debug())
         self.grid.reset()

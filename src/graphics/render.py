@@ -40,8 +40,6 @@ class Render:
     def render_image(self, image: int, place: Vec2):
         self.events.append((self.render_image_event, (image, place)))
 
-
-    
     def render_image_event(self, image: int, place: Vec2):
         self.m.mlx_put_image_to_window(
             self.mlx_ptr,
@@ -50,9 +48,7 @@ class Render:
             int(place.x),
             int(place.y),
         )
-        
-        
-        
+
     # def resize_window(self, height: int, width: int):
     #     self.m.mlx
 
@@ -62,12 +58,7 @@ class Render:
     def render_text_event(self, text: str, place: Vec2):
         # img_ptr = self.m.mlx_png_file_to_image(self.mlx_ptr, self.images[image][1])
         self.m.mlx_string_put(
-            self.mlx_ptr,
-            self.win_ptr,
-            int(place.x),
-            int(place.y),
-            100,
-            text
+            self.mlx_ptr, self.win_ptr, int(place.x), int(place.y), 100, text
         )
 
     def generate_grid_sprits(self) -> tuple:
@@ -81,7 +72,8 @@ class Render:
         self.grid_tiles = []
         for sprit in sprits:
             imgs = self.generate_sprit(
-                        path, sprit, self.tile_siz, (0, 90, 180, 270))
+                path, sprit, self.tile_siz, (0, 90, 180, 270)
+            )
             ret.append(
                 (
                     imgs,
@@ -127,10 +119,9 @@ class Render:
             self.width / (siz.x * 2 + 1), self.height / (siz.y * 2 + 1)
         )
         # self.cell_siz = Vec2(self.width / (siz.x + 4), self.height / (self.gridy) + (self.height / (self.gridy) / 3) - 1)
-    
+
     # def render_cell(self, pos: Vec2, grid: Grid, color: int, special: int):
     #     self.events.append((self.render_cell_event, (pos, grid, color, special)))
-
 
     def render_cell(self, pos: Vec2, grid: Grid, color: int, special: int):
         """ " Sepcial: 0 none, 1 home, 2 arival"""
@@ -157,7 +148,7 @@ class Render:
                                     + y * self.tile_siz.y
                                 ),
                             ),
-						)
+                        )
                     else:
                         self.render_image(
                             self.grid_tiles[0 + color * 28],
@@ -203,9 +194,11 @@ class Render:
                         )
                 elif y % 2 == 1 and i % 2 == 1:
                     self.render_image(
-                        self.grid_tiles[(special == 1) * 24
-                        + (special == 2) * 20
-                        + color * 28],
+                        self.grid_tiles[
+                            (special == 1) * 24
+                            + (special == 2) * 20
+                            + color * 28
+                        ],
                         Vec2(
                             int(
                                 pos.x * self.tile_siz.x * 2
@@ -273,7 +266,6 @@ class Render:
                     )
         # self.render()
         # self.m.mlx_do_sync(self.mlx_ptr)
-                
 
     def add_hook(self, func: callable, event: int, param):
         self.m.mlx_hook(self.win_ptr, event, 0, func, None)
@@ -303,4 +295,3 @@ class Render:
 
     # def render(self):
     #     self.m.mlx_loop_hook(self.mlx_ptr, self.render_event, None)
-        
