@@ -1,7 +1,0 @@
-config
-graphics
-helper
-includes
-mazegen
-options
-src
