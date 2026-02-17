@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/03 21:19:22 by maprunty         #+#    #+#              #
-#    Updated: 2026/02/07 20:22:02 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/17 22:05:53 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
@@ -35,12 +35,9 @@ class Config:
     filename: str | None = Field(default="config.txt")
     output_file: str | None = Field(default="maze.txt")
     model_config = ConfigDict(revalidate_instances="always")
+    color = 2
 
     def is_grid(self, vec: Vec2) -> bool:
-        maxv = Vec2(self.width, self.height)
-        return  (Vec2() <= vec < maxv)
-
-    def is_grid_border(self, vec: Vec2) -> Vec2:
         """Check if a vector lives in the grid and return a border value if not.
 
         Args:
@@ -52,13 +49,17 @@ class Config:
         rx = random.randint(0, 1)
         ry = random.randint(0, 1)
         tst = (self.width, self.height)
-        print(">>>>>",tst)
-        if not (self.is_grid(vec)):
+        #         print(
+        #             f"test{tst} {vec} {not 0 <= vec.x < tst[0]} or {not 0 <= vec.y < tst[1]}\
+        #  == {not 0 <= vec.x < tst[0] or not 0 <= vec.y < tst[1]}"
+        #         )
+        #         print("aa", vec, tst)
+        if not (0 <= vec.x < tst[0]) or not (0 <= vec.y < tst[1]):
             print(f"Wont fit on the grid...{tst} {vec}")
             return Vec2(
-                    ((tst[0] - 1 * rx) - 1 + rx),
-                    ((tst[1] - 1 * ry) - 1 + ry),
-                    )
+                ((tst[0] - 1 * rx) - 1 + rx),
+                ((tst[1] - 1 * ry) - 1 + ry),
+            )
         print(vec)
         return vec
 
@@ -84,10 +85,10 @@ class Config:
     @model_validator(mode="after")
     def is_valid(self):
         try:
-            print(self.is_grid_border(self.entry))
-            self.exit = self.is_grid_border(self.exit)
-            print("entry", self.entry)
-            print("exit", self.exit)
+            # print(self.is_grid(self.entry))
+            self.exit = self.is_grid(self.exit)
+            # print("height", self.entry)
+            # print("width", self.exit)
 
         except Exception as e:
             # print(ingrid.index(v), "Out of grid bounds", v, e)
@@ -105,7 +106,7 @@ class Config:
         c_dct["height"] = i - 3
         c_dct["entry"] = Vec2(vlst[0], vlst[1])
         c_dct["exit"] = Vec2(vlst[2], vlst[3])
-        print(c_dct)
+        # print(c_dct)
         return cls(**c_dct)
 
     def get_pic(self, select: int):
@@ -159,13 +160,13 @@ class Config:
                                         {k}:{v} "
                         )
                     c_dct.update({k: v})
-        print(c_dct)
+                    print(c_dct)
         return cls(**c_dct)
 
     def cfg_to_file(self):
         with open(self.filename, "w") as f:
             for k, v in vars(self).items():
                 f.write(f"{k.upper()}={v.__str__()}\n")
-                print(f"{k.upper()}={v.__str__()}\n")
+                # print(f"{k.upper()}={v.__str__()}\n")
         # with open(filename) as f:
         #    for line in f:

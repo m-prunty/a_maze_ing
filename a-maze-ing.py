@@ -6,7 +6,7 @@
 #    By: sdeppe <sdeppe@student.42heilbronn.de>    +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:26:52 by sdeppe           #+#    #+#              #
-#    Updated: 2026/02/09 18:32:15 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/17 21:02:11 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """TODO: Short module summary.
@@ -15,68 +15,56 @@ Optional longer description.
 """
 
 import os
-import random
 import sys
 
-from src import AMaze, Config, Grid, Options, Render, Vec2
+from src import (
+    AMaze,
+    Config,
+    Event_loop,
+    Options,
+    Render_grid,
+    Renderer,
+    Textures,
+    Vec2,
+    Window,
+)
 
 sys.setrecursionlimit(2000)
-
-
-def print_image(button, x, y):
-    """TODO: Docstring."""
-    print(
-        f"Got mouse event! button {button} at x: \
-{int((x / rend.width) * rend.gridx)}, y: {int(y / rend.width * rend.gridy)}"
-    )
-    if button == 1:
-        hex = random.randrange(0, 15)
-        grid = Grid({}, rend.gridx, rend.gridy)
-        vec = Vec2(
-            int((x / rend.height) * rend.gridx),
-            int(y / rend.width * rend.gridy),
-        )
-        grid[vec].wall = hex
-        print(grid)
-        # print(hex)
-        rend.render_cell(vec, grid)
-    #     # rend.render_cell(0, Vec2(1, 9))
 
 
 class Start:
     def __init__(self):
         # self.options = Options(1000, 1000)
-        self.rend = Render()
-        self.rend.init_window(900, 900, " -- A-maze-ing -- ")
+        Window.create(Vec2(900, 900), " -- A-maze-ing -- ")
         self.on_start = True
-        self.opt = Options(self.rend)
-        self.a = AMaze(self.opt.cfg, self.rend)
+        self.opt = Options()
+        self.opt = Options()
+        self.a = AMaze(self.opt.cfg)
         self.render_start()
 
     def render_start(self):
-        start_btn = self.rend.generate_sprit(
+        start_btn = Textures.load(
             os.path.dirname(os.path.abspath(__file__)) + "/includes/",
             "start_button.png",
             Vec2(300, 90),
             (0,),
-        )
-        opt_logo = self.rend.generate_sprit(
+        )[0]
+        opt_logo = Textures.load(
             os.path.dirname(os.path.abspath(__file__)) + "/includes/",
             "options_logo.png",
             Vec2(90, 90),
             (0,),
-        )
-        self.rend.render_text("A-MAZE-ING", Vec2(400, 50))
-        self.rend.render_image(opt_logo[0], Vec2(650, 650))
-        self.rend.render_image(start_btn[0], Vec2(300, 150))
-        self.rend.m.mlx_do_sync(self.rend.mlx_ptr)
+        )[0]
+        print(Textures(opt_logo))
+        Renderer.render_text("A-MAZE-ING", Vec2(400, 50))
+        Renderer.render_image(opt_logo, Vec2(650, 650))
+        Renderer.render_image(start_btn, Vec2(300, 150))
         self.add_hooks()
-        self.rend.launch()
-        # self.rend.render()
+        Event_loop.launch()
 
     def add_hooks(self):
-        self.rend.add_mous_hook(self.mouse_func, None)
-        self.rend.add_hook(self.rend.close, 33, None)
+        Event_loop.add_mous_hook(self.mouse_func, None)
+        Event_loop.add_hook(Event_loop.close, 33, None)
 
     def mouse_func(self, button, x, y, _):
         if self.on_start:
@@ -84,8 +72,10 @@ class Start:
                 self.opt.render()
                 self.on_start = False
             if button == 1 and x > 300 and x < 600 and y > 150 and y < 240:
-                self.rend.clear_window()
+                Window.clear_window()
                 self.on_start = False
+                Render_grid.render_grid()
+                # Mlx_context._mlx.mlx_do_sync(Mlx_context.get())
                 self.a.startup()
 
 
@@ -94,20 +84,20 @@ def main4():
     start.render_start()
 
 
-rend = Render()
+# rend = Render()
 
 
-def main():
-    """TODO: Docstring."""
-    rend.init_window(700, 700, "hello")
-    rend.init_grid(Vec2(3, 3))
-    print(rend.generate_grid_sprits())
-    # print(rend.cell_siz)
-    rend.add_hook(rend.close, 33, None)
-    rend.add_mous_hook(print_image, (1, 2))
+# def main():
+#     """TODO: Docstring."""
+#     rend.init_window(700, 700, "hello")
+#     rend.init_grid(Vec2(3, 3))
+#     print(rend.generate_grid_sprits())
+#     # print(rend.cell_siz)
+#     rend.add_hook(rend.close, 33, None)
+#     rend.add_mous_hook(print_image, (1, 2))
 
-    rend.launch()
-    print("Hello from amazing!")
+#     rend.launch()
+#     print("Hello from amazing!")
 
 
 def main2():

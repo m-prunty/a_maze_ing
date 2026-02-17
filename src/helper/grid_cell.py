@@ -74,6 +74,7 @@ class Cell:
         self.loc = loc
         self.ispath = False
         self.ispic = False
+        self.ispath = False
         self.visited = False
 
     # @property

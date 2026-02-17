@@ -11,6 +11,8 @@ from PIL import Image
 from helper import Cell, Grid, Vec2
 
 
+
+
 class Render:
     def __init__(self):
         self.m = Mlx()
@@ -90,6 +92,7 @@ class Render:
             )
             for img in imgs:
                 self.grid_tiles.append(img)
+        print(self.grid_tiles)
         return ret
 
     def generate_sprit(
@@ -293,14 +296,8 @@ class Render:
         self.m.mlx_loop(self.mlx_ptr)
 
     def render_event(self, params):
-        # i = 0
         self.m.mlx_do_sync(self.mlx_ptr)
         for event in self.events:
             event[0](*event[1])
-            # if (i == 15):
-            #     self.m.mlx_do_sync(self.mlx_ptr)
         self.events = []
-
-    # def render(self):
-    #     self.m.mlx_loop_hook(self.mlx_ptr, self.render_event, None)
         

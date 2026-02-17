@@ -7,16 +7,15 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/07 03:02:45 by maprunty         #+#    #+#              #
-#    Updated: 2026/02/09 18:30:39 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/17 22:07:35 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
 import math
 import random
-import time
 
 from config import Config
-from graphics import Render
+from graphics import Render_cell, Render_grid
 from helper import Cell, Dir, Grid, Vec2
 
 
@@ -86,6 +85,8 @@ class Generators:
         Raises:
             ExceptionType: When this is raised.
         """
+        Render_grid.render_grid()
+
         self.config.get_pic(1)
         pic = self.config.pic
         wpic = int((math.log2(pic[0])) * (pic_scalar))
@@ -157,24 +158,29 @@ class Generators:
                 print("Not a neighbour:{k}, {v}: {ae}")
         return neighbours
 
-    def animate(self, rend: Render, current, delay=0.0):
+    def animate(self, current, delay=0.001):
         """TODO: Docstring."""
+        # ANSI clear screen + cursor home
+        CLEAR = "\x1b[2J\x1b[H"
         # print(self.grid)
         # print(self.config.exit)
         Generators.open_entry_exit(self.grid[self.config.entry], self.grid)
         Generators.open_entry_exit(self.grid[self.config.exit], self.grid)
+        canva = Render_grid.cells_canva(
+            Vec2(self.grid.width, self.grid.height), Vec2()
+        )
         self.gen_42(self.config.pic, self.config.pic_scalar)
         random.seed(self.config.seed)
         pos = self.grid[current].loc
-        print("pos is")
-        print(pos)
-        rend.render_cell(pos, self.grid, 2, 1)
+        # print("pos is")
+        # print(pos)
+        Render_cell.render(pos, canva, delay)
+
+        random.seed(42)
+
         for pos in self.gen_rand(self.grid, self.config, pos):
-            rend.render_cell(pos, self.grid, 2, 0)
-            time.sleep(delay)
-        pos = self.grid[self.config.exit].loc
-        # print(f"{self.grid.path_rd()}")
-        rend.render_cell(pos, self.grid, 2, 2)
-        self.animate_path()
-        print(self.grid.debug())
-        self.grid.reset()
+            Render_cell.render(pos, canva, delay)
+            # time.sleep(delay)
+
+        canva.put_canva()
+        print(self.config.exit)
