@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/07 03:02:45 by maprunty         #+#    #+#              #
-#    Updated: 2026/02/17 22:07:35 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/22 17:17:05 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
@@ -16,7 +16,7 @@ import random
 
 from config import Config
 from graphics import Render_cell, Render_grid
-from helper import Cell, Dir, Grid, Vec2
+from helper import Cell, Dir, Grid, Path, Vec2
 
 
 class Generators:
@@ -48,7 +48,7 @@ class Generators:
         return self.config.height
 
     @staticmethod
-    def gen_rand(grid: Grid, cfg: Config, pos: tuple = (0, 0)):
+    def gen_rand(grid: Grid, cfg: Config, path: Path, pos: Vec2 = Vec2(0, 0)):
         """TODO: Docstring for gen_rand.
 
         Args:
@@ -66,16 +66,26 @@ class Generators:
             if not neighbour or neighbour.visited:
                 continue
             cell.rm_wall(direction)
-            grid.path_add(direction)
             neighbour.rm_wall(direction.opps())
-            yield neighbour.loc
-            yield from Generators.gen_rand(grid, cfg, neighbour.loc)
 
-    def animate_path(self):
+            if neighbour.loc == cfg.exit:
+                print("p>>>>> = ", grid.path, direction, path)
+                grid.path = path
+            else:
+                path = path.add_rec(direction)
+            yield neighbour.loc
+            yield from Generators.gen_rand(grid, cfg, path, neighbour.loc)
+
+    def animate_path(self, canva, delay):
         pos = self.config.entry
-        self.grid.path_mk(pos)
-        # for dir_ in self.grid.path_yd():
-        #    print(dir_.name)
+        #        print("lkjahskjdhjaslkjdlkj", len(self.grid.path))
+        # self.grid.path_mk(pos)
+        print("hjasgjdgj", self.grid.path)
+        for dir_ in self.grid.path.path_yd_rev():
+            print(">>>", pos)
+            pos += dir_.v()
+            Render_cell.render(pos, canva, delay)
+            # rend.render_cell(pos, self.grid, 3, 1)
 
     def gen_42(self, pic: list[bin], pic_scalar: int):
         """Prep for 42pic Check pic dimension against h / w.
@@ -178,9 +188,10 @@ class Generators:
 
         random.seed(42)
 
-        for pos in self.gen_rand(self.grid, self.config, pos):
+        for pos in self.gen_rand(self.grid, self.config, self.grid.path, pos):
             Render_cell.render(pos, canva, delay)
-            # time.sleep(delay)
-
+        # time.sleep(delay)
+        self.animate_path(canva, delay)
+        print(self.grid.path)
         canva.put_canva()
-        print(self.config.exit)
+        # print(self.config.exit)

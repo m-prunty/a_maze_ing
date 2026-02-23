@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:38:19 by maprunty         #+#    #+#              #
-#    Updated: 2026/02/09 18:06:48 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/09 23:51:36 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """TODO: Short module summary.
@@ -145,14 +145,61 @@ class Cell:
         self.wall &= ~direction
 
 
+class Path:
+    __slots__ = ["_bits"]
+    CELL_BITS = 4
+    CELL_MASK = (1 << CELL_BITS) - 1
+
+    def __init__(self, bits: Dir = Dir.non):
+        self._bits = bits
+
+    def __str__(self):
+        r_str = ""
+        print(f"{self._bits:b}")
+        for d in self.path_yd_rev():
+            r_str += str(f"{d.name}, ")
+        return r_str
+
+    @property
+    def bits(self) -> int:
+        """Doc"""
+        # print(f"{self.bits:b}")
+        return self._bits
+
+    def add(self, dir_: Dir):
+        # print(dir_, "3", self._bits << self.CELL_BITS | dir_)
+        self._bits = (self._bits << self.CELL_BITS) | dir_
+
+    def add_rec(self, dir_: Dir):
+        return Path((self._bits << self.CELL_BITS) | dir_)
+
+    #  def path_add(self, dir_: int):
+    # print(f"{self.bits:b}")
+
+    def path_yd(self):
+        path = self.bits
+        while path:
+            p = Dir(path & self.CELL_MASK)
+            path >>= self.CELL_BITS
+            # print("11", p)
+            yield p
+
+    def path_yd_rev(self):
+        path = []
+        for p in self.path_yd():
+            path += [p]
+        path.reverse()
+        for p in path:
+            yield p
+
+
 class Grid:
     """Docstring for Grid."""
 
     def __init__(self, width, height):
         """TODO: to be defined."""
         self.width, self.height = width, height
-        self.path = 0
-        self.state = 0
+        self.path = Path()
         self.grid = [
             [Cell(Vec2(x, y)) for x in range(self.width)]
             for y in range(self.height)
@@ -175,48 +222,15 @@ class Grid:
             print(f"Grid key error:{key} not a valid tuple {ve}")
             return None
 
-    @property
-    def path(self) -> int:
-        """Doc"""
-        # print(f"{self._path:b}")
-        return self._path
-
-    @path.setter
-    def path(self, value: int):
-        self._path = value
-
-    def path_add(self, dir_: int):
-        # print(f"{self._path:b}")
-        self._path = self._path << 4 | dir_
-
-    def path_yd(self):
-        path = self.path
-        while path:
-            p = Dir(path & 0b1111)
-            path >>= 4
-            yield p
-
-    def path_yd_rev(self):
-        path = list(Dir)
-        for p in self.path_yd():
-            path += [p]
-        path.reverse()
-        for p in path:
-            print(p)
-            yield p
-
-    def path_rd(self):
-        r_str = ""
-        path = self.path
-        for p in self.path_yd():
-            r_str += str(f"{p.name}")
-        return r_str
+    def __iter__(self):
+        for y in self.grid:
+            for x in y:
+                yield x
 
     def path_mk(self, start):
-        print("asjkld", start)
         pos = self[start]
-        print(self.path_rd())
-        for s in self.path_yd_rev():
+        # print(">>>>", self.path)
+        for s in self.path.path_yd_rev():
             print(s, "asjkld", pos, type(pos))
             try:
                 print(pos.neighbours, type(s), s)
@@ -224,11 +238,6 @@ class Grid:
                 pos = pos.neighbours[s]
             except:
                 print("AAAAAA")
-
-    def __iter__(self):
-        for y in self.grid:
-            for x in y:
-                yield x
 
     @classmethod
     def fill_grid_from_map(cls, hexlist, cfg):

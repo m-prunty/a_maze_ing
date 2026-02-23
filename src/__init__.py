@@ -6,7 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/01 13:57:24 by maprunty         #+#    #+#              #
-#    Updated: 2026/02/17 20:47:47 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/17 22:18:16 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
@@ -29,7 +29,7 @@ from .amaze import AMaze
 
 __all__ = ["AMaze", "Mlx"]
 __all__ += ["Config"]
-__all__ += ["Cell", "Grid", "Vec2"]
+__all__ += ["Cell", "Grid", "Vec2", "Path"]
 __all__ += ["Generators"]
 __all__ += ["Render"]
 __all__ += ["Options"]
