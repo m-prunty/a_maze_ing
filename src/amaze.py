@@ -60,7 +60,7 @@ class AMaze:
         # self.rend.generate_grid_sprits()
         g = Generators(self.grid, self.config)
         g.gen_grid(Vec2(0, 0))
-        Animations.grid(0.2)
+        Animations.grid(0.02)
         # .launch()
         # self.grid.dump_grid()
         self.maze_tofile(self.config.output_file)
