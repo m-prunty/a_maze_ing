@@ -12,7 +12,7 @@
 """First attempts at the A-Maze-ing project."""
 
 from config import Config
-from graphics import Render_grid
+from graphics import Render_grid, Render_cell, Animations
 from helper import Grid, Vec2
 from mazegen import Generators
 
@@ -30,7 +30,8 @@ class AMaze:
         """TODO: to be defined."""
         self.config = cfg
         self.grid = Grid(self.width, self.height)
-        Render_grid.create_grid(self.grid)
+        Render_grid.load(self.grid, cfg)
+        Render_cell.create()
 
     def __repr__(self):
         cls = self.__class__.__name__
@@ -58,9 +59,10 @@ class AMaze:
         # Render_grid.create_grid(Vec2(self.width, self.height))
         # self.rend.generate_grid_sprits()
         g = Generators(self.grid, self.config)
-        g.animate(Vec2(0, 0))
+        g.gen_grid(Vec2(0, 0))
+        Animations.grid(0.2)
         # .launch()
-        self.grid.dump_grid()
+        # self.grid.dump_grid()
         self.maze_tofile(self.config.output_file)
 
     def maze_tofile(self, filename: str):

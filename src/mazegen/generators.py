@@ -49,7 +49,8 @@ class Generators:
         cell.visited = True
         directions = list(Cell.DIRS.items())
         random.shuffle(directions)
-
+        # print("Generating")
+        # print(pos)
         for direction, (dx, dy) in directions:
             neighbour = grid[cell.loc + Vec2(dx, dy)]
             if not neighbour or neighbour.visited:
@@ -67,7 +68,7 @@ class Generators:
         Raises:
             ExceptionType: When this is raised.
         """
-        Render_grid.render_grid()
+        # Render_grid.render_grid()
         
         self.config.get_pic(1)
         pic = self.config.pic
@@ -145,27 +146,27 @@ class Generators:
                 print("is none")
         return neighbours
 
-    def animate(self, current, delay=0.001):
-        """TODO: Docstring."""
+    def gen_grid(self, current):
+        """TODO: thes becomes open walls and give the hande to the animator"""
         # ANSI clear screen + cursor home
         CLEAR = "\x1b[2J\x1b[H"
         # print(self.grid)
         # print(self.config.exit)
         Generators.open_entry_exit(self.grid[self.config.entry], self.grid)
         Generators.open_entry_exit(self.grid[self.config.exit], self.grid)
-        canva = Render_grid.cells_canva(Vec2(self.grid.width, self.grid.height), Vec2())
+        canva = Render_grid.grid_canva(Vec2(self.grid.width, self.grid.height), Vec2())
+        Render_grid.render_grid(canva)
         self.gen_42(self.config.pic, self.config.pic_scalar)
         pos = self.grid[current].loc
         # print("pos is")
-        # print(pos)
-        Render_cell.render(pos, canva, delay)
+        # Render_cell.render(pos, canva)
 
         random.seed(42)
 
-        for pos in self.gen_rand(self.grid, self.config, pos):
-            Render_cell.render(pos, canva, delay)
-            # time.sleep(delay)
-
+        [pos in self.gen_rand(self.grid, self.config, pos)]
+        # print()
+        # print("Grid properly GENEATED")
+        
         canva.put_canva()
         print(self.config.exit)
 

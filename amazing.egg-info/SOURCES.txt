@@ -13,10 +13,12 @@ src/graphics/__init__.py
 src/graphics/mlx_context.py
 src/graphics/render.py
 src/graphics/assets/textures.py
+src/graphics/engine/animator.py
 src/graphics/engine/canvas.py
 src/graphics/engine/event_loop.py
 src/graphics/engine/renderer.py
 src/graphics/engine/window.py
+src/graphics/game_logic/animations.py
 src/graphics/game_logic/grid_renderer.py
 src/helper/__init__.py
 src/helper/grid_cell.py

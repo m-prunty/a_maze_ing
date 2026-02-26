@@ -6,5 +6,6 @@ libs
 mazegen
 options
 out
+resized
 solving
 src

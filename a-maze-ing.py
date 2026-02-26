@@ -61,7 +61,7 @@ class Start:
                 y > 150 and y < 240):
                 Window.clear_window()
                 self.on_start = False
-                Render_grid.render_grid()
+                # Render_grid.render_grid()
                 # Mlx_context._mlx.mlx_do_sync(Mlx_context.get())
                 self.a.startup()
         
