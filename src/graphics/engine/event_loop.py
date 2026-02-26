@@ -1,7 +1,11 @@
-from graphics import Mlx, Mlx_context, Window
+from graphics import Mlx_context, Window
+import threading
+import time
 
 class Event_loop:
     _events = []
+    _repeatables = []
+    _repeatables = []
     
     @staticmethod
     def launch():
@@ -26,17 +30,46 @@ class Event_loop:
         Mlx_context._mlx.mlx_loop_exit(Mlx_context.get())
     
     @classmethod
-    def do_event(cls, event: callable, params: tuple):
-        # if cls._initialized:
-        #     raise RuntimeError("MlxContext already initialized")
+    def do_event(cls, event: callable, params: tuple=None):
         cls._events.append((event, params))
-        # cls._initialized = True
+
+    @classmethod
+    def do_repeat(cls, event: callable, params: tuple=None, delay=0.3):
+        """ Will stop when function returns -1"""
+        print("param is :", params)
+        cls._repeatables.append([event, delay, time.time() + delay, params])
 
     @classmethod
     def render_event(cls, params):
-        Mlx_context._mlx.mlx_do_sync(Mlx_context.get())
         # Mlx_context._mlx.mlx_do_sync(Mlx_context.get())
+        print(cls._events)
         for event in cls._events:
             event[0](*event[1])
+        # Mlx_context._mlx.mlx_do_sync(Mlx_context.get())
+            
         cls._events.clear()
+        now = time.time()
+        for animation in cls._repeatables:
+            # print("yo")
+            if (now >= animation[2]):
+                if hasattr(animation[3], '__iter__'):
+                    if (animation[0](*animation[2]) == -1):
+                        cls._repeatables.remove(animation)
+                else:
+                    if (animation[0]() == -1):
+                        cls._repeatables.remove(animation)
+                animation[2] = now + animation[1]
+        # cls._repeatables.clear()
         
+            
+			
+    # @classmethod
+    # def run_anim(cls, animation):
+    #     # print(animation[2])
+    #     # if (animation[0] and animation[2] is not None):
+    #     if (hasattr(animation[2], '__iter__')):
+    #         if (animation[0](*animation[2]) != -1):
+    #             cls._repeatables.append(animation)
+    #     else:
+    #         if (animation[0]() != -1):
+    #             cls._repeatables.append(animation)

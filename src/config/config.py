@@ -21,7 +21,7 @@ from helper import Vec2
 maxw = 30
 
 
-@dataclass
+@dataclass 
 class Config:
     maxw = 30
     width: int

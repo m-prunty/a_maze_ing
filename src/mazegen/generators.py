@@ -168,30 +168,30 @@ class Generators:
                 print("Not a neighbour:{k}, {v}: {ae}")
         return neighbours
 
-    def animate(self, current, delay=0.001):
-        """TODO: Docstring."""
+    def gen_grid(self, current):
+        """TODO: thes becomes open walls and give the hande to the animator"""
         # ANSI clear screen + cursor home
         CLEAR = "\x1b[2J\x1b[H"
         # print(self.grid)
         # print(self.config.exit)
         Generators.open_entry_exit(self.grid[self.config.entry], self.grid)
         Generators.open_entry_exit(self.grid[self.config.exit], self.grid)
-        canva = Render_grid.cells_canva(
+        canva = Render_grid.grid_canva(
             Vec2(self.grid.width, self.grid.height), Vec2()
         )
+        Render_grid.render_grid(canva)
         self.gen_42(self.config.pic, self.config.pic_scalar)
         random.seed(self.config.seed)
         pos = self.grid[current].loc
         # print("pos is")
-        # print(pos)
-        Render_cell.render(pos, canva, delay)
+        # Render_cell.render(pos, canva)
 
         random.seed(42)
 
-        for pos in self.gen_rand(self.grid, self.config, self.grid.path, pos):
-            Render_cell.render(pos, canva, delay)
-        # time.sleep(delay)
-        self.animate_path(canva, delay)
-        print(self.grid.path)
+        [pos in self.gen_rand(self.grid, self.config, pos)]
+        # print()
+        # print("Grid properly GENEATED")
+        
+        self.animate_path(canva, 0.0)
         canva.put_canva()
         # print(self.config.exit)
