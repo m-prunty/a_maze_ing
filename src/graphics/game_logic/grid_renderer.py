@@ -92,7 +92,7 @@ class Render_cell:
         cls._init = True
         cls._grid = Render_grid._grid
         cls._tile_siz = Render_grid._tile_siz
-        print(cls._exit, type(cls._exit), cls._entry, type(cls._entry))
+        # print(cls._exit, type(cls._exit), cls._entry, type(cls._entry))
         # cls._canva = Canvas(Vec2(cls._tile_siz.x * 3, cls._tile_siz.y * 3))
 
     @classmethod

@@ -42,7 +42,7 @@ class Event_loop:
     @classmethod
     def render_event(cls, params):
         # Mlx_context._mlx.mlx_do_sync(Mlx_context.get())
-        print(cls._events)
+        # print(cls._events)
         for event in cls._events:
             event[0](*event[1])
         # Mlx_context._mlx.mlx_do_sync(Mlx_context.get())

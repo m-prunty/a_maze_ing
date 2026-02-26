@@ -84,7 +84,7 @@ class Generators:
         for dir_ in self.grid.path.path_yd_rev():
             print(">>>", pos)
             pos += dir_.v()
-            Render_cell.render(pos, canva, delay)
+            # Render_cell.render(pos, canva)
             # rend.render_cell(pos, self.grid, 3, 1)
 
     def gen_42(self, pic: list[bin], pic_scalar: int):
@@ -95,7 +95,7 @@ class Generators:
         Raises:
             ExceptionType: When this is raised.
         """
-        Render_grid.render_grid()
+        # Render_grid.render_grid()
 
         self.config.get_pic(1)
         pic = self.config.pic
@@ -188,7 +188,7 @@ class Generators:
 
         random.seed(42)
 
-        [pos in self.gen_rand(self.grid, self.config, pos)]
+        [pos in self.gen_rand(self.grid, self.config, Path(), pos)]
         # print()
         # print("Grid properly GENEATED")
         
