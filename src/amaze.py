@@ -6,7 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/24 07:55:50 by maprunty         #+#    #+#              #
-#    Updated: 2026/02/04 22:18:02 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/28 02:23:15 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """First attempts at the A-Maze-ing project."""
@@ -59,7 +59,7 @@ class AMaze:
         # Render_grid.create_grid(Vec2(self.width, self.height))
         # self.rend.generate_grid_sprits()
         g = Generators(self.grid, self.config)
-        g.gen_grid(Vec2(0, 0))
+        g.gen_grid()
         Animations.grid(0.02)
         # .launch()
         # self.grid.dump_grid()

@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/07 03:02:45 by maprunty         #+#    #+#              #
-#    Updated: 2026/02/28 01:08:16 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/28 05:50:06 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
@@ -27,6 +27,7 @@ class BaseGen(ABC):
             grid (Grid): Description.
         """
         self.config = cfg
+        self.rng = random.Random(cfg.seed)
 
     @abstractmethod
     def generate(self, grid: Grid ):
@@ -82,7 +83,7 @@ class DfsGen(BaseGen):
         cell = grid[pos]
         cell.visited = True
         directions = list(cell.neighbours.items())
-        random.shuffle(directions)
+        self.rng.shuffle(directions)
 
         for direction, neighbour in directions:
             if not neighbour or neighbour.visited:
@@ -116,9 +117,9 @@ class PicGen(BaseGen):
         """
         # Render_grid.render_grid()
 
-        self.config.get_pic(2)
+        self.config.get_pic(3)
         pic = self.config.pic
-        wpic = int((math.log2(pic[0])) * (pic_scalar))
+        wpic = int((math.log2(pic[0])) * (pic_scalar)) - 1
         hpic = int(len(pic) * pic_scalar)
         if self.width >= wpic + 2 and self.height >= hpic + 2:
             tleft = self.grid[
@@ -126,9 +127,9 @@ class PicGen(BaseGen):
                 int((self.height - hpic) / 2),
             ]
             bright = self.grid[tleft.loc + Vec2(wpic, hpic)]
-            yield from self.pic_lst(tleft, bright, pic)
+            yield from self._pic_lst(tleft, bright, pic)
 
-    def pic_lst(self, tleft: Vec2, bright: Vec2, pic: list[bin]) -> list[Cell]:
+    def _pic_lst(self, tleft: Vec2, bright: Vec2, pic: list[bin]) -> list[Cell]:
         """Check and set if elements of subgrid from tleft to bright are ispic.
 
         gets a list of cells that will be ispic and steps through marking ispic
@@ -163,6 +164,50 @@ class PicGen(BaseGen):
             j += 1
         yield from r_lst
 
+class PathGen(BaseGen):
+    def generate(self, grid):
+        super().generate(grid)
+        yield from self._path()
+
+    def _path(self):
+        pos = self.config.entry
+        #        print("lkjahskjdhjaslkjdlkj", len(self.grid.path))
+        # self.grid.path_mk(pos)
+        print("hjasgjdgj", self.grid.path)
+        for dir_ in self.grid.path.path_yd_rev():
+            print(">>>", pos)
+            pos += dir_.v()
+            yield pos
+            # Render_cell.render(pos, canva)
+            # rend.render_cell(pos, self.grid, 3, 1)
+
+
+class PrimGen(BaseGen):
+    def generate(self, grid):
+        super().generate(grid)
+        yield from self._prim()
+
+    def _prim(self):
+        head = self.entry_cell
+        head.visited = True
+        visited = {head}
+        frontier = {v for k,v in head.neighbours.items() }
+        while(frontier):
+            cell = frontier.pop()
+            print(cell)
+            v = [k for k,c in cell.neighbours.items() if c and c.visited and not c.ispic]
+            self.rng.shuffle(v)
+            direction = v[0]
+            neighbour = cell.neighbours[direction]
+
+            cell.rm_wall(direction)
+            neighbour.rm_wall(direction.opps())
+            cell.visited = True
+
+            visited |= {cell}
+            frontier |= {*[n for n in cell.neighbours.values() if n and not n.visited ]}
+            #print(frontier)
+            yield frontier
 
 class Generators:
     """TODO: Summary of the class.
@@ -177,39 +222,21 @@ class Generators:
         self.grid = grid
         self.config = cfg
 
-    def animate_path(self, canva, delay):
-        pos = self.config.entry
-        #        print("lkjahskjdhjaslkjdlkj", len(self.grid.path))
-        # self.grid.path_mk(pos)
-        print("hjasgjdgj", self.grid.path)
-        for dir_ in self.grid.path.path_yd_rev():
-            print(">>>", pos)
-            pos += dir_.v()
-            # Render_cell.render(pos, canva)
-            # rend.render_cell(pos, self.grid, 3, 1)
 
-    def gen_grid(self, current):
+    def gen_grid(self):
         """TODO: thes becomes open walls and give the hande to the animator"""
-        # ANSI clear screen + cursor home
-        CLEAR = "\x1b[2J\x1b[H"
-        # print(self.grid)
-        # print(self.config.exit)
-        canva = Render_grid.grid_canva(
-            Vec2(self.grid.width, self.grid.height), Vec2()
-        )
-        Render_grid.render_grid(canva)
-#        self.gen_42(self.config.pic, self.config.pic_scalar)
-        random.seed(self.config.seed)
-        pos = self.grid[current].loc
-        # print("pos is")
-        # Render_cell.render(pos, canva)
         pic = PicGen(self.config)
-        print(">", [*pic.generate(self.grid)])
+        [*pic.generate(self.grid)]
 
-        dfs = DfsGen(self.config)
-        print(">>", [*dfs.generate(self.grid)])
+        #dfs = DfsGen(self.config)
+        #[*dfs.generate(self.grid)]
+
+        prim = PrimGen(self.config)
+        [*prim.generate(self.grid)]
+        
+        path = PathGen(self.config)
+        [*path.generate(self.grid)]
         # print()
         # print("Grid properly GENEATED")
         # self.animate_path(canva, 0.0)
-        canva.put_canva()
         # print(self.config.exit)

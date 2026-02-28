@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:38:19 by maprunty         #+#    #+#              #
-#    Updated: 2026/02/09 23:51:36 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/28 04:51:03 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """TODO: Short module summary.
@@ -110,13 +110,16 @@ class Cell:
     @property
     def neighbours(self) -> dict[Dir, "Cell"]:
         return self._neighbours
-
+    
+    @neighbours.setter
     def get_neighbours(self, grid) -> dict[Dir, "Cell"]:
         """Doc"""
         self._neighbours: dict[Dir, Cell] = {}
         for k in Dir:
             try:
-                self._neighbours.update({k: grid[k.v() + self.loc]})
+                if grid.isvalid(k.v() + self.loc):
+                    # print(k.v()+self.loc)
+                    self._neighbours.update({k: grid[k.v() + self.loc]})
             except AttributeError:
                 print("is none")
         # print("   ?????", self._neighbours)
@@ -187,7 +190,7 @@ class Path:
     def path_yd_rev(self):
         path = []
         for p in self.path_yd():
-            path += [p]
+            path += [Dir(p)]
         path.reverse()
         for p in path:
             yield p
@@ -221,6 +224,11 @@ class Grid:
         except ValueError as ve:
             print(f"Grid key error:{key} not a valid tuple {ve}")
             return None
+
+    def isvalid(self, v:Vec2):
+        if 0 <= v.x <= self.width and 0 <= v.y <= self.height:
+            return v
+        return 0
 
     def __iter__(self):
         for y in self.grid:
@@ -259,7 +267,7 @@ class Grid:
     @staticmethod
     def get_cell_neighbours(grid):
         for c in grid:
-            c.get_neighbours(grid)
+            c.get_neighbours = grid
 
     #
     #    @property
