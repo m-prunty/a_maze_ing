@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/07 03:02:45 by maprunty         #+#    #+#              #
-#    Updated: 2026/02/22 17:17:05 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/28 01:08:16 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
@@ -17,25 +17,25 @@ import random
 from config import Config
 from graphics import Render_cell, Render_grid
 from helper import Cell, Dir, Grid, Path, Vec2
+from abc import ABC, abstractmethod
 
-
-class Generators:
-    """TODO: Summary of the class.
-
-    Optional longer descrgiption.
-
-    Attributes:
-        attr (type): Description.
-    """
-
-    def __init__(self, grid: Grid, cfg: Config) -> None:
+class BaseGen(ABC):
+    def __init__(self, cfg: Config) -> None:
         """TODO: init summary for Generators.
 
         Args:
             grid (Grid): Description.
         """
-        self.grid = grid
         self.config = cfg
+
+    @abstractmethod
+    def generate(self, grid: Grid ):
+        self.grid = grid
+        self.entry_cell = self.grid[self.config.entry]
+        self.exit_cell = self.grid[self.config.exit]
+
+        self.open_entry_exit(self.entry_cell, self.grid)
+        self.open_entry_exit(self.exit_cell, self.grid)
 
     @property
     def width(self):
@@ -47,8 +47,30 @@ class Generators:
         """Get HEIGHT from config file."""
         return self.config.height
 
-    @staticmethod
-    def gen_rand(grid: Grid, cfg: Config, path: Path, pos: Vec2 = Vec2(0, 0)):
+    def open_entry_exit(self,cell: Cell, grid: Grid):
+        """Open entry/exits gaps on border."""
+        if cell:
+            if cell.loc.x == 0:
+                cell.rm_wall(Dir.W)
+            elif cell.loc.x == grid.width - 1:
+                cell.rm_wall(Dir.E)
+            elif cell.loc.y == 0:
+                cell.rm_wall(Dir.N)
+            elif cell.loc.y == grid.height - 1:
+                cell.rm_wall(Dir.S)
+        else:
+            print(Exception(f"cell={cell}; dosent exist"))
+
+
+
+class DfsGen(BaseGen):
+    def generate(self, grid: Grid):
+        super().generate(grid)
+        start = self.config.entry
+        path = Path()
+        yield from self._dfs(grid, path, start)
+
+    def _dfs(self, grid: Grid, path: Path, pos: Vec2 = Vec2(0, 0)):
         """TODO: Docstring for gen_rand.
 
         Args:
@@ -67,27 +89,24 @@ class Generators:
                 continue
             cell.rm_wall(direction)
             neighbour.rm_wall(direction.opps())
-
-            if neighbour.loc == cfg.exit:
-                print("p>>>>> = ", grid.path, direction, path)
-                grid.path = path
-            else:
-                path = path.add_rec(direction)
+            if not self.exit_cell.visited:
+                if neighbour.loc == self.config.exit:
+                    print("p>>>>> = ", grid.path, direction, path)
+                    grid.path = path
+                else:
+                    path = path.add_rec(direction)
             yield neighbour.loc
-            yield from Generators.gen_rand(grid, cfg, path, neighbour.loc)
+            yield from self._dfs(grid, path, neighbour.loc)
 
-    def animate_path(self, canva, delay):
-        pos = self.config.entry
-        #        print("lkjahskjdhjaslkjdlkj", len(self.grid.path))
-        # self.grid.path_mk(pos)
-        print("hjasgjdgj", self.grid.path)
-        for dir_ in self.grid.path.path_yd_rev():
-            print(">>>", pos)
-            pos += dir_.v()
-            # Render_cell.render(pos, canva)
-            # rend.render_cell(pos, self.grid, 3, 1)
+class PicGen(BaseGen):
 
-    def gen_42(self, pic: list[bin], pic_scalar: int):
+    def generate(self, grid: Grid):
+        super().generate(grid)
+        start = self.config.entry
+        path = Path()
+        yield from self._gen_pic(1)
+
+    def _gen_pic(self, pic_scalar: int):
         """Prep for 42pic Check pic dimension against h / w.
 
         Calculate topleft and botright and passes to pic_lst
@@ -97,7 +116,7 @@ class Generators:
         """
         # Render_grid.render_grid()
 
-        self.config.get_pic(1)
+        self.config.get_pic(2)
         pic = self.config.pic
         wpic = int((math.log2(pic[0])) * (pic_scalar))
         hpic = int(len(pic) * pic_scalar)
@@ -107,7 +126,7 @@ class Generators:
                 int((self.height - hpic) / 2),
             ]
             bright = self.grid[tleft.loc + Vec2(wpic, hpic)]
-            self.pic_lst(tleft, bright, pic)
+            yield from self.pic_lst(tleft, bright, pic)
 
     def pic_lst(self, tleft: Vec2, bright: Vec2, pic: list[bin]) -> list[Cell]:
         """Check and set if elements of subgrid from tleft to bright are ispic.
@@ -128,45 +147,46 @@ class Generators:
         """
         delta = bright.loc - tleft.loc
         # print(tleft, bright, delta, self.config.width, self.config.height)
-        r_lst: list[list[Cell]] = [[] for x in range(delta.y)]
+        r_lst: list[Cell] = []
         j = 0
         while j < delta.y:
-            r_lst[j]: list[Cell] = []
             i = 0
             while i <= delta.x:
                 curr = tleft.loc + (Dir.E.v() * i) + (Dir.S.v() * j)
                 cell = self.grid[curr]
+                r_lst.append(cell.loc)
                 cell.ispic = pic[int(j / self.config.pic_scalar)] & (
                     1 << int((delta.x - i) / self.config.pic_scalar)
                 )
                 cell.visited = cell.ispic
                 i += 1
             j += 1
-        return r_lst
+        yield from r_lst
 
-    def open_entry_exit(cell: Cell, grid: Grid):
-        """Open entry/exits gaps on border."""
-        if cell:
-            if cell.loc.x == 0:
-                cell.rm_wall(Dir.W)
-            elif cell.loc.x == grid.width - 1:
-                cell.rm_wall(Dir.E)
-            if cell.loc.y == 0:
-                cell.rm_wall(Dir.N)
-            elif cell.loc.y == grid.height - 1:
-                cell.rm_wall(Dir.S)
-        else:
-            print(Exception(f"cell={cell}; dosent exist"))
 
-    def neighbour(self, pos: Vec2) -> dict[list[Cell]]:
-        """TODO: Docstring."""
-        neighbours: dict[list[Cell]] = {}
-        for k, v in Cell.DIRS.items():
-            try:
-                neighbours.update({k: self[v + pos].wall})
-            except AttributeError:
-                print("Not a neighbour:{k}, {v}: {ae}")
-        return neighbours
+class Generators:
+    """TODO: Summary of the class.
+
+    Optional longer descrgiption.
+
+    Attributes:
+        attr (type): Description.
+    """
+
+    def __init__(self, grid:Grid, cfg: Config):
+        self.grid = grid
+        self.config = cfg
+
+    def animate_path(self, canva, delay):
+        pos = self.config.entry
+        #        print("lkjahskjdhjaslkjdlkj", len(self.grid.path))
+        # self.grid.path_mk(pos)
+        print("hjasgjdgj", self.grid.path)
+        for dir_ in self.grid.path.path_yd_rev():
+            print(">>>", pos)
+            pos += dir_.v()
+            # Render_cell.render(pos, canva)
+            # rend.render_cell(pos, self.grid, 3, 1)
 
     def gen_grid(self, current):
         """TODO: thes becomes open walls and give the hande to the animator"""
@@ -174,24 +194,22 @@ class Generators:
         CLEAR = "\x1b[2J\x1b[H"
         # print(self.grid)
         # print(self.config.exit)
-        Generators.open_entry_exit(self.grid[self.config.entry], self.grid)
-        Generators.open_entry_exit(self.grid[self.config.exit], self.grid)
         canva = Render_grid.grid_canva(
             Vec2(self.grid.width, self.grid.height), Vec2()
         )
         Render_grid.render_grid(canva)
-        self.gen_42(self.config.pic, self.config.pic_scalar)
+#        self.gen_42(self.config.pic, self.config.pic_scalar)
         random.seed(self.config.seed)
         pos = self.grid[current].loc
         # print("pos is")
         # Render_cell.render(pos, canva)
+        pic = PicGen(self.config)
+        print(">", [*pic.generate(self.grid)])
 
-        random.seed(42)
-
-        [pos in self.gen_rand(self.grid, self.config, Path(), pos)]
+        dfs = DfsGen(self.config)
+        print(">>", [*dfs.generate(self.grid)])
         # print()
         # print("Grid properly GENEATED")
-        
-        self.animate_path(canva, 0.0)
+        # self.animate_path(canva, 0.0)
         canva.put_canva()
         # print(self.config.exit)

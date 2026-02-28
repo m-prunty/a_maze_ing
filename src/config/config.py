@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/03 21:19:22 by maprunty         #+#    #+#              #
-#    Updated: 2026/02/17 22:05:53 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/28 00:43:48 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
@@ -28,7 +28,7 @@ class Config:
     height: int
     entry: Vec2
     exit: Vec2
-    seed: int | None = None
+    seed: int | None = 42 
     perfect: bool | None = None
     pic: list[int] | None = None
     pic_scalar: float | None = 1
