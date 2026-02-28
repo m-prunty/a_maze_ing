@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:38:19 by maprunty         #+#    #+#              #
-#    Updated: 2026/02/28 04:51:03 by maprunty        ###   ########.fr        #
+#    Updated: 2026/02/28 10:30:42 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """TODO: Short module summary.
@@ -35,6 +35,9 @@ class Dir(IntFlag):
 
     def __str__(self):
         return f"{self.name}"
+
+    #def __add__(self, other)-> Self:
+
 
     def opps(self) -> "Dir":
         return {
@@ -74,7 +77,6 @@ class Cell:
         self.loc = loc
         self.ispath = False
         self.ispic = False
-        self.ispath = False
         self.visited = False
 
     # @property
@@ -105,6 +107,7 @@ class Cell:
 
     @loc.setter
     def loc(self, value: Vec2):
+        self.x, self.y = value
         self._loc = value
 
     @property
@@ -146,6 +149,11 @@ class Cell:
     def rm_wall(self, direction):
         """TODO: Docstring."""
         self.wall &= ~direction
+    
+    def rm_wall_nb(self,direction):
+        neighbour = self.neighbours[direction]
+        self.rm_wall(direction)
+        neighbour.rm_wall(direction.opps())
 
 
 class Path:
@@ -153,7 +161,7 @@ class Path:
     CELL_BITS = 4
     CELL_MASK = (1 << CELL_BITS) - 1
 
-    def __init__(self, bits: Dir = Dir.non):
+    def __init__(self, bits: Dir = Dir.non,loc: Vec2 = Vec2(0,0)):
         self._bits = bits
 
     def __str__(self):
@@ -169,9 +177,13 @@ class Path:
         # print(f"{self.bits:b}")
         return self._bits
 
-    def add(self, dir_: Dir):
+    def __add__(self, dir_: Dir):
         # print(dir_, "3", self._bits << self.CELL_BITS | dir_)
+        return (self._bits << self.CELL_BITS) | dir_
+
+    def add(self, dir_: Dir):
         self._bits = (self._bits << self.CELL_BITS) | dir_
+
 
     def add_rec(self, dir_: Dir):
         return Path((self._bits << self.CELL_BITS) | dir_)
