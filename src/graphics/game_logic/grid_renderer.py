@@ -111,6 +111,8 @@ class Render_cell:
             special = 0
         if (cls._grid[pos].ispic):
             color = 1
+        elif (cls._grid[pos].ispath):
+            color = 0
         else:
             color = 2 # TODO: make a function to use the right color in here
         

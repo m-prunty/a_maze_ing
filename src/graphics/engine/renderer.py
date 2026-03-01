@@ -22,7 +22,7 @@ class Renderer:
     @classmethod
     def render_image_ptr(cls, image_ptr: int, place: Vec2):
         Event_loop.do_event(cls.render_image_ptr_event, (image_ptr, place))
-        print("hello")
+        #print("hello")
          
     @staticmethod
     def render_image_ptr_event(image_ptr: int, place: Vec2):
