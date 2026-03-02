@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:38:19 by maprunty         #+#    #+#              #
-#    Updated: 2026/02/28 10:30:42 by maprunty        ###   ########.fr        #
+#    Updated: 2026/03/02 06:50:17 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """TODO: Short module summary.
@@ -114,17 +114,17 @@ class Cell:
     def neighbours(self) -> dict[Dir, "Cell"]:
         return self._neighbours
     
-    @neighbours.setter
     def get_neighbours(self, grid) -> dict[Dir, "Cell"]:
         """Doc"""
         self._neighbours: dict[Dir, Cell] = {}
+        print(type(grid))
         for k in Dir:
             try:
                 if grid.isvalid(k.v() + self.loc):
                     # print(k.v()+self.loc)
                     self._neighbours.update({k: grid[k.v() + self.loc]})
-            except AttributeError:
-                print("is none")
+            except AttributeError as ae:
+                print(f"Neighbours is none {ae}")
         # print("   ?????", self._neighbours)
         return self._neighbours
 
@@ -219,7 +219,7 @@ class Grid:
             [Cell(Vec2(x, y)) for x in range(self.width)]
             for y in range(self.height)
         ]
-        self.get_cell_neighbours(self)
+        self.get_cell_neighbours()
 
     def __getitem__(self, key):
         """TODO: Docstring."""
@@ -245,6 +245,7 @@ class Grid:
     def __iter__(self):
         for y in self.grid:
             for x in y:
+                print("aaaa", x,y)
                 yield x
 
     def path_mk(self, start):
@@ -276,10 +277,10 @@ class Grid:
         hexlist = [[f"{hex(c.wall)[2:]}" for c in r] for r in self.grid]
         return hexlist
 
-    @staticmethod
-    def get_cell_neighbours(grid):
-        for c in grid:
-            c.get_neighbours = grid
+    def get_cell_neighbours(self):
+        for c in self:
+            print(c)
+            c.get_neighbours(self)
 
     #
     #    @property
