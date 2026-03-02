@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/07 03:02:45 by maprunty         #+#    #+#              #
-#    Updated: 2026/03/01 02:33:20 by maprunty        ###   ########.fr        #
+#    Updated: 2026/03/01 05:01:02 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
@@ -26,6 +26,7 @@ class MazeEvent:
     cell: Cell
     parent: Cell| None = None
     _dir: Dir| None = None
+    config: Config| None = None
 
 class BaseStage(Protocol):
     def generate(self, e: MazeEvent) -> Any:
@@ -37,19 +38,6 @@ class IOStage:
         self._open_entry_exit(e.cell)
         return e 
 
-    def _open_entry_exit(self,cell: Cell):
-        """Open entry/exits gaps on border."""
-        if cell:
-            if cell.loc.x == 0:
-                cell.rm_wall_nb(Dir.W)
-            elif cell.loc.x == grid.width - 1:
-                cell.rm_wall_nb(Dir.E)
-            elif cell.loc.y == 0:
-                cell.rm_wall_nb(Dir.N)
-            elif cell.loc.y == grid.height - 1:
-                cell.rm_wall_nb(Dir.S)
-        else:
-            print(Exception(f"cell={cell}; dosent exist"))
 
 class MkStage:
     MKDCT = {
@@ -81,23 +69,41 @@ class BaseGen(ABC):
             grid (Grid): Description.
         """
         self.config = cfg
-        self.rng = random.Random(cfg.seed)
+        self.rng = random.Random(0)#cfg.seed)
         self.stages: list[BaseStage] = []
 
     def add_stage(self, stage: BaseStage) -> None:
         self.stages.append(stage)
+
 
     @abstractmethod
     def generate(self, grid: Grid ):
         self.grid = grid
         self.entry_cell = self.grid[self.config.entry]
         self.exit_cell = self.grid[self.config.exit]
-        print(">>", [s for s in self.stages])
+        self._open_entry_exit(self.entry_cell)
+        self._open_entry_exit(self.exit_cell)
+        #print(">>", [s for s in self.stages])
         #print(self.stages[0])
     
     def _dispatch(self, event: MazeEvent):
         for stage in self.stages:
             stage.generate(event)
+
+    def _open_entry_exit(self,cell: Cell):
+        """Open entry/exits gaps on border."""
+        if cell and not cell.visited:
+            if cell.loc.x == 0:
+                cell.rm_wall(Dir.W)
+            elif cell.loc.x == self.grid.width - 1:
+                cell.rm_wall(Dir.E)
+            elif cell.loc.y == 0:
+                cell.rm_wall(Dir.N)
+            elif cell.loc.y == self.grid.height - 1:
+                cell.rm_wall(Dir.S)
+            #cell.visited = True
+        else:
+            print(Exception(f"cell={cell}; dosent exist"))
 
     @property
     def width(self):
@@ -136,7 +142,7 @@ class DfsGen(BaseGen):
             if not neighbour or neighbour.visited:
                 continue
 
-            self._dispatch(MazeEvent(cell,neighbour, direction))
+            self._dispatch(MazeEvent(cell, neighbour, direction))
             yield neighbour.loc
             yield from self._dfs(grid, neighbour.loc)
 
@@ -158,22 +164,22 @@ class PicGen(BaseGen):
         """
         # Render_grid.render_grid()
 
-        self.config.get_pic(1)
+        self.config.get_pic(3)
         pic = self.config.pic
-        wpic = int((math.log2(pic[0])) * (pic_scalar)) - 1 
+        wpic = int(math.log2(max(pic)) * (pic_scalar)) - 1 
         hpic = int(len(pic) * pic_scalar)
-        print("pic>>>>", wpic, self.width, pic_scalar)
+        #print("pic>>>>", wpic, self.width, pic_scalar)
         mx = max(wpic, hpic)
         mn = min(self.height, self.width)
-        print(mx, int(mn / 5) * 3)
+        #print(mx, int(mn / 5) * 3)
         if ( mx < int(mn / 5) * 3):
             pic_scalar = int(((mn / 5) * 3 )/ mx) 
-            wpic = int((math.log2(pic[0])) * (pic_scalar)) - 1 
+            wpic = int((math.log2(max(pic))) * (pic_scalar)) - 1 
             hpic = int(len(pic) * pic_scalar)
         self.config.pic_scalar = pic_scalar
 
-        print("pic>>>>", wpic, self.width, pic_scalar)
-        print("pic>>>>", hpic, self.height)
+        #print("pic>>>>", wpic, self.width, pic_scalar)
+        #print("pic>>>>", hpic, self.height)
         if self.width >= wpic + 2 and self.height >= hpic + 2:
             tleft = self.grid[
                 int((self.width - wpic) / 2),
@@ -223,21 +229,21 @@ class PicGen(BaseGen):
             j += 1
         yield from r_lst
 
-class PathGen(BaseGen):
-    def generate(self, grid):
-        super().generate(grid)
-        yield from self._path()
-
-    def _path(self):
-        from time import time 
-        pos = self.config.entry
-        self.grid[pos].ispath = True 
-        for dir_ in self.grid.path.path_yd_rev():
-            print(">>>", pos)
-            self.grid[pos].ispath = True 
-            yield self.grid[pos]
-            pos += dir_.v()
-
+# class PathGen(BaseGen):
+#    def generate(self, grid):
+#        super().generate(grid)
+#        yield from self._path()
+# 
+#    def _path(self):
+#        from time import time 
+#        pos = self.config.entry
+#        self.grid[pos].ispath = True 
+#        for dir_ in self.grid.path.path_yd_rev():
+#            print(">>>", pos)
+#            self.grid[pos].ispath = True 
+#            yield self.grid[pos]
+#            pos += dir_.v()
+# 
 
 class PrimGen(BaseGen):
     """Prims Algo.
@@ -275,9 +281,9 @@ Good For
         frontier = {v for k,v in head.neighbours.items() }
         while(frontier):
             cell = frontier.pop()
-            print(cell)
+            #print(cell)
             v = [k for k,c in cell.neighbours.items() if c and c.visited and not c.ispic]
-            print(v)
+            #print(v)
             self.rng.shuffle(v)
             direction = v[0] if len(v) else None 
             neighbour = cell.neighbours[direction] if direction else None

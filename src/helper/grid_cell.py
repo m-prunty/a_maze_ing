@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:38:19 by maprunty         #+#    #+#              #
-#    Updated: 2026/02/28 10:30:42 by maprunty        ###   ########.fr        #
+#    Updated: 2026/03/02 05:39:02 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """TODO: Short module summary.
@@ -79,9 +79,6 @@ class Cell:
         self.ispic = False
         self.visited = False
 
-    # @property
-    # def scale_factor(self, tile_siz):
-    #     return tile_siz.x * 2 + i * tile_siz.x
     def debug(self):
         r_str = ""
         for k, v in vars(self).items():
@@ -110,11 +107,7 @@ class Cell:
         self.x, self.y = value
         self._loc = value
 
-    @property
-    def neighbours(self) -> dict[Dir, "Cell"]:
-        return self._neighbours
     
-    @neighbours.setter
     def get_neighbours(self, grid) -> dict[Dir, "Cell"]:
         """Doc"""
         self._neighbours: dict[Dir, Cell] = {}
@@ -219,7 +212,7 @@ class Grid:
             [Cell(Vec2(x, y)) for x in range(self.width)]
             for y in range(self.height)
         ]
-        self.get_cell_neighbours(self)
+        self.get_cell_neighbours()
 
     def __getitem__(self, key):
         """TODO: Docstring."""
@@ -245,6 +238,7 @@ class Grid:
     def __iter__(self):
         for y in self.grid:
             for x in y:
+                print("aaaa", x,y)
                 yield x
 
     def path_mk(self, start):
@@ -276,10 +270,9 @@ class Grid:
         hexlist = [[f"{hex(c.wall)[2:]}" for c in r] for r in self.grid]
         return hexlist
 
-    @staticmethod
-    def get_cell_neighbours(grid):
-        for c in grid:
-            c.get_neighbours = grid
+    def get_cell_neighbours(self):
+        for c in self:
+            c.get_neighbours(self.grid)
 
     #
     #    @property
