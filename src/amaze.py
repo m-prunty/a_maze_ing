@@ -12,7 +12,7 @@
 """First attempts at the A-Maze-ing project."""
 
 from config import Config
-from graphics import Render_grid, Render_cell, Animations
+from graphics import Render_grid, Render_cell, Animations, Event_loop
 from helper import Grid, Vec2
 from mazegen import Generators
 
@@ -61,9 +61,17 @@ class AMaze:
         g = Generators(self.grid, self.config)
         g.gen_grid(Vec2(0, 0))
         Animations.grid(0.02)
-        # .launch()
-        # self.grid.dump_grid()
+        self.is_a_path = False
+        Event_loop.add_key_hook(self.launch_animation, None)
         self.maze_tofile(self.config.output_file)
+
+
+    def launch_animation(self, key: int, dummy):
+        if key == 32 and not self.is_a_path:
+            Animations.path(0.2)
+            self.is_a_path = True
+        elif key == 32 and not self.is_a_path:
+            print(key)
 
     def maze_tofile(self, filename: str):
         hexlist = self.grid.dump_grid()
