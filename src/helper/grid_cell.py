@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:38:19 by maprunty         #+#    #+#              #
-#    Updated: 2026/03/02 05:39:02 by maprunty        ###   ########.fr        #
+#    Updated: 2026/03/02 07:00:36 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """TODO: Short module summary.
@@ -36,8 +36,7 @@ class Dir(IntFlag):
     def __str__(self):
         return f"{self.name}"
 
-    #def __add__(self, other)-> Self:
-
+    # def __add__(self, other)-> Self:
 
     def opps(self) -> "Dir":
         return {
@@ -107,7 +106,10 @@ class Cell:
         self.x, self.y = value
         self._loc = value
 
-    
+    @property
+    def neighbours(self):
+        return self._neighbours
+
     def get_neighbours(self, grid) -> dict[Dir, "Cell"]:
         """Doc"""
         self._neighbours: dict[Dir, Cell] = {}
@@ -116,8 +118,8 @@ class Cell:
                 if grid.isvalid(k.v() + self.loc):
                     # print(k.v()+self.loc)
                     self._neighbours.update({k: grid[k.v() + self.loc]})
-            except AttributeError:
-                print("is none")
+            except AttributeError as ae:
+                print(f"Neighbours is none {ae}")
         # print("   ?????", self._neighbours)
         return self._neighbours
 
@@ -142,8 +144,8 @@ class Cell:
     def rm_wall(self, direction):
         """TODO: Docstring."""
         self.wall &= ~direction
-    
-    def rm_wall_nb(self,direction):
+
+    def rm_wall_nb(self, direction):
         neighbour = self.neighbours[direction]
         self.rm_wall(direction)
         neighbour.rm_wall(direction.opps())
@@ -154,7 +156,7 @@ class Path:
     CELL_BITS = 4
     CELL_MASK = (1 << CELL_BITS) - 1
 
-    def __init__(self, bits: Dir = Dir.non,loc: Vec2 = Vec2(0,0)):
+    def __init__(self, bits: Dir = Dir.non, loc: Vec2 = Vec2(0, 0)):
         self._bits = bits
 
     def __str__(self):
@@ -176,7 +178,6 @@ class Path:
 
     def add(self, dir_: Dir):
         self._bits = (self._bits << self.CELL_BITS) | dir_
-
 
     def add_rec(self, dir_: Dir):
         return Path((self._bits << self.CELL_BITS) | dir_)
@@ -230,7 +231,7 @@ class Grid:
             print(f"Grid key error:{key} not a valid tuple {ve}")
             return None
 
-    def isvalid(self, v:Vec2):
+    def isvalid(self, v: Vec2):
         if 0 <= v.x <= self.width and 0 <= v.y <= self.height:
             return v
         return 0
@@ -238,7 +239,6 @@ class Grid:
     def __iter__(self):
         for y in self.grid:
             for x in y:
-                print("aaaa", x,y)
                 yield x
 
     def path_mk(self, start):
@@ -272,7 +272,7 @@ class Grid:
 
     def get_cell_neighbours(self):
         for c in self:
-            c.get_neighbours(self.grid)
+            c.get_neighbours(self)
 
     #
     #    @property
