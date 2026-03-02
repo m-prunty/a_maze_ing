@@ -62,6 +62,11 @@ class Render_grid:
         return ret
 
     @classmethod
+    def load_path(cls, path: list[Vec2], texture: int):
+        cls._path = path
+        cls._path_texture = texture
+
+    @classmethod
     def render_grid(cls, canva : Canvas):
         # canva = cls.grid_canva(Vec2(cls._grid.width, cls._grid.height), Vec2())
         for x in range(cls._grid.width):
@@ -92,8 +97,38 @@ class Render_cell:
         cls._init = True
         cls._grid = Render_grid._grid
         cls._tile_siz = Render_grid._tile_siz
-        # print(cls._exit, type(cls._exit), cls._entry, type(cls._entry))
-        # cls._canva = Canvas(Vec2(cls._tile_siz.x * 3, cls._tile_siz.y * 3))
+
+    @classmethod
+    def render_path(cls, iteration: int, canva: Canvas):
+        path = Render_grid._path
+        curent  = path[iteration]
+        print("curent", curent)
+        # make entry tile
+        if iteration != 0:
+            prev = path[iteration - 1]
+            canva.add_image( Render_grid._path_texture,
+                            Vec2(
+                                int(
+                                    curent.x * cls._tile_siz.x * 2
+                                    + (1 - (curent.x - prev.x)) * cls._tile_siz.x
+                                ),
+                                int(
+                                    curent.y * cls._tile_siz.y * 2
+                                    + (1 - (curent.y - prev.y)) * cls._tile_siz.y
+                                )))
+        
+        if iteration != len(path) and iteration != 0:
+            canva.add_image( Render_grid._path_texture,
+                            Vec2(
+                                int(
+                                    curent.x * cls._tile_siz.x * 2
+                                    + 1 * cls._tile_siz.x
+                                ),
+                                int(
+                                    curent.y * cls._tile_siz.y * 2
+                                    + 1 * cls._tile_siz.y
+                                )))
+            Vec2(2, 2)
 
     @classmethod
     def render(cls, pos: Vec2, canva: Canvas):

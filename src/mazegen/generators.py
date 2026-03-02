@@ -460,5 +460,5 @@ class Generators:
 # [*path.generate(self.grid)]
 # print()
 # print("Grid properly GENEATED")
-# self.animate_path(canva, 0.0)
+# # self.animate_path(canva, 0.0)
 # print(self.config.exit)
