@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:38:19 by maprunty         #+#    #+#              #
-#    Updated: 2026/02/09 23:51:36 by maprunty        ###   ########.fr        #
+#    Updated: 2026/03/02 07:00:36 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """TODO: Short module summary.
@@ -35,6 +35,8 @@ class Dir(IntFlag):
 
     def __str__(self):
         return f"{self.name}"
+
+    # def __add__(self, other)-> Self:
 
     def opps(self) -> "Dir":
         return {
@@ -74,12 +76,8 @@ class Cell:
         self.loc = loc
         self.ispath = False
         self.ispic = False
-        self.ispath = False
         self.visited = False
 
-    # @property
-    # def scale_factor(self, tile_siz):
-    #     return tile_siz.x * 2 + i * tile_siz.x
     def debug(self):
         r_str = ""
         for k, v in vars(self).items():
@@ -105,10 +103,11 @@ class Cell:
 
     @loc.setter
     def loc(self, value: Vec2):
+        self.x, self.y = value
         self._loc = value
 
     @property
-    def neighbours(self) -> dict[Dir, "Cell"]:
+    def neighbours(self):
         return self._neighbours
 
     def get_neighbours(self, grid) -> dict[Dir, "Cell"]:
@@ -116,9 +115,11 @@ class Cell:
         self._neighbours: dict[Dir, Cell] = {}
         for k in Dir:
             try:
-                self._neighbours.update({k: grid[k.v() + self.loc]})
-            except AttributeError:
-                print("is none")
+                if grid.isvalid(k.v() + self.loc):
+                    # print(k.v()+self.loc)
+                    self._neighbours.update({k: grid[k.v() + self.loc]})
+            except AttributeError as ae:
+                print(f"Neighbours is none {ae}")
         # print("   ?????", self._neighbours)
         return self._neighbours
 
@@ -144,13 +145,18 @@ class Cell:
         """TODO: Docstring."""
         self.wall &= ~direction
 
+    def rm_wall_nb(self, direction):
+        neighbour = self.neighbours[direction]
+        self.rm_wall(direction)
+        neighbour.rm_wall(direction.opps())
+
 
 class Path:
     __slots__ = ["_bits"]
     CELL_BITS = 4
     CELL_MASK = (1 << CELL_BITS) - 1
 
-    def __init__(self, bits: Dir = Dir.non):
+    def __init__(self, bits: Dir = Dir.non, loc: Vec2 = Vec2(0, 0)):
         self._bits = bits
 
     def __str__(self):
@@ -166,8 +172,11 @@ class Path:
         # print(f"{self.bits:b}")
         return self._bits
 
-    def add(self, dir_: Dir):
+    def __add__(self, dir_: Dir):
         # print(dir_, "3", self._bits << self.CELL_BITS | dir_)
+        return (self._bits << self.CELL_BITS) | dir_
+
+    def add(self, dir_: Dir):
         self._bits = (self._bits << self.CELL_BITS) | dir_
 
     def add_rec(self, dir_: Dir):
@@ -187,7 +196,7 @@ class Path:
     def path_yd_rev(self):
         path = []
         for p in self.path_yd():
-            path += [p]
+            path += [Dir(p)]
         path.reverse()
         for p in path:
             yield p
@@ -204,7 +213,7 @@ class Grid:
             [Cell(Vec2(x, y)) for x in range(self.width)]
             for y in range(self.height)
         ]
-        self.get_cell_neighbours(self)
+        self.get_cell_neighbours()
 
     def __getitem__(self, key):
         """TODO: Docstring."""
@@ -221,6 +230,11 @@ class Grid:
         except ValueError as ve:
             print(f"Grid key error:{key} not a valid tuple {ve}")
             return None
+
+    def isvalid(self, v: Vec2):
+        if 0 <= v.x <= self.width and 0 <= v.y <= self.height:
+            return v
+        return 0
 
     def __iter__(self):
         for y in self.grid:
@@ -256,10 +270,9 @@ class Grid:
         hexlist = [[f"{hex(c.wall)[2:]}" for c in r] for r in self.grid]
         return hexlist
 
-    @staticmethod
-    def get_cell_neighbours(grid):
-        for c in grid:
-            c.get_neighbours(grid)
+    def get_cell_neighbours(self):
+        for c in self:
+            c.get_neighbours(self)
 
     #
     #    @property

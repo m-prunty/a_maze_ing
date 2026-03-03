@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/03 21:19:22 by maprunty         #+#    #+#              #
-#    Updated: 2026/02/17 22:05:53 by maprunty        ###   ########.fr        #
+#    Updated: 2026/03/01 03:54:55 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
@@ -108,7 +108,6 @@ class Config:
         c_dct["height"] = i - 3
         c_dct["entry"] = Vec2(vlst[0], vlst[1])
         c_dct["exit"] = Vec2(vlst[2], vlst[3])
-        # print(c_dct)
         return cls(**c_dct)
 
     def get_pic(self, select: int):
@@ -128,6 +127,22 @@ class Config:
                 0b101010101010101000100,
                 0b101010101010101110111,
             ]
+        elif select == 3:
+            self.pic = [
+    0b000000011110000011111111,
+    0b000001110100001110000111,
+    0b000111011100000000011100,
+    0b011100111000000011100000,
+    0b111111111100011100000000,
+    0b000011100001110000000000,
+    0b000111000111111110110000,
+    ]
+
+
+
+
+
+
 
     @classmethod
     def cfg_from_file(cls, filename: str):
@@ -149,6 +164,8 @@ class Config:
                         k = k.strip().lower()
                         if "[" in v:
                             v = [e.strip(",[]") for e in (v.split(","))]
+                        elif "None"== v:
+                            v = None
                         elif "," in v:
                             v = v.split(",")
                             v = Vec2(v[0], v[1])

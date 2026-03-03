@@ -7,35 +7,104 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/07 03:02:45 by maprunty         #+#    #+#              #
-#    Updated: 2026/02/22 17:17:05 by maprunty        ###   ########.fr        #
+#    Updated: 2026/03/02 06:58:36 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
 import math
 import random
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Any, Protocol
 
 from config import Config
-from graphics import Render_cell, Render_grid
 from helper import Cell, Dir, Grid, Path, Vec2
 
 
-class Generators:
-    """TODO: Summary of the class.
+@dataclass
+class MazeEvent:
+    cell: Cell
+    parent: Cell | None = None
+    _dir: Dir | None = None
+    config: Config | None = None
 
-    Optional longer descrgiption.
 
-    Attributes:
-        attr (type): Description.
-    """
+class BaseStage(Protocol):
+    def generate(self, e: MazeEvent) -> Any:
+        pass
 
-    def __init__(self, grid: Grid, cfg: Config) -> None:
+
+class IOStage:
+    def generate(self, e: MazeEvent) -> Any:
+        self._open_entry_exit(e.cell)
+        return e
+
+
+class MkStage:
+    MKDCT = {
+        Dir.N: "visited",
+        Dir.S: "ispic",
+        Dir.E: "visited",
+        Dir.W: "visited",
+    }
+
+    def generate(self, e: MazeEvent) -> Any:
+        attr = self.MKDCT[e._dir] if e._dir else ""
+        setattr(e.cell, attr, True)
+        return e.cell
+
+
+class RmStage:
+    def generate(self, e: MazeEvent) -> Any:
+        e.cell.rm_wall_nb(e._dir)
+        return e.cell
+
+    def neighbours(self):
+        pass
+
+
+class BaseStrat(ABC):
+    def __init__(self, cfg: Config) -> None:
         """TODO: init summary for Generators.
 
         Args:
             grid (Grid): Description.
         """
-        self.grid = grid
         self.config = cfg
+        self.rng = random.Random(0)  # cfg.seed)
+        self.stages: list[BaseStage] = []
+
+    def add_stage(self, stage: BaseStage) -> None:
+        self.stages.append(stage)
+
+    @abstractmethod
+    def generate(self, grid: Grid):
+        self.grid = grid
+        self.entry_cell = self.grid[self.config.entry]
+        self.exit_cell = self.grid[self.config.exit]
+        self._open_entry_exit(self.entry_cell)
+        self._open_entry_exit(self.exit_cell)
+        # print(">>", [s for s in self.stages])
+        # print(self.stages[0])
+
+    def _dispatch(self, event: MazeEvent):
+        for stage in self.stages:
+            stage.generate(event)
+
+    def _open_entry_exit(self, cell: Cell):
+        """Open entry/exits gaps on border."""
+        if cell and not cell.visited:
+            if cell.loc.x == 0:
+                cell.rm_wall(Dir.W)
+            elif cell.loc.x == self.grid.width - 1:
+                cell.rm_wall(Dir.E)
+            elif cell.loc.y == 0:
+                cell.rm_wall(Dir.N)
+            elif cell.loc.y == self.grid.height - 1:
+                cell.rm_wall(Dir.S)
+            # cell.visited = True
+        else:
+            print(Exception(f"cell={cell}; dosent exist"))
 
     @property
     def width(self):
@@ -47,8 +116,15 @@ class Generators:
         """Get HEIGHT from config file."""
         return self.config.height
 
-    @staticmethod
-    def gen_rand(grid: Grid, cfg: Config, path: Path, pos: Vec2 = Vec2(0, 0)):
+
+class Dfs(BaseStrat):
+    def generate(self, grid: Grid):
+        super().generate(grid)
+        start = self.config.entry
+        path = Path()
+        yield from self._dfs(grid, start)
+
+    def _dfs(self, grid: Grid, pos: Vec2 = Vec2(0, 0)):
         """TODO: Docstring for gen_rand.
 
         Args:
@@ -60,34 +136,25 @@ class Generators:
         cell = grid[pos]
         cell.visited = True
         directions = list(cell.neighbours.items())
-        random.shuffle(directions)
+        self.rng.shuffle(directions)
 
         for direction, neighbour in directions:
             if not neighbour or neighbour.visited:
                 continue
-            cell.rm_wall(direction)
-            neighbour.rm_wall(direction.opps())
 
-            if neighbour.loc == cfg.exit:
-                print("p>>>>> = ", grid.path, direction, path)
-                grid.path = path
-            else:
-                path = path.add_rec(direction)
+            self._dispatch(MazeEvent(cell, neighbour, direction))
             yield neighbour.loc
-            yield from Generators.gen_rand(grid, cfg, path, neighbour.loc)
+            yield from self._dfs(grid, neighbour.loc)
 
-    def animate_path(self, canva, delay):
-        pos = self.config.entry
-        #        print("lkjahskjdhjaslkjdlkj", len(self.grid.path))
-        # self.grid.path_mk(pos)
-        print("hjasgjdgj", self.grid.path)
-        for dir_ in self.grid.path.path_yd_rev():
-            print(">>>", pos)
-            pos += dir_.v()
-            # Render_cell.render(pos, canva)
-            # rend.render_cell(pos, self.grid, 3, 1)
 
-    def gen_42(self, pic: list[bin], pic_scalar: int):
+class Pic(BaseStrat):
+    def generate(self, grid: Grid):
+        super().generate(grid)
+        start = self.config.entry
+        path = Path()
+        yield from self._gen_pic(1)
+
+    def _gen_pic(self, pic_scalar: int):
         """Prep for 42pic Check pic dimension against h / w.
 
         Calculate topleft and botright and passes to pic_lst
@@ -97,19 +164,33 @@ class Generators:
         """
         # Render_grid.render_grid()
 
-        self.config.get_pic(1)
+        self.config.get_pic(3)
         pic = self.config.pic
-        wpic = int((math.log2(pic[0])) * (pic_scalar))
+        wpic = int(math.log2(max(pic)) * (pic_scalar)) - 1
         hpic = int(len(pic) * pic_scalar)
+        # print("pic>>>>", wpic, self.width, pic_scalar)
+        mx = max(wpic, hpic)
+        mn = min(self.height, self.width)
+        # print(mx, int(mn / 5) * 3)
+        if mx < int(mn / 5) * 3:
+            pic_scalar = int(((mn / 5) * 3) / mx)
+            wpic = int((math.log2(max(pic))) * (pic_scalar)) - 1
+            hpic = int(len(pic) * pic_scalar)
+        self.config.pic_scalar = pic_scalar
+
+        # print("pic>>>>", wpic, self.width, pic_scalar)
+        # print("pic>>>>", hpic, self.height)
         if self.width >= wpic + 2 and self.height >= hpic + 2:
             tleft = self.grid[
                 int((self.width - wpic) / 2),
                 int((self.height - hpic) / 2),
             ]
             bright = self.grid[tleft.loc + Vec2(wpic, hpic)]
-            self.pic_lst(tleft, bright, pic)
+            yield from self._pic_lst(tleft, bright, pic)
 
-    def pic_lst(self, tleft: Vec2, bright: Vec2, pic: list[bin]) -> list[Cell]:
+    def _pic_lst(
+        self, tleft: Vec2, bright: Vec2, pic: list[bin]
+    ) -> list[Cell]:
         """Check and set if elements of subgrid from tleft to bright are ispic.
 
         gets a list of cells that will be ispic and steps through marking ispic
@@ -120,6 +201,7 @@ class Generators:
             bright (Vec2): bottom right coordinates of subgroup
             pic (list[bin]): binary representation of a pic
 
+
         Returns:
             list[Cell]: subgroup of Cells within range(topleft, botright)
 
@@ -128,70 +210,255 @@ class Generators:
         """
         delta = bright.loc - tleft.loc
         # print(tleft, bright, delta, self.config.width, self.config.height)
-        r_lst: list[list[Cell]] = [[] for x in range(delta.y)]
+        r_lst: list[Cell] = []
         j = 0
         while j < delta.y:
-            r_lst[j]: list[Cell] = []
             i = 0
             while i <= delta.x:
                 curr = tleft.loc + (Dir.E.v() * i) + (Dir.S.v() * j)
                 cell = self.grid[curr]
-                cell.ispic = pic[int(j / self.config.pic_scalar)] & (
+                r_lst.append(cell.loc)
+                # cell.ispic = pic[int(j / self.config.pic_scalar)] & (
+                #    1 << int((delta.x - i) / self.config.pic_scalar)
+                # )
+                if pic[int(j / self.config.pic_scalar)] & (
                     1 << int((delta.x - i) / self.config.pic_scalar)
-                )
-                cell.visited = cell.ispic
+                ):
+                    self._dispatch(MazeEvent(cell=cell, _dir=Dir.N))
+                    self._dispatch(MazeEvent(cell=cell, _dir=Dir.S))
+                # cell.visited = cell.ispic
                 i += 1
             j += 1
-        return r_lst
+        yield from r_lst
 
-    def open_entry_exit(cell: Cell, grid: Grid):
-        """Open entry/exits gaps on border."""
-        if cell:
-            if cell.loc.x == 0:
-                cell.rm_wall(Dir.W)
-            elif cell.loc.x == grid.width - 1:
-                cell.rm_wall(Dir.E)
-            if cell.loc.y == 0:
-                cell.rm_wall(Dir.N)
-            elif cell.loc.y == grid.height - 1:
-                cell.rm_wall(Dir.S)
-        else:
-            print(Exception(f"cell={cell}; dosent exist"))
 
-    def neighbour(self, pos: Vec2) -> dict[list[Cell]]:
-        """TODO: Docstring."""
-        neighbours: dict[list[Cell]] = {}
-        for k, v in Cell.DIRS.items():
-            try:
-                neighbours.update({k: self[v + pos].wall})
-            except AttributeError:
-                print("Not a neighbour:{k}, {v}: {ae}")
-        return neighbours
+# class Path(BaseStrat):
+#    def generate(self, grid):
+#        super().generate(grid)
+#        yield from self._path()
+#
+#    def _path(self):
+#        from time import time
+#        pos = self.config.entry
+#        self.grid[pos].ispath = True
+#        for dir_ in self.grid.path.path_yd_rev():
+#            print(">>>", pos)
+#            self.grid[pos].ispath = True
+#            yield self.grid[pos]
+#            pos += dir_.v()
+#
 
-    def gen_grid(self, current):
+
+class Prim(BaseStrat):
+    """Prims Algo.
+
+    https://en.wikipedia.org/wiki/Prim%27s_algorithm
+    chatgpt.com
+    Core Idea
+
+    Maintain frontier cells:
+    - Pick random frontier
+    - Connect to random visited neighbor
+
+    Properties
+    - Many short branches
+    - Very “organic” look
+    - More uniform density than DFS
+    - Still perfect maze
+
+    Complexity
+    - Time: O(N)
+    - Space: O(N)
+
+    Good For
+    - Balanced maze feel
+    - Less corridor bias than DFS
+    """
+
+    def generate(self, grid):
+        super().generate(grid)
+        yield from self._prim()
+
+    def _prim(self):
+        head = self.entry_cell
+        head.visited = True
+        visited = {head}
+        frontier = {v for k, v in head.neighbours.items()}
+        while frontier:
+            cell = frontier.pop()
+            # print(cell)
+            v = [
+                k
+                for k, c in cell.neighbours.items()
+                if c and c.visited and not c.ispic
+            ]
+            print("neighbours>>>>", v)
+            self.rng.shuffle(v)
+            direction = v[0] if len(v) else None
+            neighbour = cell.neighbours[direction] if direction else None
+
+            self._dispatch(MazeEvent(cell, neighbour, direction))
+            cell.visited = True
+
+            visited |= {cell}
+            frontier |= {
+                *[n for n in cell.neighbours.values() if n and not n.visited]
+            }
+            # print(frontier)
+            yield frontier
+
+
+class Sidewinder(BaseStrat):
+    def generate(self, grid):
+        super().generate(grid)
+        yield from self._sidewind()
+
+    def _sidewind(self):
+        """Function generate_sidewinder(grid):
+
+        for each row y in grid:
+
+            run = empty list
+
+            for each cell x in row:
+
+                current = grid[x, y]
+                add current to run
+
+                at_eastern_boundary = (x == grid.width - 1)
+                at_northern_boundary = (y == 0)
+
+                should_close_run =
+                    at_eastern_boundary OR
+                    (NOT at_northern_boundary AND random_boolean())
+
+                if should_close_run:
+
+                    choose random cell from run → member
+
+                    if NOT at_northern_boundary:
+                        carve passage from member to NORTH
+
+                    clear run
+
+                else:
+                    carve passage EAST from current
+        """
+        start = self.config.entry
+        run = [self.grid[start]]
+        e_bound = lambda v: v.x == self.width - 1
+        n_bound = lambda v: v.y == 0
+        for cell in self.grid:
+            run.append(cell)
+            close = (e_bound(cell.loc)) or (
+                not n_bound(cell.loc) and bool(self.rng.getrandbits(1))
+            )
+            self.rng.shuffle(run)
+            r = run.pop()
+            if not r.ispic:
+                if close:
+                    if (
+                        Dir.N in r.neighbours.keys()
+                        and r.neighbours[Dir.N]
+                        and not r.neighbours[Dir.N].ispic
+                    ):
+                        neighbour = r.neighbours[Dir.N]
+                        r.rm_wall(Dir.N)
+                        neighbour.rm_wall(Dir.N.opps())
+                    run = []
+                else:
+                    neighbour = r.neighbours[Dir.E]
+                    if neighbour and not neighbour.ispic:
+                        r.rm_wall(Dir.E)
+                        neighbour.rm_wall(Dir.E.opps())
+            cell.visited = True
+            yield cell
+
+
+class Wilson(BaseStrat):
+    def generate(self, grid):
+        super().generate(grid)
+        yield from self._wilson()
+
+    def _wilson(self):
+        current = self.grid[self.config.entry]
+        ngrid = {*self.grid}
+        path = {current: None, "walls": Path()}
+        print("\n\n>>>>", type(ngrid))
+        while len(ngrid) and current:
+            n = [*current.neighbours]
+            self.rng.shuffle(n)
+            next_cell = current.neighbours[n[0]]
+            if next_cell and next_cell not in path:
+                path[current] = next_cell
+                path["walls"] += next_cell.wall
+                current.visited = True
+                ngrid.discard(current)
+            else:
+                path, r_set = self._rewind(path, next_cell)
+                ngrid |= r_set
+            current = next_cell
+            # print("\n\n>>>>", ngrid)
+            yield current
+
+    def _rewind(self, path, current):
+        curr = current
+        r_set: set = set()
+        while curr in path:
+            tmp = curr
+            print(curr)
+            curr = path[curr]
+            print("pop", path.pop(tmp))
+            curr.visited = False
+        return (path, r_set)
+
+
+class Generators:
+    """TODO: Summary of the class.
+
+    Optional longer descrgiption.
+
+    Attributes:
+        attr (type): Description.
+    """
+
+    ADAPT = {
+        "dfs": Dfs,
+        "prim": Prim,
+        "swinder": Sidewinder,
+        "wilson": Wilson,
+    }
+
+    def __init__(self, grid: Grid, cfg: Config):
+        self.grid = grid
+        self.config = cfg
+        # self.adapters =
+
+    def gen_grid(self):
         """TODO: thes becomes open walls and give the hande to the animator"""
-        # ANSI clear screen + cursor home
-        CLEAR = "\x1b[2J\x1b[H"
-        # print(self.grid)
-        # print(self.config.exit)
-        Generators.open_entry_exit(self.grid[self.config.entry], self.grid)
-        Generators.open_entry_exit(self.grid[self.config.exit], self.grid)
-        canva = Render_grid.grid_canva(
-            Vec2(self.grid.width, self.grid.height), Vec2()
-        )
-        Render_grid.render_grid(canva)
-        self.gen_42(self.config.pic, self.config.pic_scalar)
-        random.seed(self.config.seed)
-        pos = self.grid[current].loc
-        # print("pos is")
-        # Render_cell.render(pos, canva)
+        pic = Pic(self.config)
+        pic.add_stage(MkStage())
+        [*pic.generate(self.grid)]
 
-        random.seed(42)
+        # dfs = Dfs(self.config)
+        # dfs.add_stage(RmStage())
+        # [*dfs.generate(self.grid)]
 
-        [pos in self.gen_rand(self.grid, self.config, Path(), pos)]
-        # print()
-        # print("Grid properly GENEATED")
-        
-        # self.animate_path(canva, 0.0)
-        canva.put_canva()
-        # print(self.config.exit)
+        prim = Prim(self.config)
+        # prim.add_stage(MkStage())
+        prim.add_stage(RmStage())
+        [*prim.generate(self.grid)]
+
+        # swinder = Sidewinder(self.config)
+        # [*swinder.generate(self.grid)]
+
+
+#       wilson = Wilson(self.config)
+#       [*wilson.generate(self.grid)]
+
+# path = Path(self.config)
+# [*path.generate(self.grid)]
+# print()
+# print("Grid properly GENEATED")
+# # self.animate_path(canva, 0.0)
+# print(self.config.exit)

@@ -8,13 +8,14 @@ class Animations:
     def grid(cls, delay=0.01):
         cls._grid_steps = 0
         cls._grid = Render_grid._grid
+        #print(Vec2(cls._grid.width, cls._grid.height))
         # print(Vec2(cls._grid.width, cls._grid.height))
         cls._canvas = Render_grid.grid_canva(Vec2(cls._grid.width, cls._grid.height), Vec2(0, 0))
         Animator.animate(cls.grid_step, None, delay)
 
     @classmethod
     def grid_step(cls):
-        print(cls._grid_steps)
+        #print(cls._grid_steps)
         x = cls._grid.height - 1
         y = cls._grid.width - 1
         ma = max(x, y)
