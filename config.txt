@@ -8,3 +8,4 @@ PIC_SCALAR=1.0
 FILENAME=config.txt
 OUTPUT_FILE=maze.txt
 DELAY=0.01
+COLOR=2
