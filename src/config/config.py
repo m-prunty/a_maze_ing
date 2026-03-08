@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/03 21:19:22 by maprunty         #+#    #+#              #
-#    Updated: 2026/03/08 13:46:14 by maprunty        ###   ########.fr        #
+#    Updated: 2026/03/08 15:21:56 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
@@ -49,11 +49,6 @@ class Config:
         rx = random.randint(0, 1)
         ry = random.randint(0, 1)
         tst = (self.width, self.height)
-        #         print(
-        #             f"test{tst} {vec} {not 0 <= vec.x < tst[0]} or {not 0 <= vec.y < tst[1]}\
-        #  == {not 0 <= vec.x < tst[0] or not 0 <= vec.y < tst[1]}"
-        #         )
-        #         print("aa", vec, tst)
         if not (0 <= vec.x < tst[0]) or not (0 <= vec.y < tst[1]):
             print(f"Wont fit on the grid...{tst} {vec}")
             return Vec2(
