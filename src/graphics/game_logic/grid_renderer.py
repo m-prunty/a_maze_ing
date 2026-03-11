@@ -149,7 +149,7 @@ class Render_cell:
         # elif (cls._grid[pos].ispath):
         #     color = 0
         else:
-            color = 2 # TODO: make a function to use the right color in here
+            color = Render_grid._cfg.color # TODO: make a function to use the right color in here
         
         for i in range(3):
             for y in range(3):

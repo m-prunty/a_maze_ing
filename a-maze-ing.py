@@ -38,7 +38,6 @@ class Start:
         Window.create(Vec2(900, 900), " -- A-maze-ing -- ")
         self.on_start = True
         self.opt = Options()
-        self.opt = Options()
         self.a = AMaze(self.opt.cfg)
         self.render_start()
 
@@ -67,13 +66,14 @@ class Start:
         Event_loop.add_hook(Event_loop.close, 33, None)
 
     def mouse_func(self, button, x, y, _):
+        print(self.on_start)
         if self.on_start:
             if button == 1 and x > 650 and x < 760 and y > 650 and y < 760:
+                self.on_start = False
                 self.opt.render()
-                self.on_start = False
             if button == 1 and x > 300 and x < 600 and y > 150 and y < 240:
-                Window.clear_window()
                 self.on_start = False
+                Window.clear_window()
                 # Render_grid.render_grid()
                 # Mlx_context._mlx.mlx_do_sync(Mlx_context.get())
                 self.a.startup()
