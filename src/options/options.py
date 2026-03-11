@@ -1,5 +1,9 @@
 from annotated_types import Ge, Le
 from graphics import Event_loop, Window, Textures, Renderer
+from typing import Literal, get_origin, get_args
+from dataclasses import fields
+
+
 # from matha
 
 from config import Config
@@ -12,11 +16,19 @@ class Options:
     def __init__(self):
         self.cfg = Config.cfg_from_file("config.txt")
         self.opt_rend = Options_render()
-        for key, val  in self.cfg:
-            print(f"{key} has value:", val)
+        for field  in fields(self.cfg):
+            # print(f"{key} has value:", get_origin(), " args are: ", get_args(val))
             min = None
             max = None
-            for meta in Config.__pydantic_fields__[key].metadata:
+            value = getattr(self.cfg, field.name)
+            annotation = field.type
+            
+            # print("name:", field.name)
+            # print("value:", value)
+            # print("type:", annotation)
+            # for meta in Config.__pydantic_fields__[key].metadata:
+
+            for meta in Config.__pydantic_fields__[field.name].metadata:
                 if isinstance(meta, Ge):
                     # print("ge =", meta.ge)
                     min = meta.ge
@@ -25,11 +37,15 @@ class Options:
                     max = meta.le
             if min is not None and max is not None:
                 print("cursor added")
-                self.opt_rend.add_cursor(key, "", (min, val, max + 1))
-            elif (type(val) is int):
-                self.opt_rend.add_input(key, val, int)
+                self.opt_rend.add_cursor(field.name, "", (min, value, max + 1))
+            elif (annotation is int):
+                self.opt_rend.add_input(field.name, value, int)
+            elif (get_origin(annotation) is Literal):
+                # print("Arguments are: ", get_args(annotation))
+                self.opt_rend.add_dropdown(field.name, value, get_args(annotation))
             	# print()
-                
+        
+        # self.opt_rend.add_dropdown("try", "hi", ("hello", "hi", "wtf"))
         self.is_active = False
     
     def put_to_config(self, fields: list):
@@ -101,6 +117,14 @@ class Options_render:
                                                  Vec2(self.bar_width * 1.05,
                                                       self.bar_height + self.top_padding),
                         						  (0,))[0]
+        self.imgs["Arrows"] = Textures.load(path,"arrow.png",
+                                                 Vec2( self.bar_height,
+                                                       self.bar_height),
+                        						  (180, 270))
+        self.imgs["Drop_back"] = Textures.load(path,"dropdown_back.png",
+                                                 Vec2(self.bar_width * 0.5,
+                                                      self.bar_height * 1.75),
+                        						  (0,))[0]
         self.imgs["Cursor"] = Textures.load(path, "cursor.png",
                                                  Vec2(self.bar_width / 100,
                         						 self.bar_height), (0,))[0]
@@ -123,6 +147,8 @@ class Options_render:
                 self.render_cursor(field)
             if (self.fields[field]["TYPE"] == "input"):
                 self.render_input(field)
+            if (self.fields[field]["TYPE"] == "dropdown"):
+                self.render_dropdown(field)
         
 
     def add_cursor(self, name: str, unit: str, vals: tuple):
@@ -143,14 +169,58 @@ class Options_render:
         """ "vals 0 min, 1 default, 2 max"""
         self.fields[name] = {
             "NAME": name,
-            # "POS": len(self.fields),
             "VAL": val,
             "INPUT": None,
             "INDEX": len(self.fields),
             "DATA_TYPE": type,
             "TYPE": "input"
         }
+        
+    def add_dropdown(self, name: str, val, posibles: list):
+        """ "vals 0 min, 1 default, 2 max"""
+        self.fields[name] = {
+            "NAME": name,
+            # "POS": len(self.fields),
+            "VAL": val,
+            "POSSIBLE": posibles,
+            "INDEX": len(self.fields),
+            "TYPE": "dropdown",
+            "OPEN": False
+        }
     
+    def render_dropdown(self, name: str):
+        # print("yo")
+        if name not in self.fields:
+            print("Field not found !")
+        Renderer.render_text(f'{name}: {self.fields[name]["VAL"]}', Vec2(self.sids_padding * 1.5,
+                                self.height * 0.02 + ((self.text_siz+ self.bar_height + self.top_padding)
+                                                      * self.fields[name]["INDEX"]) + self.scroll))
+        if self.fields[name]["OPEN"]:
+            Renderer.render_image(self.imgs["Arrows"][1],
+                               Vec2(self.sids_padding + len(f'{name}: {self.fields[name]["VAL"]}') * 15,
+                                    self.height * 0.02 + ((self.text_siz+ self.bar_height + self.top_padding)
+                                                      * self.fields[name]["INDEX"]) + self.scroll))
+            i = 1
+            for value in self.fields[name]["POSSIBLE"]:
+                # print(value)
+                Renderer.render_image(self.imgs["Drop_back"], Vec2(int(self.sids_padding * 2),
+                                                    int(self.height * 0.02 + ((self.text_siz + self.bar_height
+                                                                               + self.top_padding) * self.fields[name]["INDEX"]) + self.text_siz * i + self.scroll)))
+                
+                Renderer.render_text(value, Vec2(int(self.sids_padding * 2),
+                                                    int(self.height * 0.02 + ((self.text_siz
+                                    	            + self.bar_height + self.top_padding) * self.fields[name]["INDEX"]) + self.text_siz * i + self.scroll)), 0)
+                i += 1
+                
+        else:
+            Renderer.render_image(self.imgs["Arrows"][0],
+                               Vec2(int(self.sids_padding + len(f'{name}: {self.fields[name]["VAL"]}') * 15),
+                                    self.height * 0.025 + ((self.text_siz+ self.bar_height + self.top_padding)
+                                                      * self.fields[name]["INDEX"]) + self.scroll))
+            # Renderer.render_text(str(self.fields[name]["INPUT"]), Vec2(int(self.sids_padding),
+            #                                         int(self.height * 0.025 + ((self.text_siz
+            #                         	            + self.bar_height + self.top_padding) * self.fields[name]["INDEX"]) + self.text_siz + self.scroll)))
+            
     def render_input(self, name: str):
         # print("yo")
         if name not in self.fields:
@@ -170,6 +240,8 @@ class Options_render:
             Renderer.render_text(str(self.fields[name]["INPUT"]), Vec2(int(self.sids_padding),
                                                     int(self.height * 0.025 + ((self.text_siz
                                     	            + self.bar_height + self.top_padding) * self.fields[name]["INDEX"]) + self.text_siz + self.scroll)))
+
+    
         
     def change_cursor(self, name: str, new_val: tuple):
         """" new value: 0 value, 1 percent (from 0 to 1) (if one is not given the other is gesed)"""
@@ -198,7 +270,7 @@ class Options_render:
                                     int(self.height * 0.02 + ((self.text_siz
                                     	+ self.bar_height + self.top_padding) * self.fields[name]["INDEX"]) + self.text_siz + self.scroll)))
         Renderer.render_image(self.imgs["Cursor"],
-                               Vec2(self.sids_padding + (self.bar_width * self.fields[name]["PERCENT"]),
+                               Vec2(int(self.sids_padding + (self.bar_width * self.fields[name]["PERCENT"])),
                                     (self.height * 0.02) + ((self.text_siz
                                     	+ self.bar_height + self.top_padding) * self.fields[name]["INDEX"]) + self.text_siz + self.scroll))
     
@@ -210,7 +282,6 @@ class Options_render:
         except:
             field["INPUT"] = "This Value is impossible"
             print("This Value is impossible")
-            # self.render_options()
         else:
             field["INPUT"] = None
         self.render_options()
@@ -239,6 +310,39 @@ class Options_render:
                         field_value["INPUT"] = ""
                         self.render_options()
                         Event_loop.input_to_str(field_value, "INPUT", self.render_options, None, self.set_field, (field_value, ))
+            # dropdown
+            if (field_value["TYPE"] == "dropdown"):
+                fpos = Vec2(self.sids_padding,
+                                    ((self.text_siz
+                                    	+ self.bar_height + self.top_padding) * self.fields[field_name]["INDEX"]) + self.scroll)
+                siz = Vec2(self.bar_width / 2, self.bar_height + self.top_padding)
+                if (fpos.y < pos.y and fpos.y + siz.y > pos.y):
+                    if (fpos.x < pos.x and fpos.x + siz.x > pos.x):
+                        if (not field_value["OPEN"]):
+                            field_value["OPEN"] = True
+                        else:
+                            field_value["OPEN"] = False
+                        self.render_options()
+                elif (field_value["OPEN"]):
+                    i = 1
+                    box_height = self.text_siz - 1 
+                    print("box height is", box_height)
+                    # siz.y = box_height
+                    for value in field_value["POSSIBLE"]:
+                        if (fpos.y + (box_height * (i - 1)) + siz.y < pos.y  and fpos.y + siz.y + (box_height * i) > pos.y):
+                    	    if (fpos.x  < pos.x and fpos.x + siz.x > pos.x):
+                                field_value["VAL"] = value
+                                print(value)
+                                self.render_options()
+                                return
+                        i += 1
+                    field_value["OPEN"] = False
+                    self.render_options()
+                    
+                    
+                        
+        print(pos)    
+                            
         
         save_pos = Vec2(self.width * 0.3,
             (self.height * 0.02) + ((self.text_siz

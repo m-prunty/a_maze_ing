@@ -38,7 +38,7 @@ class Config:
     output_file: str | None = Field(default="maze.txt")
     model_config = ConfigDict(revalidate_instances="always")
     color: int = Field(ge=0, le=2)
-    gen_algo: Literal["Dfs", "prim", "swinder", "wilson"] = None
+    gen_algo: Literal["Dfs", "prim", "swinder", "wilson"] = "Dfs"
 
 
     def is_grid(self, vec: Vec2) -> bool:
