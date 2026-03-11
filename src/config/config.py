@@ -25,21 +25,12 @@ maxw = 30
 
 @dataclass
 class Config:
-<<<<<<< HEAD
-    maxw = 30
-    width: int
-    height: int
-    entry: Vec2
-    exit: Vec2
-    seed: int | None = 0
-=======
     # maxw = 30
     width: int = Field(ge=5, le=30)
     height: int = Field(ge=5, le=30)
     entry: Vec2 = None
     exit: Vec2 = None
     seed: int | None = None
->>>>>>> graphics
     perfect: bool | None = None
     pic: list[int] | None = None
     pic_scalar: float | None = None
