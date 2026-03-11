@@ -14,8 +14,9 @@
 import random
 
 from typing import Literal
-from pydantic import ConfigDict, Field, field_validator, model_validator, fields
+from pydantic import ConfigDict, Field, field_validator, model_validator
 from pydantic.dataclasses import dataclass
+from dataclasses import fields
 
 from helper import Vec2
 
@@ -27,17 +28,18 @@ class Config:
     # maxw = 30
     width: int = Field(ge=5, le=30)
     height: int = Field(ge=5, le=30)
-    entry: Vec2 = Field(ge=5, le=30)
-    exit: Vec2 = Field(ge=5, le=30)
-    seed: int | None = Field()
-    perfect: bool | None = Field()
-    pic: list[int] | None = Field()
-    pic_scalar: float | None = Field()
+    entry: Vec2 = None
+    exit: Vec2 = None
+    seed: int | None = None
+    perfect: bool | None = None
+    pic: list[int] | None = None
+    pic_scalar: float | None = None
     filename: str | None = Field(default="config.txt")
     output_file: str | None = Field(default="maze.txt")
     model_config = ConfigDict(revalidate_instances="always")
     color: int = Field(ge=0, le=2)
-    algo: str = Literal[""]
+    gen_algo: Literal["Dfs", "prim", "swinder", "wilson"] = None
+
 
     def is_grid(self, vec: Vec2) -> bool:
         """Check if a vector lives in the grid and return a border value if not.
