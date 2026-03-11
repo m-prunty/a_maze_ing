@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/03 21:19:22 by maprunty         #+#    #+#              #
-#    Updated: 2026/03/01 03:54:55 by maprunty        ###   ########.fr        #
+#    Updated: 2026/03/08 15:21:56 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
@@ -21,14 +21,14 @@ from helper import Vec2
 maxw = 30
 
 
-@dataclass 
+@dataclass
 class Config:
     maxw = 30
     width: int
     height: int
     entry: Vec2
     exit: Vec2
-    seed: int | None = 42 
+    seed: int | None = 0
     perfect: bool | None = None
     pic: list[int] | None = None
     pic_scalar: float | None = 1
@@ -49,11 +49,6 @@ class Config:
         rx = random.randint(0, 1)
         ry = random.randint(0, 1)
         tst = (self.width, self.height)
-        #         print(
-        #             f"test{tst} {vec} {not 0 <= vec.x < tst[0]} or {not 0 <= vec.y < tst[1]}\
-        #  == {not 0 <= vec.x < tst[0] or not 0 <= vec.y < tst[1]}"
-        #         )
-        #         print("aa", vec, tst)
         if not (0 <= vec.x < tst[0]) or not (0 <= vec.y < tst[1]):
             print(f"Wont fit on the grid...{tst} {vec}")
             return Vec2(
@@ -127,20 +122,14 @@ class Config:
             ]
         elif select == 3:
             self.pic = [
-    0b000000011110000011111111,
-    0b000001110100001110000111,
-    0b000111011100000000011100,
-    0b011100111000000011100000,
-    0b111111111100011100000000,
-    0b000011100001110000000000,
-    0b000111000111111110110000,
-    ]
-
-
-
-
-
-
+                0b000000011110000011111111,
+                0b000001110100001110000111,
+                0b000111011100000000011100,
+                0b011100111000000011100000,
+                0b111111111100011100000000,
+                0b000011100001110000000000,
+                0b000111000111111110110000,
+            ]
 
     @classmethod
     def cfg_from_file(cls, filename: str):
@@ -162,7 +151,7 @@ class Config:
                         k = k.strip().lower()
                         if "[" in v:
                             v = [e.strip(",[]") for e in (v.split(","))]
-                        elif "None"== v:
+                        elif v == "None":
                             v = None
                         elif "," in v:
                             v = v.split(",")

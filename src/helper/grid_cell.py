@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:38:19 by maprunty         #+#    #+#              #
-#    Updated: 2026/03/02 07:00:36 by maprunty        ###   ########.fr        #
+#    Updated: 2026/03/08 15:32:10 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """TODO: Short module summary.
@@ -208,7 +208,7 @@ class Grid:
     def __init__(self, width, height):
         """TODO: to be defined."""
         self.width, self.height = width, height
-        self.path = Path()
+        self.path = []
         self.grid = [
             [Cell(Vec2(x, y)) for x in range(self.width)]
             for y in range(self.height)
