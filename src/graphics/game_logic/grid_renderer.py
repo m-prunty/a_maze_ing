@@ -100,13 +100,13 @@ class Render_cell:
 
     @classmethod
     def render_path(cls, iteration: int, canva: Canvas):
-        path = Render_grid._path
+        path = Render_grid._grid.path
         curent  = path[iteration]
         print("curent", curent)
         # make entry tile
         if iteration != 0:
             prev = path[iteration - 1]
-            canva.add_image( Render_grid._path_texture,
+            canva.add_image(Render_grid._path_texture,
                             Vec2(
                                 int(
                                     curent.x * cls._tile_siz.x * 2
@@ -146,8 +146,8 @@ class Render_cell:
             special = 0
         if (cls._grid[pos].ispic):
             color = 1
-        elif (cls._grid[pos].ispath):
-            color = 0
+        # elif (cls._grid[pos].ispath):
+        #     color = 0
         else:
             color = 2 # TODO: make a function to use the right color in here
         

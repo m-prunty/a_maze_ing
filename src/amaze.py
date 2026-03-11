@@ -58,7 +58,7 @@ class AMaze:
 
     def launch_animation(self, key: int, dummy):
         if key == 32 and not self.is_a_path:
-            Animations.path(self.grid.path, 0.2)
+            Animations.path()
             self.is_a_path = True
         elif key == 32 and not self.is_a_path:
             print(key)

@@ -11,7 +11,7 @@ class Animations:
         cls._grid = Render_grid._grid
         #print(Vec2(cls._grid.width, cls._grid.height))
         # print(Vec2(cls._grid.width, cls._grid.height))
-        cls._canvas = Render_grid.grid_canva(Vec2(cls._grid.width, cls._grid.height), Vec2(0, 0))
+        # cls._canvas = Render_grid.grid_canva(Vec2(cls._grid.width, cls._grid.height), Vec2(0, 0))
         cls._canvas = Render_grid.grid_canva(
             Vec2(cls._grid.width, cls._grid.height), Vec2(0, 0)
         )
@@ -40,10 +40,11 @@ class Animations:
         return 1
 
     @classmethod
-    def path(cls, path: list[Vec2], delay=0.01):
-        print(path)
+    def path(cls, delay=0.0):
+        # print(path)
         if not cls._grid:
             cls._grid = Render_grid._grid
+        path = cls._grid.path
         cls._path_canvas = Render_grid.grid_canva(
             Vec2(cls._grid.width, cls._grid.height), Vec2(0, 0)
         )
@@ -56,6 +57,7 @@ class Animations:
             Vec2(Render_grid._tile_siz.x + 2, Render_grid._tile_siz.y + 2),
             (0,),
         )[0]
+        print(texture)
         Render_grid.load_path(path, texture)
 
     @classmethod
