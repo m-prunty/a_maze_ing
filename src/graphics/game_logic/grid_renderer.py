@@ -2,11 +2,6 @@ from graphics import Textures, Window, Canvas
 from helper import Grid, Cell, Vec2
 from config import Config
 import os
-import time
-
-from config import Config
-from graphics import Canvas, Textures, Window
-from helper import Cell, Grid, Vec2
 
 
 class Render_grid:
@@ -57,7 +52,6 @@ class Render_grid:
             )
 
             for img in imgs:
-                # print(img)
                 cls._tiles.append(img)
         return ret
 
@@ -68,10 +62,8 @@ class Render_grid:
 
     @classmethod
     def render_grid(cls, canva : Canvas):
-        # canva = cls.grid_canva(Vec2(cls._grid.width, cls._grid.height), Vec2())
         for x in range(cls._grid.width):
             for y in range(cls._grid.height):
-                print("grid pos is :", x, y)
                 Render_cell.render(Vec2(x, y), canva)
         canva.put_canva()
 
@@ -89,7 +81,6 @@ class Render_cell:
     _init = False
     _tile_siz = Vec2
 
-    # _canva = Canvas(Vec2(_tile_siz.x * 3, _tile_siz.y * 3))
     @classmethod
     def create(cls):
         if cls._init:
@@ -102,8 +93,6 @@ class Render_cell:
     def render_path(cls, iteration: int, canva: Canvas):
         path = Render_grid._grid.path
         curent  = path[iteration]
-        print("curent", curent)
-        # make entry tile
         if iteration != 0:
             prev = path[iteration - 1]
             canva.add_image(Render_grid._path_texture,
@@ -116,8 +105,7 @@ class Render_cell:
                                     curent.y * cls._tile_siz.y * 2
                                     + (1 - (curent.y - prev.y)) * cls._tile_siz.y
                                 )))
-        
-        if iteration != len(path) and iteration != 0:
+        if iteration != len(path) and iteration != 0 and curent != Render_grid._cfg.exit:
             canva.add_image( Render_grid._path_texture,
                             Vec2(
                                 int(
@@ -128,12 +116,18 @@ class Render_cell:
                                     curent.y * cls._tile_siz.y * 2
                                     + 1 * cls._tile_siz.y
                                 )))
-            Vec2(2, 2)
 
     @classmethod
     def render(cls, pos: Vec2, canva: Canvas):
         """ " Pos is dependent on the canva """
-        # print(pos)
+        def set_pic_color(color: int):
+            match color:
+                case 0:
+                    return 1
+                case 1:
+                    return 0
+                case 2:
+                    return 0
         if not cls._init:
             cls.create()
         hex = cls._grid[pos].wall
@@ -145,9 +139,7 @@ class Render_cell:
         else:
             special = 0
         if (cls._grid[pos].ispic):
-            color = 1
-        # elif (cls._grid[pos].ispath):
-        #     color = 0
+            color = set_pic_color(Render_grid._cfg.color)
         else:
             color = Render_grid._cfg.color # TODO: make a function to use the right color in here
         
@@ -232,7 +224,7 @@ class Render_cell:
                         (hex >> (2 * (i == 0) + 1)) & 1
                         if y == 0
                         else (n[Cell.S] >> (2 * (i == 0) + 1)) & 1
-                        if pos.y < Render_grid._grid.height - 1  # y
+                        if pos.y < Render_grid._grid.height - 1
                         else 0
                     )
                     left = (
@@ -246,7 +238,7 @@ class Render_cell:
                         (hex >> y) & 1
                         if i == 0
                         else (n[Cell.E] >> y) & 1
-                        if pos.x < Render_grid._grid.width - 1  # x
+                        if pos.x < Render_grid._grid.width - 1 
                         else 0
                     )
                     tile = top + bot + left + right

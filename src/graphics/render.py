@@ -82,7 +82,6 @@ class Render:
             )
             for img in imgs:
                 self.grid_tiles.append(img)
-        print(self.grid_tiles)
         return ret
 
     def generate_sprit(

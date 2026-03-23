@@ -56,12 +56,12 @@ class AMaze:
         Event_loop.add_key_hook(self.launch_animation, None)
         self.maze_tofile(self.config.output_file)
 
-    def launch_animation(self, key: int, dummy):
+    def launch_animation(self, key: int):
         if key == 32 and not self.is_a_path:
             Animations.path()
             self.is_a_path = True
-        elif key == 32 and not self.is_a_path:
-            print(key)
+        # elif key == 32 and not self.is_a_path:
+            # print(key)
 
     def maze_tofile(self, filename: str):
         hexlist = self.grid.dump_grid()

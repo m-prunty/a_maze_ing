@@ -6,11 +6,12 @@ import time
 class Event_loop:
     _events = []
     _repeatables = []
-    _strs = []
+    _key_funcs = []
+    _str = {}
     
     def launch():
         Mlx_context._mlx.mlx_loop_hook(Mlx_context.get(), Event_loop.render_event, None)
-        Event_loop.add_key_hook(Event_loop.input_event, None)
+        Mlx_context._mlx.mlx_key_hook(Window.get(), Event_loop.input_event, None)
         Mlx_context._mlx.mlx_loop(Mlx_context.get())
     
     @staticmethod
@@ -21,9 +22,14 @@ class Event_loop:
     def add_mous_hook(func: callable, param):
         Mlx_context._mlx.mlx_mouse_hook(Window.get(), func, param)
 
+    @classmethod
+    def add_key_hook(cls, func: callable, param):
+        cls._key_funcs.append({"FUNCTION": func, "PARAMS": param})
+        # Mlx_context._mlx.mlx_key_hook(Window.get(), func, param)
+        
     @staticmethod
-    def add_key_hook(func: callable, param):
-        Mlx_context._mlx.mlx_key_hook(Window.get(), func, param)
+    def add_loop_hook(func: callable, param):
+        Mlx_context._mlx.mlx_loop_hook(Window.get(), func, param)
 
     @staticmethod
     def close(dummy):
@@ -37,7 +43,6 @@ class Event_loop:
     @classmethod
     def do_repeat(cls, event: callable, params: tuple=None, delay=0.3):
         """ Will stop when function returns -1"""
-        print("param is :", params)
         cls._repeatables.append([event, delay, time.time() + delay, params])
 
     @classmethod
@@ -64,46 +69,62 @@ class Event_loop:
     
     @classmethod
     def input_to_str(cls, field, key, func: callable, params: tuple, end_func: callable, end_params: tuple):
-        cls._strs.append({"FIELD": field, "KEY": key, "CURSOR": 0, "SPECIAL": None, "FUNCTION": func, "PARAMS": params, "END": end_func, "END_PARA": end_params})
+        if cls._str:
+            val = cls._str["FIELD"][cls._str["KEY"]]
+            if (cls._str["END_PARA"] is not None):
+                cls._str["FIELD"][cls._str["KEY"]] = f"{val[: cls._str['CURSOR']]}{val[cls._str['CURSOR'] + 1:]}"
+                cls._str["END"](*cls._str["END_PARA"])
+            else:
+                cls._str["FIELD"][cls._str["KEY"]] = f"{val[: cls._str['CURSOR']]}{val[cls._str['CURSOR'] + 1:]}"
+                cls._str["END"]()
+            # cls._str = {}
+        cls._str = {"FIELD": field, "KEY": key, "CURSOR": 0, "SPECIAL": None, "FUNCTION": func, "PARAMS": params, "END": end_func, "END_PARA": end_params}
+        # cls.input_event(0, None)
         
     @classmethod
     def input_event(cls, input, _):
         # print(input)
+        for func in cls._key_funcs:
+            if (func["PARAMS"] is not None):
+                func["FUNCTION"](input, *func["PARAMS"])
+            else:
+                func["FUNCTION"](input)
+                
         key = XK.keysym_to_string(input)
         # print(key, input)
-        for dict in cls._strs:
-            val = dict["FIELD"][dict["KEY"]]
+        if cls._str:
+            val = cls._str["FIELD"][cls._str["KEY"]]
             if (input == 65293):
                 # print(string["END_PARA"])
-                if (dict["END_PARA"] is not None):
-                    dict["FIELD"][dict["KEY"]] = f"{val[: dict['CURSOR']]}{val[dict['CURSOR'] + 1:]}"
-                    dict["END"](*dict["END_PARA"])
+                if (cls._str["END_PARA"] is not None):
+                    cls._str["FIELD"][cls._str["KEY"]] = f"{val[: cls._str['CURSOR']]}{val[cls._str['CURSOR'] + 1:]}"
+                    cls._str["END"](*cls._str["END_PARA"])
                 else:
-                    dict["FIELD"][dict["KEY"]] = f"{val[: dict['CURSOR']]}{val[dict['CURSOR'] + 1:]}"
-                    dict["END"]()
-                cls._strs.remove(dict)
+                    cls._str["FIELD"][cls._str["KEY"]] = f"{val[: cls._str['CURSOR']]}{val[cls._str['CURSOR'] + 1:]}"
+                    cls._str["END"]()
+                cls._str = {}
             else:
-                dict["FIELD"][dict["KEY"]] = f"{val[: dict['CURSOR']]}{val[dict['CURSOR'] + 1:]}"
+                cls._str["FIELD"][cls._str["KEY"]] = f"{val[: cls._str['CURSOR']]}{val[cls._str['CURSOR'] + 1:]}"
                 if (input == 65288):
-                    val = dict["FIELD"][dict["KEY"]]
-                    dict["FIELD"][dict["KEY"]] = f"{val[:dict['CURSOR'] - 1]}{val[dict['CURSOR']:]}"
-                    dict['CURSOR'] -= 1
-                elif (input == 65361 and dict['CURSOR'] > 0):
-                    dict['CURSOR'] -= 1
-                elif (input == 65363 and dict['CURSOR'] < len(dict["FIELD"][dict["KEY"]])):
-                    dict['CURSOR'] += 1
+                    val = cls._str["FIELD"][cls._str["KEY"]]
+                    cls._str["FIELD"][cls._str["KEY"]] = f"{val[:cls._str['CURSOR'] - 1]}{val[cls._str['CURSOR']:]}"
+                    cls._str['CURSOR'] -= 1
+                elif (input == 65361 and cls._str['CURSOR'] > 0):
+                    cls._str['CURSOR'] -= 1
+                elif (input == 65363 and cls._str['CURSOR'] < len(cls._str["FIELD"][cls._str["KEY"]])):
+                    cls._str['CURSOR'] += 1
                 elif (key is None or not key.isprintable):
                     print(input, "is not supported")
-                elif dict["SPECIAL"] is None and key.isprintable:
-                    val = dict["FIELD"][dict["KEY"]]
-                    dict["FIELD"][dict["KEY"]] = f"{val[: dict['CURSOR']]}{f'{key}'}{val[dict['CURSOR']:]}"
-                    dict['CURSOR'] += 1
-                val = dict["FIELD"][dict["KEY"]]
-                dict["FIELD"][dict["KEY"]] = f"{val[:dict['CURSOR']]}|{val[dict['CURSOR']:]}"
-                if (dict["PARAMS"] is not None):
-                    dict["FUNCTION"](*dict["PARAMS"])
+                elif cls._str["SPECIAL"] is None and key.isprintable:
+                    val = cls._str["FIELD"][cls._str["KEY"]]
+                    cls._str["FIELD"][cls._str["KEY"]] = f"{val[: cls._str['CURSOR']]}{f'{key}'}{val[cls._str['CURSOR']:]}"
+                    cls._str['CURSOR'] += 1
+                val = cls._str["FIELD"][cls._str["KEY"]]
+                cls._str["FIELD"][cls._str["KEY"]] = f"{val[:cls._str['CURSOR']]}|{val[cls._str['CURSOR']:]}"
+                if (cls._str["PARAMS"] is not None):
+                    cls._str["FUNCTION"](*cls._str["PARAMS"])
                 else:
-                    dict["FUNCTION"]()
+                    cls._str["FUNCTION"]()
             
             
     # @classmethod

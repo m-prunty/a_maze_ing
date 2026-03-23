@@ -21,8 +21,9 @@
 # --check-untyped-defs
 # • lint-strict (optional): Execute the commands flake8 . and mypy . --strict
 SHELL := bash
-IMG_CACHE :=./src/graphics/game_logic/includes/sprits/grid/resized \
-			./src/graphics/game_logic/includes/resized
+
+IMG_CACHE := **/resized/*.png 
+
 RMFILES :=__pycache__ .*.sw* *.egg-info dist build $(IMG_CACHE)
 
 CFG := FILENAME=config.txt\\nWIDTH=25\\nHEIGHT=25\\nENTRY=0,0\\nEXIT=0,25\

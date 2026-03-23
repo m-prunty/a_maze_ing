@@ -88,22 +88,22 @@ class Vec2:
         """Return a tuple iterable  represantation of a Vec2 instance."""
         return iter((self.x, self.y))
 
-    @classmethod
-    def from_str(cls, coord: str) -> "Vec2":
-        """TODO: Docstring for from_str.
+    # @classmethod
+    # def from_str(cls, coord: str) -> "Vec2":
+    #     """TODO: Docstring for from_str.
 
-        Args:
-            coord (str): coordinates in form "x,y,z"
+    #     Args:
+    #         coord (str): coordinates in form "x,y,z"
 
-        Returns: An instance of Vec2
+    #     Returns: An instance of Vec2
 
-        """
-        try:
-            lst = [0]
-            lst += cls.ft_split(coord, ",")
-            lst = cls.parse_args(len(lst), lst)
-            return cls(lst[0], lst[1])
-        except Exception as e:
-            r_str = f"Error details - Type: {e.__class__.__name__}"
-            r_str += f', Args: ("{e.args[0]}",)'
-            raise ValueError(r_str)
+    #     """
+    #     try:
+    #         lst = [0]
+    #         lst += cls.ft_split(coord, ",")
+    #         lst = cls.parse_args(len(lst), lst)
+    #         return cls(lst[0], lst[1])
+    #     except Exception as e:
+    #         r_str = f"Error details - Type: {e.__class__.__name__}"
+    #         r_str += f', Args: ("{e.args[0]}",)'
+    #         raise ValueError(r_str)

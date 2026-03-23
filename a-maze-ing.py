@@ -35,10 +35,11 @@ sys.setrecursionlimit(2000)
 class Start:
     def __init__(self):
         # self.options = Options(1000, 1000)
-        Window.create(Vec2(900, 900), " -- A-maze-ing -- ")
         self.on_start = True
-        self.opt = Options()
-        self.a = AMaze(self.opt.cfg)
+        self.cfg = Config.cfg_from_file("config.txt")
+        Window.create(self.cfg.window_siz, " -- A-maze-ing -- ")
+        self.opt = Options(self.cfg)
+        self.a = AMaze(self.cfg)
         self.render_start()
 
     def render_start(self):
@@ -50,7 +51,7 @@ class Start:
         )[0]
         opt_logo = Textures.load(
             os.path.dirname(os.path.abspath(__file__)) + "/includes/",
-            "options_logo.png",
+            "options_button.png",
             Vec2(90, 90),
             (0,),
         )[0]
@@ -62,11 +63,23 @@ class Start:
         Event_loop.launch()
 
     def add_hooks(self):
+        print("== HOOKS PROPERLY ADDED ==")
         Event_loop.add_mous_hook(self.mouse_func, None)
         Event_loop.add_hook(Event_loop.close, 33, None)
+        Event_loop.add_key_hook(self.restart, None)
+        # Event_loop.add_key_hook(self.restart, None)
+        # Event_loop.add_hook(self.opt.save(), 65307, None)
 
+    def restart(self, input):
+        print(input)
+        if (input == 65307):
+            if (self.on_start):
+                Event_loop.close(None)
+            else:
+                self.opt.save()
+        
     def mouse_func(self, button, x, y, _):
-        print(self.on_start)
+        # print(self.on_start)
         if self.on_start:
             if button == 1 and x > 650 and x < 760 and y > 650 and y < 760:
                 self.on_start = False
@@ -76,28 +89,13 @@ class Start:
                 Window.clear_window()
                 # Render_grid.render_grid()
                 # Mlx_context._mlx.mlx_do_sync(Mlx_context.get())
+                # Event_loop.add_key_hook(self.restart, None)
                 self.a.startup()
 
 
 def main4():
     start = Start()
     start.render_start()
-
-
-# rend = Render()
-
-
-# def main():
-#     """TODO: Docstring."""
-#     rend.init_window(700, 700, "hello")
-#     rend.init_grid(Vec2(3, 3))
-#     print(rend.generate_grid_sprits())
-#     # print(rend.cell_siz)
-#     rend.add_hook(rend.close, 33, None)
-#     rend.add_mous_hook(print_image, (1, 2))
-
-#     rend.launch()
-#     print("Hello from amazing!")
 
 
 def main2():

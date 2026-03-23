@@ -21,7 +21,7 @@ from typing import Any, Protocol
 
 from config import Config
 from helper import Cell, Dir, Grid, Path, Vec2
-
+	
 
 class EType(Enum):
     ENTER = auto()
@@ -59,8 +59,8 @@ class PathGraph:
         c_list = [
             c for c in list(cell.neighbours.items()) if not cell.has_wall(c[0])
         ]
-
-        print(c_list)
+        c_list.sort(key=lambda x: (x[0], x[1].loc.x, x[1].loc.y))
+        # print(c_list)
         yield from c_list
 
 
@@ -126,7 +126,7 @@ class GoalStage:
 
     def process(self, e):
         if e.etype == EType.ENTER and e.cell.loc == self.goal:
-            print("!!!!!")
+            # print("!!!!!")
             e.found = True
         return not e.found
 
@@ -139,7 +139,8 @@ class BaseStrat(ABC):
             grid (Grid): Description.
         """
         self.config = cfg
-        self.rng = random.Random(0)  # cfg.seed)
+        # random.seed()
+        self.rng = random.Random(cfg.seed)
         self.stages: list[BaseStage] = []
         self.graph = graph
         self.grid = graph.grid
@@ -159,7 +160,7 @@ class BaseStrat(ABC):
     def _dispatch(self, event: MazeEvent) -> bool:
         for stage in self.stages:
             result = stage.process(event)
-            print(result, event)
+            # print(result, event)
             if result is False:
                 return False
         return True
@@ -239,7 +240,7 @@ class Pic(BaseStrat):
         Raises:
             ExceptionType: When this is raised.
         """
-        self.config.get_pic(1)
+        self.config.get_pic(self.config.pic)
         pic = self.config.pic
         wpic = int(math.log2(max(pic)) * (pic_scalar)) - 1
         hpic = int(len(pic) * pic_scalar)
@@ -344,13 +345,13 @@ class Prim(BaseStrat):
         frontier = {v for k, v in [*self.graph.neighbours(head)]}
         while frontier:
             cell = frontier.pop()
-            print(cell.neighbours)
+            # print(cell.neighbours)
             v = [
                 k
                 for k, c in cell.neighbours.items()
                 if c and c.visited and not c.ispic
             ]
-            print("neighbours>>>>", v)
+            # print("neighbours>>>>", v)
             self.rng.shuffle(v)
             direction = v[0] if len(v) else None
             neighbour = cell.neighbours[direction] if direction else None
@@ -442,7 +443,7 @@ class Wilson(BaseStrat):
         current = self.grid[self.config.entry]
         ngrid = {*self.grid}
         path = {current: None, "walls": Path()}
-        print("\n\n>>>>", type(ngrid))
+        # print("\n\n>>>>", type(ngrid))
         while len(ngrid) and current:
             n = [*current.neighbours]
             self.rng.shuffle(n)
@@ -463,9 +464,9 @@ class Wilson(BaseStrat):
         r_set: set = set()
         while curr in path:
             tmp = curr
-            print(curr)
+            # print(curr)
             curr = path[curr]
-            print("pop", path.pop(tmp))
+            # print("pop", path.pop(tmp))
             curr.visited = False
         return (path, r_set)
 
@@ -492,7 +493,7 @@ class Generators:
         self.path = []
 
     def to_path(self, v_lst: list[Vec2]):
-        print([v for v in v_lst if self.grid[v].ispath])
+        # print([v for v in v_lst if self.grid[v].ispath])
         yield from [v for v in v_lst if self.grid[v].ispath]
 
     def gen_grid(self):
