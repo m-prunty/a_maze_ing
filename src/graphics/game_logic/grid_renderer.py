@@ -1,7 +1,8 @@
-from graphics import Textures, Window, Canvas
-from helper import Grid, Cell, Vec2
-from config import Config
 import os
+
+from config import Config
+from graphics import Canvas, Textures, Window
+from helper import Cell, Grid, Vec2
 
 
 class Render_grid:
@@ -27,7 +28,6 @@ class Render_grid:
     def load_tiles(cls):
         if not cls._initialized:
             if cls._grid is None or cls._cfg is None:
-                raise RuntimeError("Grid was not created")
             cls.load(cls._grid, cls._grid)
         path = (
             os.path.dirname(os.path.abspath(__file__))
@@ -122,7 +122,8 @@ class Render_cell:
 
     @classmethod
     def render(cls, pos: Vec2, canva: Canvas):
-        """ " Pos is dependent on the canva """
+        """ " Pos is dependent on the canva"""
+
         def set_pic_color(color: int):
             match color:
                 case 0:
@@ -131,6 +132,7 @@ class Render_cell:
                     return 0
                 case 2:
                     return 0
+
         if not cls._init:
             cls.create()
         hex = cls._grid[pos].wall
@@ -141,7 +143,7 @@ class Render_cell:
             special = 2
         else:
             special = 0
-        if (cls._grid[pos].ispic):
+        if cls._grid[pos].ispic:
             color = set_pic_color(Render_grid._cfg.color)
         else:
             color = Render_grid._cfg.color
