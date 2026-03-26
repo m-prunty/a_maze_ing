@@ -15,3 +15,5 @@ from .grid_cell import Cell, Dir, Grid, Path
 from .vector import Vec2
 
 __all__ = ["Cell", "Grid", "Vec2", "Dir", "Path"]
+
+# vec2 = ["Vec2"]

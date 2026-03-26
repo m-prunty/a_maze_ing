@@ -1,9 +1,10 @@
-from graphics import Mlx_context, Mlx
+from graphics import Mlx_context
 from helper import Vec2
+
 
 class Window:
     _win_ptr = None
-    _siz : Vec2 = None
+    _siz: Vec2 = None
     _initialized = False
 
     @classmethod
@@ -11,7 +12,9 @@ class Window:
         if cls._initialized:
             raise RuntimeError("MlxContext already initialized")
         cls._siz = siz
-        cls._win_ptr = Mlx_context._mlx.mlx_new_window(Mlx_context.get(), siz.x, siz.y, name) 
+        cls._win_ptr = Mlx_context._mlx.mlx_new_window(
+            Mlx_context.get(), siz.x, siz.y, name
+        )
         cls._initialized = True
 
     @classmethod
@@ -23,9 +26,9 @@ class Window:
     @classmethod
     def get(cls):
         if not cls._initialized:
-            raise RuntimeError("First need to call Window.create for initialization")
+            raise RuntimeError("First need to call")
         return cls._win_ptr
-    
+
     @classmethod
-    def clear_window(self):
+    def clear_window(self) -> None:
         Mlx_context._mlx.mlx_clear_window(Mlx_context.get(), self._win_ptr)

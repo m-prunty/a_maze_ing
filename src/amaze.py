@@ -26,18 +26,18 @@ class AMaze:
 
     """
 
-    def __init__(self, cfg: Config):
+    def __init__(self, cfg: Config) -> None:
         """TODO: to be defined."""
         self.config = cfg
-        self.grid = Grid(self.width, self.height)
+        self.grid = Grid(cfg.width, cfg.height)
         Render_grid.load(self.grid, cfg)
         Render_cell.create()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         cls = self.__class__.__name__
         return f"{cls}({self.config})"
 
-    def startup(self):
+    def startup(self) -> None:
         """TODO: Summary line.
 
         Args:
@@ -56,40 +56,43 @@ class AMaze:
         Event_loop.add_key_hook(self.launch_animation, None)
         self.maze_tofile(self.config.output_file)
 
-    def launch_animation(self, key: int):
+    def launch_animation(self, key: int) -> None:
         if key == 32 and not self.is_a_path:
             Animations.path()
             self.is_a_path = True
         # elif key == 32 and not self.is_a_path:
-            # print(key)
+        # print(key)
 
-    def maze_tofile(self, filename: str):
+    def maze_tofile(self, filename: str) -> None:
         hexlist = self.grid.dump_grid()
-        with open(filename, "w") as f:
-            for y in hexlist:
-                f.write("\n")
-                for x in y:
-                    f.write(x)
+        try:
+            f = open(filename, "w")
+        except FileNotFoundError:
+            f = open(filename, "x")
+        for y in hexlist:
             f.write("\n")
-            f.write(f"\n{self.config.entry}\n")
-            f.write(f"{self.config.exit}\n")
-
+            for x in y:
+                f.write(x)
+        f.write("\n")
+        f.write(f"\n{self.config.entry}\n")
+        f.write(f"{self.config.exit}\n")
+       
     @classmethod
-    def maze_fromfile(cls, filename: str):
+    def maze_fromfile(cls, filename: str) -> Grid:
         hexlist = []
         with open(filename) as f:
             hexlist = f.read().split("\n")
         cfg = Config.cfg_from_filemap(hexlist)
-        c = cls(cfg, None)
+        c = cls(cfg)
         c.grid.fill_grid_from_map(hexlist, c)
         return c
 
-    @property
-    def width(self):
-        """Get WIDTH from config file."""
-        return self.config.width
+    # @property
+    # def width(self) -> int:
+    #     """Get WIDTH from config file."""
+    #     return self.config.width
 
-    @property
-    def height(self):
-        """Get HEIGHT from config file."""
-        return self.config.height
+    # @property
+    # def height(self) -> int:
+    #     """Get HEIGHT from config file."""
+    #     return self.config.height

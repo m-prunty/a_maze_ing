@@ -21,7 +21,7 @@ from typing import Any, Protocol
 
 from config import Config
 from helper import Cell, Dir, Grid, Path, Vec2
-	
+
 
 class EType(Enum):
     ENTER = auto()
@@ -56,9 +56,8 @@ class PathGraph:
 
     def neighbours(self, cell: Cell) -> Iterable[Cell]:
         """Returns list of neighbours if no wall between cell and dir."""
-        c_list = [
-            c for c in list(cell.neighbours.items()) if not cell.has_wall(c[0])
-        ]
+        c_list = [c for c in list(cell.neighbours.items()) if
+                  not cell.has_wall(c[0])]
         c_list.sort(key=lambda x: (x[0], x[1].loc.x, x[1].loc.y))
         # print(c_list)
         yield from c_list
@@ -105,10 +104,10 @@ class PathStage:
     def process(self, e: MazeEvent):
         if e.etype == EType.ENTER:
             e.cell.ispath = True
-            print("path mark")
+            # print("path mark")
         elif e.etype == EType.EXIT:
             e.cell.ispath = False
-            print("path clear")
+            # print("path clear")
         return True
 
 
@@ -229,7 +228,7 @@ class Dfs(BaseStrat):
 class Pic(BaseStrat):
     def generate(self):
         super().generate()
-        start = self.config.entry
+        # start = self.config.entry
         yield from self._gen_pic(1)
 
     def _gen_pic(self, pic_scalar: int):
@@ -260,9 +259,8 @@ class Pic(BaseStrat):
             bright = self.grid[tleft.loc + Vec2(wpic, hpic)]
             yield from self._pic_lst(tleft, bright, pic)
 
-    def _pic_lst(
-        self, tleft: Vec2, bright: Vec2, pic: list[bin]
-    ) -> list[Cell]:
+    def _pic_lst(self, tleft: Vec2,
+                 bright: Vec2, pic: list[bin]) -> any:
         """Check and set if elements of subgrid from tleft to bright are ispic.
 
         gets a list of cells that will be ispic and steps through marking ispic
@@ -347,8 +345,7 @@ class Prim(BaseStrat):
             cell = frontier.pop()
             # print(cell.neighbours)
             v = [
-                k
-                for k, c in cell.neighbours.items()
+                k for k, c in cell.neighbours.items()
                 if c and c.visited and not c.ispic
             ]
             # print("neighbours>>>>", v)
@@ -360,9 +357,8 @@ class Prim(BaseStrat):
             cell.visited = True
 
             visited |= {cell}
-            frontier |= {
-                *[n for n in cell.neighbours.values() if n and not n.visited]
-            }
+            frontier |= {*[n for n in cell.neighbours.values()
+                           if n and not n.visited]}
             # print(frontier)
             yield frontier
 
@@ -405,8 +401,13 @@ class Sidewinder(BaseStrat):
         """
         start = self.config.entry
         run = [self.grid[start]]
-        e_bound = lambda v: v.x == self.width - 1
-        n_bound = lambda v: v.y == 0
+
+        def e_bound(v):
+            return v.x == self.width - 1
+
+        def n_bound(v):
+            return v.y == 0
+
         for cell in self.grid:
             run.append(cell)
             close = (e_bound(cell.loc)) or (
@@ -463,7 +464,7 @@ class Wilson(BaseStrat):
         curr = current
         r_set: set = set()
         while curr in path:
-            tmp = curr
+            # tmp = curr
             # print(curr)
             curr = path[curr]
             # print("pop", path.pop(tmp))
@@ -505,12 +506,7 @@ class Generators:
         dfs = Dfs(GenGraph(self.grid), self.config)
         dfs.add_stage(VisitStage())
         dfs.add_stage(RmStage())
-        dfs_lst = [*dfs.generate()]
-
-        #        prim = Prim(GenGraph(self.grid), self.config)
-        #        prim.add_stage(VisitStage())
-        #        prim.add_stage(RmStage())
-        #        prim_lst = [*prim.generate()]
+        [*dfs.generate()]
 
         self.grid.reset()
 

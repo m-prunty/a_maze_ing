@@ -33,7 +33,8 @@ class Options:
                     if isinstance(meta, Le):
                         max = meta.le
                 if min is not None and max is not None:
-                    self.opt_rend.add_cursor(field.name, "", (min, value, max + 1))
+                    self.opt_rend.add_cursor(field.name, "",
+                                             (min, value, max + 1))
             if (annotation is int and min is None):
                 self.opt_rend.add_input(field.name, value, int)
             elif (annotation is str):
@@ -49,9 +50,8 @@ class Options:
                 self.opt_rend.add_dropdown(field.name,
                                            value,
                                            get_args(annotation))
-        
         self.is_active = False
-    
+
     def put_to_config(self, fields: list):
         """ vars: 0 width, 1 height"""
         for key, value in self.cfg:
@@ -65,19 +65,19 @@ class Options:
                 print(key, "is not handeld yet")
         self.cfg.cfg_to_file()
 
-    def render(self):
+    def render(self) -> None:
         self.opt_rend.render_options()
         Event_loop.add_hook(Event_loop.close, 33, None)
         Event_loop.add_mous_hook(self.mouse_event, None)
         self.is_active = True
 
-    def save(self):
+    def save(self) -> None:
         Event_loop.close(None)
         os.execv(sys.executable, [sys.executable] + sys.argv)
         self.is_active = False
         self.render()
 
-    def mouse_event(self, button, x, y, baa):
+    def mouse_event(self, button: int, x: int, y: int, baa: None) -> None:
         if (self.is_active):
             if (button == 4):
                 self.opt_rend.scroll -= 10
@@ -101,9 +101,9 @@ class Options_render:
         self.text_siz = self.top_padding
 
         self.fields = {}
-        
+
         path = os.path.dirname(os.path.abspath(__file__)) + "/includes/"
-        
+
         self.imgs = {}
         self.imgs["Bar"] = Textures.load(path, "bar.png",
                                          Vec2(self.bar_width * 1.05,
@@ -123,8 +123,8 @@ class Options_render:
                                                     self.bar_height * 1.75),
                                                (0,))[0]
         self.imgs["Cursor"] = Textures.load(path, "cursor.png",
-                                                 Vec2(self.bar_width / 100,
-                        						 self.bar_height), (0,))[0]
+                                            Vec2(self.bar_width / 100,
+                                                 self.bar_height), (0,))[0]
         self.imgs["Save"] = Textures.load(path, "save_button.png",
                                           Vec2(self.width * 0.4,
                                                self.height * 0.1), (0,))[0]
@@ -239,7 +239,7 @@ class Options_render:
                                            + self.top_padding)
                                           * self.fields[name]["INDEX"])
                                        + self.scroll))
-            
+
     def render_input(self, name: str):
         if name not in self.fields:
             print("Field not found !")
@@ -253,64 +253,106 @@ class Options_render:
                                   + self.scroll))
         Renderer.render_image(self.imgs["Box"],
                               Vec2(int(self.sids_padding * 0.95),
-                                    int(self.height * 0.02 + ((self.text_siz
-                                    	+ self.bar_height + self.top_padding) * self.fields[name]["INDEX"]) + self.text_siz + self.scroll)))
+                                   int(self.height * 0.02
+                                       + ((self.text_siz
+                                           + self.bar_height
+                                           + self.top_padding)
+                                          * self.fields[name]["INDEX"])
+                                       + self.text_siz + self.scroll)))
         if self.fields[name]["INPUT"] is None:
-            Renderer.render_text('Click to change', Vec2(int(self.sids_padding),
-                                                    int(self.height * 0.025 + ((self.text_siz
-                                    	            + self.bar_height + self.top_padding) * self.fields[name]["INDEX"]) + self.text_siz + self.scroll)))
+            Renderer.render_text('Click to change',
+                                 Vec2(int(self.sids_padding),
+                                      int(self.height * 0.025
+                                          + ((self.text_siz
+                                              + self.bar_height
+                                              + self.top_padding)
+                                             * self.fields[name]["INDEX"])
+                                          + self.text_siz + self.scroll)))
         else:
-            Renderer.render_text(str(self.fields[name]["INPUT"]), Vec2(int(self.sids_padding),
-                                                    int(self.height * 0.025 + ((self.text_siz
-                                    	            + self.bar_height + self.top_padding) * self.fields[name]["INDEX"]) + self.text_siz + self.scroll)))
+            Renderer.render_text(str(self.fields[name]["INPUT"]),
+                                 Vec2(int(self.sids_padding),
+                                      int(self.height * 0.025
+                                          + ((self.text_siz
+                                              + self.bar_height
+                                              + self.top_padding)
+                                             * self.fields[name]["INDEX"])
+                                          + self.text_siz + self.scroll)))
 
-    
-        
     def change_cursor(self, name: str, new_val: tuple):
-        """" new value: 0 value, 1 percent (from 0 to 1) (if one is not given the other is gesed)"""
+        """" new value: 0 value, 1 percent (from 0 to 1)
+        (if one is not given the other is gesed)"""
         if name not in self.fields:
             print("Field not found !")
         if (new_val[0]):
             self.fields[name]["VAL"] = new_val[0]
         else:
-            self.fields[name]["VAL"] = (self.fields[name]["MAX"] - self.fields[name]["MIN"]) * new_val[1] + self.fields[name]["MIN"]
+            self.fields[name]["VAL"] = (
+                self.fields[name]["MIN"]
+                + new_val[1] * (
+                    self.fields[name]["MAX"]
+                    - self.fields[name]["MIN"])
+                )
+
         if (new_val[1]):
             self.fields[name]["PERCENT"] = new_val[1]
         else:
-            self.fields[name]["PERCENT"] = (new_val[0] - self.fields[name]["MIN"]) / (
-				self.fields[name]["MAX"] - self.fields[name]["MIN"]
-			)
+            self.fields[name]["PERCENT"] = (
+                new_val[0]
+                - self.fields[name]["MIN"]) / (self.fields[name]["MAX"]
+                                               - self.fields[name]["MIN"]
+                                               )
         self.render_options()
-        
+
     def render_cursor(self, name: str):
         if name not in self.fields:
             print("Field not found !")
-        Renderer.render_text(f'{name}: {int(self.fields[name]["VAL"])} {self.fields[name]["UNIT"]}', Vec2(self.sids_padding * 1.5,
-                                    self.height * 0.02 + ((self.text_siz
-                                    	+ self.bar_height + self.top_padding) * self.fields[name]["INDEX"]) + self.scroll))
+        val = int(self.fields[name]["VAL"])
+        unit = self.fields[name]["UNIT"]
+
+        indicator = f"{name}: {val}{unit}"
+        Renderer.render_text(indicator,
+                             Vec2(self.sids_padding * 1.5,
+                                  self.height * 0.02
+                                  + ((self.text_siz
+                                      + self.bar_height
+                                      + self.top_padding)
+                                      * self.fields[name]["INDEX"])
+                                  + self.scroll))
         Renderer.render_image(self.imgs["Bar"],
-                               Vec2(int(self.sids_padding * 0.95),
-                                    int(self.height * 0.02 + ((self.text_siz
-                                    	+ self.bar_height + self.top_padding) * self.fields[name]["INDEX"]) + self.text_siz + self.scroll)))
+                              Vec2(int(self.sids_padding * 0.95),
+                                   int(self.height * 0.02
+                                       + ((self.text_siz
+                                           + self.bar_height
+                                           + self.top_padding)
+                                          * self.fields[name]["INDEX"])
+                                       + self.text_siz + self.scroll)))
         Renderer.render_image(self.imgs["Cursor"],
-                               Vec2(int(self.sids_padding + (self.bar_width * self.fields[name]["PERCENT"])),
-                                    (self.height * 0.02) + ((self.text_siz
-                                    	+ self.bar_height + self.top_padding) * self.fields[name]["INDEX"]) + self.text_siz + self.scroll))
-    
+                              Vec2(int(self.sids_padding
+                                       + (self.bar_width
+                                          * self.fields[name]["PERCENT"])),
+                                   (self.height * 0.02)
+                                   + ((self.text_siz
+                                       + self.bar_height
+                                       + self.top_padding)
+                                      * self.fields[name]["INDEX"])
+                                   + self.text_siz + self.scroll))
+
     def set_field(self, field, opt: Options):
         Window.clear_window()
         try:
-            if(field["NAME"].endswith("X")):
+            if (field["NAME"].endswith("X")):
                 x = field["DATA_TYPE"](field["INPUT"])
                 second_field = field["NAME"][:-1] + "Y"
-                y = self.fields[second_field]["DATA_TYPE"](self.fields[second_field]["VAL"])
+                y = self.fields[second_field]["DATA_TYPE"](
+                    self.fields[second_field]["VAL"])
                 val = Vec2(x, y)
                 setattr(opt.cfg, field["NAME"][:-2], val)
                 field["VAL"] = val.x
             elif field["NAME"].endswith("Y"):
                 y = field["DATA_TYPE"](field["INPUT"])
                 second_field = field["NAME"][:-1] + "X"
-                x = self.fields[second_field]["DATA_TYPE"](self.fields[second_field]["VAL"])
+                x = self.fields[second_field]["DATA_TYPE"](
+                    self.fields[second_field]["VAL"])
                 val = Vec2(x, y)
                 setattr(opt.cfg, field["NAME"][:-2], val)
                 field["VAL"] = val.y
@@ -325,34 +367,55 @@ class Options_render:
             field["INPUT"] = None
         self.render_options()
 
-    def check_click(self, pos: Vec2, opt: Options):
+    def check_click(self, pos: Vec2, opt: Options) -> None:
         for field_name, field_value in self.fields.items():
             # corsor
             if (field_value["TYPE"] == "cursor"):
                 fpos = Vec2(self.sids_padding,
-                                    (self.height * 0.02) + ((self.text_siz
-                                    	+ self.bar_height + self.top_padding) * self.fields[field_name]["INDEX"]) + self.text_siz + self.scroll)
+                            (self.height * 0.02)
+                            + ((self.text_siz
+                                + self.bar_height
+                                + self.top_padding)
+                               * self.fields[field_name]["INDEX"])
+                            + self.text_siz + self.scroll)
                 siz = Vec2(self.bar_width, self.bar_height)
                 if (fpos.y < pos.y and fpos.y + siz.y > pos.y):
                     if (fpos.x < pos.x and fpos.x + siz.x > pos.x):
-                        self.change_cursor(field_name, (None , (pos.x - fpos.x) / siz.x))
+                        self.change_cursor(field_name,
+                                           (None, (pos.x - fpos.x) / siz.x))
             # inputs
-            if (field_value["TYPE"] == "input" and (field_value["INPUT"] is None or field_value["INPUT"] == "This Value is impossible")):
+            if (field_value["TYPE"] == "input"
+               and (field_value["INPUT"] is None
+               or field_value["INPUT"] == "This Value is impossible")):
+
                 fpos = Vec2(self.sids_padding,
-                                    (self.height * 0.02) + ((self.text_siz
-                                    	+ self.bar_height + self.top_padding) * self.fields[field_name]["INDEX"]) + self.text_siz + self.scroll)
+                            (self.height * 0.02)
+                            + ((self.text_siz
+                               + self.bar_height
+                               + self.top_padding)
+                               * self.fields[field_name]["INDEX"])
+                            + self.text_siz + self.scroll)
                 siz = Vec2(self.bar_width, self.bar_height + self.top_padding)
                 if (fpos.y < pos.y and fpos.y + siz.y > pos.y):
                     if (fpos.x < pos.x and fpos.x + siz.x > pos.x):
                         field_value["INPUT"] = ""
                         self.render_options()
-                        Event_loop.input_to_str(field_value, "INPUT", self.render_options, None, self.set_field, (field_value, opt ))
+                        Event_loop.input_to_str(field_value,
+                                                "INPUT",
+                                                self.render_options,
+                                                None,
+                                                self.set_field,
+                                                (field_value, opt))
             # dropdown
             if (field_value["TYPE"] == "dropdown"):
                 fpos = Vec2(self.sids_padding,
-                                    ((self.text_siz
-                                    	+ self.bar_height + self.top_padding) * self.fields[field_name]["INDEX"]) + self.scroll)
-                siz = Vec2(self.bar_width / 2, self.bar_height + self.top_padding)
+                            ((self.text_siz
+                              + self.bar_height
+                              + self.top_padding)
+                             * self.fields[field_name]["INDEX"])
+                            + self.scroll)
+                siz = Vec2(self.bar_width / 2,
+                           self.bar_height + self.top_padding)
                 if (fpos.y < pos.y and fpos.y + siz.y > pos.y):
                     if (fpos.x < pos.x and fpos.x + siz.x > pos.x):
                         if (not field_value["OPEN"]):
@@ -362,27 +425,32 @@ class Options_render:
                         self.render_options()
                 elif (field_value["OPEN"]):
                     i = 1
-                    box_height = self.text_siz - 1 
+                    box_height = self.text_siz - 1
                     for value in field_value["POSSIBLE"]:
-                        if (fpos.y + (box_height * (i - 1)) + siz.y < pos.y  and fpos.y + siz.y + (box_height * i) > pos.y):
-                    	    if (fpos.x  < pos.x and fpos.x + siz.x > pos.x):
+                        if (fpos.y + (box_height * (i - 1)) + siz.y < pos.y
+                           and fpos.y + siz.y + (box_height * i) > pos.y):
+                            if (fpos.x < pos.x and fpos.x + siz.x > pos.x):
                                 field_value["VAL"] = value
                                 self.render_options()
                                 return
                         i += 1
                     field_value["OPEN"] = False
                     self.render_options()
-		# SAVE button
+        # SAVE button
         save_pos = Vec2(self.width * 0.3,
-            (self.height * 0.02) + ((self.text_siz
-            + self.bar_height + self.top_padding) * len(self.fields)) + self.text_siz + self.scroll)
+                        (self.height * 0.02)
+                        + ((self.text_siz
+                            + self.bar_height + self.top_padding)
+                           * len(self.fields))
+                        + self.text_siz + self.scroll)
         save_siz = Vec2(self.width * 0.4,
                         self.height * 0.1)
         if (save_pos.y < pos.y and save_pos.y + save_siz.y > pos.y):
             if (save_pos.x < pos.x and save_pos.x + save_siz.x > pos.x):
                 vars = []
                 for field_name, field_value in self.fields.items():
-                    if field_value["TYPE"] == "input" and field_value["INPUT"] is not None:
+                    if (field_value["TYPE"] == "input"
+                       and field_value["INPUT"] is not None):
                         field_value["INPUT"] = field_value["INPUT"][:-1]
                         self.set_field(field_value, opt)
                     vars.append(field_value["VAL"])

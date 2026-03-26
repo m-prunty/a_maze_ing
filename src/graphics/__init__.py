@@ -23,9 +23,16 @@ from .game_logic.grid_renderer import Render_grid
 from .game_logic.grid_renderer import Render_cell
 from .game_logic.animations import Animations
 
-__all__ = ["Mlx_context", "Window", "Mlx", "Textures", "Renderer", "Canvas", "Event_loop", "Render_grid", "Render_cell", "Animator", "Animations"]
-
-
-# from .render import Render
-
-# __all__ = ["Render"]
+__all__ = [
+    "Mlx_context",
+    "Window",
+    "Mlx",
+    "Textures",
+    "Renderer",
+    "Canvas",
+    "Event_loop",
+    "Render_grid",
+    "Render_cell",
+    "Animator",
+    "Animations",
+]

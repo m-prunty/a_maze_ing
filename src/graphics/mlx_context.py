@@ -1,4 +1,5 @@
-from graphics import Mlx
+from mlx import Mlx
+
 
 class Mlx_context:
     _mlx_ptr = None

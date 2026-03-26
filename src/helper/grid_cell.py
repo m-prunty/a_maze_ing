@@ -18,6 +18,12 @@ Optional longer description.
 from enum import IntFlag
 
 from .vector import Vec2
+from typing import Protocol, Self, Generator
+
+
+class HasSize(Protocol):
+    width: int
+    height: int
 
 
 class Dir(IntFlag):
@@ -28,12 +34,12 @@ class Dir(IntFlag):
     W = 1 << 3
     A = N | E | S | W
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return a tuple represantation of a Vec2 instance."""
         cls = self.__class__.__name__
         return f"{cls}.{self.name}"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.name}"
 
     # def __add__(self, other)-> Self:
@@ -48,7 +54,7 @@ class Dir(IntFlag):
             Dir.non: Dir.A,
         }[self]
 
-    def v(self):
+    def v(self) -> int:
         return {
             Dir.N: Vec2(0, -1),
             Dir.E: Vec2(1, 0),
@@ -205,7 +211,7 @@ class Path:
 class Grid:
     """Docstring for Grid."""
 
-    def __init__(self, width, height):
+    def __init__(self, width: int, height: int):
         """TODO: to be defined."""
         self.width, self.height = width, height
         self.path = []
@@ -215,7 +221,7 @@ class Grid:
         ]
         self.get_cell_neighbours()
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: tuple[int, int] | Vec2) -> Cell | None:
         """TODO: Docstring."""
         try:
             x, y = key
@@ -231,46 +237,48 @@ class Grid:
             print(f"Grid key error:{key} not a valid tuple {ve}")
             return None
 
-    def isvalid(self, v: Vec2):
-        if 0 <= v.x <= self.width and 0 <= v.y <= self.height:
+    def isvalid(self, v: Vec2) -> int | Vec2:
+        if (v.x is not None and v.y is not None and
+           0 <= v.x <= self.width and
+           0 <= v.y <= self.height):
             return v
         return 0
 
-    def __iter__(self):
+    def __iter__(self) -> Generator[Cell, None, None]:
         for y in self.grid:
             for x in y:
                 yield x
 
-    def path_mk(self, start):
-        pos = self[start]
-        # print(">>>>", self.path)
-        for s in self.path.path_yd_rev():
-            print(s, "asjkld", pos, type(pos))
-            try:
-                print(pos.neighbours, type(s), s)
-                pos.ispath = True
-                pos = pos.neighbours[s]
-            except:
-                print("AAAAAA")
+    # def path_mk(self, start):
+    #     pos = self[start]
+    #     # print(">>>>", self.path)
+    #     for s in self.path.path_yd_rev():
+    #         print(s, "asjkld", pos, type(pos))
+    #         try:
+    #             print(pos.neighbours, type(s), s)
+    #             pos.ispath = True
+    #             pos = pos.neighbours[s]
+    #         except Exception:
+    #             print("AAAAAA")
 
     @classmethod
-    def fill_grid_from_map(cls, hexlist, cfg):
+    def fill_grid_from_map(cls, hexlist: list[Dir], cfg: HasSize) -> Self:
         c = cls(cfg.width, cfg.height)
-        print(hexlist)
+        # print(hexlist)
         for y, row in enumerate(hexlist[1:]):
             if y < c.height:
                 for x, i in enumerate(row):
                     if x < c.width:
                         c[x, y].wall = i
-        print(hexlist)
+        # print(hexlist)
         return c
 
-    def dump_grid(self) -> list[list[hex]]:
+    def dump_grid(self) -> list[list[str]]:
         """Produce a list(list(hex))to represent the currnet layof the grid."""
         hexlist = [[f"{hex(c.wall)[2:]}" for c in r] for r in self.grid]
         return hexlist
 
-    def get_cell_neighbours(self):
+    def get_cell_neighbours(self) -> None:
         for c in self:
             c.get_neighbours(self)
 
@@ -298,14 +306,14 @@ class Grid:
         # print(n)
         return n
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset all vistied values to false."""
         for row in self.grid:
             for cell in row:
                 cell.visited = False
                 # print(cell)
 
-    def debug(self):
+    def debug(self) -> str:
         r_str = ""
         tmp = ""
         for k, v in vars(self).items():
@@ -317,21 +325,25 @@ class Grid:
             r_str += f"{k}, {v}\n"
         return r_str
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         cls = self.__class__.__name__
         return f"{cls}(width={self.width}, height={self.height})"
 
-    def __str__(self, cursor=None):
+    def __str__(self, cursor: Vec2) -> str:
         """TODO: Docstring."""
         r_str = ""
         for x in range(self.width):
             cell = self[x, 0]
+            if cell is None:
+                continue
             r_str += "+"
             r_str += "---" if cell.has_wall(Dir.N) else "   "
         r_str += "+\n"
         for y in range(self.height):
             for x in range(self.width):
                 cell = self[x, y]
+                if cell is None:
+                    continue
                 if cell.has_wall(Dir.W):
                     r_str += "|"
                 else:
@@ -340,10 +352,14 @@ class Grid:
                     r_str += " @ "
                 else:
                     r_str += "   " if not cell.ispic else " X "
+            if cell is None:
+                continue
             r_str += "|\n" if cell.has_wall(Dir.E) else " \n"
             for x in range(self.width):
                 cell = self[x, y]
                 r_str += "+"
+                if cell is None:
+                    continue
                 if cell.has_wall(Dir.S):
                     r_str += "---"
                 else:

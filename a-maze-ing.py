@@ -22,7 +22,6 @@ from src import (
     Config,
     Event_loop,
     Options,
-    Render_grid,
     Renderer,
     Textures,
     Vec2,
@@ -33,7 +32,7 @@ sys.setrecursionlimit(2000)
 
 
 class Start:
-    def __init__(self):
+    def __init__(self) -> None:
         # self.options = Options(1000, 1000)
         self.on_start = True
         self.cfg = Config.cfg_from_file("config.txt")
@@ -42,7 +41,7 @@ class Start:
         self.a = AMaze(self.cfg)
         self.render_start()
 
-    def render_start(self):
+    def render_start(self) -> None:
         start_btn = Textures.load(
             os.path.dirname(os.path.abspath(__file__)) + "/includes/",
             "start_button.png",
@@ -62,7 +61,7 @@ class Start:
         self.add_hooks()
         Event_loop.launch()
 
-    def add_hooks(self):
+    def add_hooks(self) -> None:
         print("== HOOKS PROPERLY ADDED ==")
         Event_loop.add_mous_hook(self.mouse_func, None)
         Event_loop.add_hook(Event_loop.close, 33, None)
@@ -70,15 +69,15 @@ class Start:
         # Event_loop.add_key_hook(self.restart, None)
         # Event_loop.add_hook(self.opt.save(), 65307, None)
 
-    def restart(self, input):
+    def restart(self, input: int) -> None:
         print(input)
-        if (input == 65307):
-            if (self.on_start):
+        if input == 65307:
+            if self.on_start:
                 Event_loop.close(None)
             else:
                 self.opt.save()
-        
-    def mouse_func(self, button, x, y, _):
+
+    def mouse_func(self, button: int, x: int, y: int, _: None) -> None:
         # print(self.on_start)
         if self.on_start:
             if button == 1 and x > 650 and x < 760 and y > 650 and y < 760:
@@ -93,12 +92,12 @@ class Start:
                 self.a.startup()
 
 
-def main4():
+def main4() -> None:
     start = Start()
     start.render_start()
 
 
-def main2():
+def main2() -> None:
     """Drive the main loop."""
     av = sys.argv
     ac = len(av)
@@ -110,13 +109,6 @@ def main2():
         # print("____________", cfg.entry, cfg.exit)
         a = AMaze(cfg)
         a.startup()
-
-
-def main3():
-    a = AMaze.maze_fromfile("maze.txt")
-    a.startup()
-    print(a)
-
 
 if __name__ == "__main__":
     main4()

@@ -10,7 +10,7 @@ class Render_grid:
     # _canva = None
 
     @classmethod
-    def load(cls, grid: Grid, cfg: Config):
+    def load(cls, grid: Grid, cfg: Config) -> None:
         if cls._initialized:
             raise RuntimeError("MlxContext already initialized")
         cls._grid = grid
@@ -27,7 +27,7 @@ class Render_grid:
     def load_tiles(cls):
         if not cls._initialized:
             if cls._grid is None or cls._cfg is None:
-                raise RuntimeError("Grid was not created, please run Render_grid.create_grid first")
+                raise RuntimeError("Grid was not created")
             cls.load(cls._grid, cls._grid)
         path = (
             os.path.dirname(os.path.abspath(__file__))
@@ -61,7 +61,7 @@ class Render_grid:
         cls._path_texture = texture
 
     @classmethod
-    def render_grid(cls, canva : Canvas):
+    def render_grid(cls, canva: Canvas):
         for x in range(cls._grid.width):
             for y in range(cls._grid.height):
                 Render_cell.render(Vec2(x, y), canva)
@@ -70,13 +70,13 @@ class Render_grid:
     @classmethod
     def grid_canva(cls, cells: Vec2, grid_pos: Vec2):
         """"  The cells pos """
-        canva = Canvas(Vec2(cls._tile_siz.x * 3 * cells.x, cls._tile_siz.y * 3 * cells.y),
-                      Vec2(cls._tile_siz.x * 3 * grid_pos.x, cls._tile_siz.y * 3 * grid_pos.y))
+        canva = Canvas(Vec2(cls._tile_siz.x * 3 * cells.x,
+                            cls._tile_siz.y * 3 * cells.y),
+                       Vec2(cls._tile_siz.x * 3 * grid_pos.x,
+                            cls._tile_siz.y * 3 * grid_pos.y))
         return canva
 
-        
-    
-    
+
 class Render_cell:
     _init = False
     _tile_siz = Vec2
@@ -92,21 +92,24 @@ class Render_cell:
     @classmethod
     def render_path(cls, iteration: int, canva: Canvas):
         path = Render_grid._grid.path
-        curent  = path[iteration]
+        curent = path[iteration]
         if iteration != 0:
             prev = path[iteration - 1]
             canva.add_image(Render_grid._path_texture,
                             Vec2(
                                 int(
                                     curent.x * cls._tile_siz.x * 2
-                                    + (1 - (curent.x - prev.x)) * cls._tile_siz.x
+                                    + (1 - (curent.x - prev.x))
+                                    * cls._tile_siz.x
                                 ),
                                 int(
                                     curent.y * cls._tile_siz.y * 2
-                                    + (1 - (curent.y - prev.y)) * cls._tile_siz.y
+                                    + (1 - (curent.y - prev.y))
+                                    * cls._tile_siz.y
                                 )))
-        if iteration != len(path) and iteration != 0 and curent != Render_grid._cfg.exit:
-            canva.add_image( Render_grid._path_texture,
+        if (iteration != len(path) and iteration != 0
+           and curent != Render_grid._cfg.exit):
+            canva.add_image(Render_grid._path_texture,
                             Vec2(
                                 int(
                                     curent.x * cls._tile_siz.x * 2
@@ -141,77 +144,76 @@ class Render_cell:
         if (cls._grid[pos].ispic):
             color = set_pic_color(Render_grid._cfg.color)
         else:
-            color = Render_grid._cfg.color # TODO: make a function to use the right color in here
-        
+            color = Render_grid._cfg.color
+
         for i in range(3):
             for y in range(3):
                 if y == 1 and i % 2 == 0:
                     if (hex >> 2 * (i == 0) + 1) & 1:
                         canva.add_image(Render_grid._tiles[5 + color * 28],
-                                    Vec2(
-                                        int(
-                                            pos.x * cls._tile_siz.x * 2
-                                            + i * cls._tile_siz.x
-                                        ),
-                                        int(
-                                            pos.y * cls._tile_siz.y * 2
-                                            + y * cls._tile_siz.y
-                                        )))
+                                        Vec2(
+                                            int(
+                                                pos.x * cls._tile_siz.x * 2
+                                                + i * cls._tile_siz.x
+                                            ),
+                                            int(
+                                                pos.y * cls._tile_siz.y * 2
+                                                + y * cls._tile_siz.y
+                                            )))
                     else:
                         canva.add_image(Render_grid._tiles[color * 28],
-                                            Vec2(
-                                                    int(
-                                                        pos.x * cls._tile_siz.x * 2
-                                                        + i * cls._tile_siz.x
-                                                    ),
-                                                    int(
-                                                        pos.y * cls._tile_siz.y * 2
-                                                        + y * cls._tile_siz.y
-                                                    ),
+                                        Vec2(
+                                                int(
+                                                    pos.x * cls._tile_siz.x * 2
+                                                    + i * cls._tile_siz.x
                                                 ),
-                                            )
+                                                int(
+                                                    pos.y * cls._tile_siz.y * 2
+                                                    + y * cls._tile_siz.y
+                                                ),
+                                            ),
+                                        )
                 elif i == 1 and y % 2 == 0:
                     if (hex >> y) & 1:
                         canva.add_image(Render_grid._tiles[4 + color * 28],
-                                Vec2(
-                                        int(
-                                            pos.x * cls._tile_siz.x * 2
-                                            + i * cls._tile_siz.x
-                                        ),
-                                        int(
-                                            pos.y * cls._tile_siz.y * 2
-                                            + y * cls._tile_siz.y
-                                        ),
-                                    ),
-                                )
+                                        Vec2(
+                                                int(
+                                                    pos.x * cls._tile_siz.x * 2
+                                                    + i * cls._tile_siz.x
+                                                ),
+                                                int(
+                                                    pos.y * cls._tile_siz.y * 2
+                                                    + y * cls._tile_siz.y
+                                                ),
+                                            ),
+                                        )
                     else:
                         canva.add_image(Render_grid._tiles[color * 28],
-                                 Vec2(
-                        		        int(
-                        		            pos.x * cls._tile_siz.x * 2
-                        		            + i * cls._tile_siz.x
-                        		        ),
-                        		        int(
-                        		            pos.y * cls._tile_siz.y * 2
-                        		            + y * cls._tile_siz.y
-                        		        ),
-                        		    ),
-                        		)
+                                        Vec2(
+                                               int(
+                                                   pos.x * cls._tile_siz.x * 2
+                                                   + i * cls._tile_siz.x
+                                               ),
+                                               int(
+                                                   pos.y * cls._tile_siz.y * 2
+                                                   + y * cls._tile_siz.y
+                                               ),
+                                           ))
                 elif y % 2 == 1 and i % 2 == 1:
-                    canva.add_image(Render_grid._tiles[(special == 1) * 24
+                    canva.add_image(Render_grid._tiles[((special == 1) * 24
                                                         + (special == 2) * 20
-                                                        + color * 28],
-                                Vec2(
-                                        int(
-                                            pos.x * cls._tile_siz.x * 2
-                                            + i * cls._tile_siz.x
+                                                        + color * 28)],
+                                    Vec2(
+                                            int(
+                                                pos.x * cls._tile_siz.x * 2
+                                                + i * cls._tile_siz.x
+                                            ),
+                                            int(
+                                                pos.y * cls._tile_siz.y * 2
+                                                + y * cls._tile_siz.y
+                                            ),
                                         ),
-                                        int(
-                                            pos.y * cls._tile_siz.y * 2
-                                            + y * cls._tile_siz.y
-                                        ),
-                                    ),
-                                )
+                                    )
                 else:
                     top = (
                         (hex >> (2 * (i == 0) + 1)) & 1
@@ -238,7 +240,7 @@ class Render_cell:
                         (hex >> y) & 1
                         if i == 0
                         else (n[Cell.E] >> y) & 1
-                        if pos.x < Render_grid._grid.width - 1 
+                        if pos.x < Render_grid._grid.width - 1
                         else 0
                     )
                     tile = top + bot + left + right
@@ -252,17 +254,17 @@ class Render_cell:
                         ori = (top or left) * 2 + right * -1 + bot
                     elif tile == 3:
                         ori = 6 - (bot * 3 + left * 2 + top * 1)
-                    
-                    canva.add_image(Render_grid._tiles[(tile * 4 + ori) + color * 28],
-                                        Vec2(
-					                            int(
-					                                pos.x * cls._tile_siz.x * 2
-					                                + i * cls._tile_siz.x
-					                            ),
-					                            int(
-					                                pos.y * cls._tile_siz.y * 2
-					                                + y * cls._tile_siz.y
-					                            ),
-					                        ),
-					                    )
-                    
+
+                    canva.add_image(Render_grid._tiles[(tile * 4 + ori)
+                                                       + color * 28],
+                                    Vec2(
+                                            int(
+                                                pos.x * cls._tile_siz.x * 2
+                                                + i * cls._tile_siz.x
+                                            ),
+                                            int(
+                                                pos.y * cls._tile_siz.y * 2
+                                                + y * cls._tile_siz.y
+                                            ),
+                                        ),
+                                    )

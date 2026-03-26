@@ -49,14 +49,10 @@ class Render:
             int(place.y),
         )
 
-    # def resize_window(self, height: int, width: int):
-    #     self.m.mlx
-
     def render_text(self, text: str, place: Vec2):
         self.events.append((self.render_text_event, (text, place)))
 
     def render_text_event(self, text: str, place: Vec2):
-        # img_ptr = self.m.mlx_png_file_to_image(self.mlx_ptr, self.images[image][1])
         self.m.mlx_string_put(
             self.mlx_ptr, self.win_ptr, int(place.x), int(place.y), 100, text
         )
@@ -114,18 +110,12 @@ class Render:
     def init_grid(self, siz: Vec2):
         self.gridx = siz.x
         self.gridy = siz.y
-        # self.grid = [[0 for _ in range(siz.y)] for _ in range(siz.x)]
         self.tile_siz = Vec2(
             self.width / (siz.x * 2 + 1), self.height / (siz.y * 2 + 1)
         )
-        # self.cell_siz = Vec2(self.width / (siz.x + 4), self.height / (self.gridy) + (self.height / (self.gridy) / 3) - 1)
-
-    # def render_cell(self, pos: Vec2, grid: Grid, color: int, special: int):
-    #     self.events.append((self.render_cell_event, (pos, grid, color, special)))
 
     def render_cell(self, pos: Vec2, grid: Grid, color: int, special: int):
         """ " Sepcial: 0 none, 1 home, 2 arival"""
-        # img_siz = Vec2(self.cell_siz.x / 3, self.cell_siz.y / 3)
         hex = grid[pos].wall
         if color > 2:
             color = 0

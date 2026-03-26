@@ -24,7 +24,7 @@ SHELL := bash
 
 IMG_CACHE := **/resized/*.png 
 
-RMFILES :=__pycache__ .*.sw* *.egg-info dist build $(IMG_CACHE)
+RMFILES :=__pycache__ .*.sw* *.egg-info dist build $(IMG_CACHE) .venv 
 
 CFG := FILENAME=config.txt\\nWIDTH=25\\nHEIGHT=25\\nENTRY=0,0\\nEXIT=0,25\
 \\nOUTPUT_FILE=maze.txt\\nPERFECT=True\\nPIC_SCALAR=1\\nPIC=[87, 81, 119, 20, 23]

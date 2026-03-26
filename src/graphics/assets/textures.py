@@ -1,8 +1,9 @@
-from graphics import Mlx, Mlx_context
+from graphics import Mlx_context
 from helper import Vec2
 
 import os
 from PIL import Image
+
 
 class Textures:
     _textures = []
@@ -18,7 +19,6 @@ class Textures:
     @classmethod
     def load(cls, path: str, image: str, siz: Vec2, degs: tuple):
         # def generate_texture(path, image, siz, degs) -> tuple:
-            
 
         if not os.path.exists(path + image):
             print(f"file: {path + image} not found")
@@ -40,7 +40,8 @@ class Textures:
         ret = []
         for img in images:
             id = len(cls._textures)
-            ptr = Mlx_context._mlx.mlx_png_file_to_image(Mlx_context.get(), img)
+            ptr = Mlx_context._mlx.mlx_png_file_to_image(Mlx_context.get(),
+                                                         img)
             cls._textures.append(ptr[0])
             cls._sizes.append(siz)
             ret.append(id)
