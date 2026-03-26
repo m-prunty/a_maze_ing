@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/07 03:02:45 by maprunty         #+#    #+#              #
-#    Updated: 2026/03/08 17:01:32 by maprunty        ###   ########.fr        #
+#    Updated: 2026/03/26 10:44:13 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
@@ -21,7 +21,7 @@ from typing import Any, Protocol
 
 from config import Config
 from helper import Cell, Dir, Grid, Path, Vec2
-	
+
 
 class EType(Enum):
     ENTER = auto()
@@ -43,7 +43,7 @@ class Graph(Protocol):
 
 
 class GenGraph:
-    def __init__(self, grid: Grid):
+    def __init__(self, grid: Grid) -> None:
         self.grid = grid
 
     def neighbours(self, cell: Cell) -> Iterable[Cell]:
@@ -51,7 +51,7 @@ class GenGraph:
 
 
 class PathGraph:
-    def __init__(self, grid: Grid):
+    def __init__(self, grid: Grid) -> None:
         self.grid = grid
 
     def neighbours(self, cell: Cell) -> Iterable[Cell]:
@@ -60,7 +60,6 @@ class PathGraph:
             c for c in list(cell.neighbours.items()) if not cell.has_wall(c[0])
         ]
         c_list.sort(key=lambda x: (x[0], x[1].loc.x, x[1].loc.y))
-        # print(c_list)
         yield from c_list
 
 
@@ -89,7 +88,7 @@ class MkStage:
 
 
 class VisitStage:
-    def process(self, e: MazeEvent):
+    def process(self, e: MazeEvent) -> bool:
         if e.etype == EType.ENTER:
             if e.cell.visited:
                 return False
@@ -102,13 +101,11 @@ class VisitStage:
 
 
 class PathStage:
-    def process(self, e: MazeEvent):
+    def process(self, e: MazeEvent) -> bool:
         if e.etype == EType.ENTER:
             e.cell.ispath = True
-            print("path mark")
         elif e.etype == EType.EXIT:
             e.cell.ispath = False
-            print("path clear")
         return True
 
 
@@ -124,9 +121,8 @@ class GoalStage:
     def __init__(self, goal):
         self.goal = goal
 
-    def process(self, e):
+    def process(self, e) -> bool:
         if e.etype == EType.ENTER and e.cell.loc == self.goal:
-            # print("!!!!!")
             e.found = True
         return not e.found
 
@@ -139,11 +135,13 @@ class BaseStrat(ABC):
             grid (Grid): Description.
         """
         self.config = cfg
-        # random.seed()
         self.rng = random.Random(cfg.seed)
         self.stages: list[BaseStage] = []
         self.graph = graph
         self.grid = graph.grid
+        self._n_imperfect = ((self.width * self.height) ** 0.5) * int(
+            not self.config.perfect
+        )
 
     def add_stage(self, stage: BaseStage) -> None:
         self.stages.append(stage)
@@ -154,13 +152,33 @@ class BaseStrat(ABC):
         self.exit_cell = self.grid[self.config.exit]
         self._open_entry_exit(self.entry_cell)
         self._open_entry_exit(self.exit_cell)
-        # print(">>", [s for s in self.stages])
-        # print(self.stages[0])
+
+    def _imperfect(self) -> None:
+        while self._n_imperfect >= 0:
+            cell = self.entry_cell
+            while cell in (self.entry_cell, self.exit_cell) or cell.ispic:
+                cell = self.grid[
+                    (
+                        self.rng.randint(0, self.width - 1),
+                        self.rng.randint(0, self.height - 1),
+                    )
+                ]
+            n_lst = [
+                n[0]
+                for n in self.graph.neighbours(cell)
+                if n[1] and not n[1].ispic
+            ]
+            print(cell.ispic, n_lst, not n_lst)
+            self.rng.shuffle(n_lst)
+            if n_lst:
+                n = self.rng.randint(1, len(n_lst))
+                for _ in n_lst[:n]:
+                    cell.rm_wall_nb(_)
+            self._n_imperfect -= 1
 
     def _dispatch(self, event: MazeEvent) -> bool:
         for stage in self.stages:
             result = stage.process(event)
-            # print(result, event)
             if result is False:
                 return False
         return True
@@ -193,6 +211,7 @@ class BaseStrat(ABC):
 class Dfs(BaseStrat):
     def generate(self):
         super().generate()
+        self._imperfect()
         start = self.config.entry
         yield from self._dfs(start)
 
@@ -224,6 +243,106 @@ class Dfs(BaseStrat):
         back = MazeEvent(cell, etype=EType.EXIT)
         self._dispatch(back)
         return False
+
+
+class Dijkstra(BaseStrat):
+    """PSuuedocode https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm.
+
+        1  function Dijkstra(Graph, source):
+         2
+         3      for each vertex v in Graph.Vertices:
+         4          dist[v] ← INFINITY
+         5          prev[v] ← UNDEFINED
+         6          add v to Q
+         7      dist[source] ← 0
+         8
+         9      while Q is not empty:
+        10          u ← vertex in Q with minimum dist[u]
+        11          Q.remove(u)
+        12
+        13          for each edge (u, v) in Graph:
+        14              alt ← dist[u] + Graph.Distance(u,v)
+        15              if alt < dist[v]:
+        16                  dist[v] ← alt
+        17                  prev[v] ← u
+        18
+        19      return dist[], prev[]
+
+    procedure uniform_cost_search(start) is
+        node ← start
+        frontier ← priority queue containing node only
+        expanded ← empty set
+        do
+            if frontier is empty then
+                return failure
+            node ← frontier.pop()
+            if node is a goal state then
+                return solution(node)
+            expanded.add(node)
+            for each of node's neighbors n do
+                if n is not in expanded and not in frontier then
+                    frontier.add(n)
+                else if n is in frontier with higher cost
+                    replace existing node with n
+    """
+
+    def generate(self):
+        super().generate()
+        self._imperfect()
+        start = self.config.entry
+        yield from self._dijks(start)
+
+    def _dijks(self, pos: Vec2 = Vec2(0, 0)):
+        node: Cell = self.grid[pos]
+        frontier: list[Cell] = [(0, node)]
+        expanded: set[Cell] = set()
+
+        print("nnn", node)
+        # cost: dict[Cell, int] = {node: 0}
+        parent: Dict[Cell, Cell] = {node: None}
+        while True:
+            if not frontier:
+                return False
+            i = min(frontier, key=lambda f: f[0])
+            frontier.remove(i)
+            cost, node = i
+
+            if node in expanded:
+                continue
+            enter = MazeEvent(cell=node, etype=EType.ENTER)
+            if not self._dispatch(enter):
+                break
+            # return enter.found
+
+            # print(node.loc)
+            # yield node.loc
+            expanded.add(node)
+            for direction, neighbour in self.graph.neighbours(node):
+                if not neighbour:
+                    continue
+                e = MazeEvent(node, neighbour, direction, EType.EDGE)
+                if not self._dispatch(e):
+                    continue
+
+                if neighbour not in expanded:
+                    _neighbour = next(
+                        (f for f in frontier if f[1] == neighbour), None
+                    )
+                    if not _neighbour:
+                        frontier.append((cost + 1, neighbour))
+                    elif _neighbour[0] > (cost + 1):
+                        frontier.remove(_neighbour)
+                        frontier.append((cost + 1, neighbour))
+                    parent[neighbour] = node
+            back = MazeEvent(node, etype=EType.EXIT)
+            self._dispatch(back)
+        print("nnn", node)
+        cell = parent[self.exit_cell]
+        print("aaa", cell)
+        while cell != self.entry_cell:
+            print(cell)
+            cell = parent[cell]
+            yield cell
 
 
 class Pic(BaseStrat):
@@ -493,8 +612,9 @@ class Generators:
         self.path = []
 
     def to_path(self, v_lst: list[Vec2]):
-        # print([v for v in v_lst if self.grid[v].ispath])
-        yield from [v for v in v_lst if self.grid[v].ispath]
+        return reversed(v_lst)
+        # [print(v) for v in v_lst if self.grid[v].ispath]
+        # yield from [v for v in v_lst if self.grid[v].ispath]
 
     def gen_grid(self):
         """Thes becomes open walls and give the hande to the animator."""
@@ -514,30 +634,9 @@ class Generators:
 
         self.grid.reset()
 
-        path = Dfs(PathGraph(self.grid), self.config)
+        path = Dijkstra(PathGraph(self.grid), self.config)
         path.add_stage(VisitStage())
         path.add_stage(PathStage())
         path.add_stage(GoalStage(self.config.exit))
 
-        # print([*path.generate()])
         self.grid.path = [*self.to_path([*path.generate()])]
-
-
-# prim = Prim(self.config)
-# prim.add_stage(MkStage())
-# prim.add_stage(RmStage())
-# [*prim.generate(self.grid)]
-
-# swinder = Sidewinder(self.config)
-# [*swinder.generate(self.grid)]
-
-
-#       wilson = Wilson(self.config)
-#       [*wilson.generate(self.grid)]
-
-# path = Path(self.config)
-# [*path.generate(self.grid)]
-# print()
-# print("Grid properly GENEATED")
-# # self.animate_path(canva, 0.0)
-# print(self.config.exit)
