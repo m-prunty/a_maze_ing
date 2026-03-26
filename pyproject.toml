@@ -1,5 +1,5 @@
 [project]
-name = "amazing"
+name = "mazegen"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [tool.setuptools.packages.find]
-where = [".", "src"]
+where = [".", "src/mazegen"]
 
 [tool.uv.sources]
 mlx = { path = "mlx-2.2-py3-none-any.whl" }

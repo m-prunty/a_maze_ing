@@ -12,11 +12,12 @@ from helper import Vec2
 import os
 import sys
 
+
 class Options:
     def __init__(self, config: Config):
         self.cfg = config
         self.opt_rend = Options_render()
-        for field  in fields(self.cfg):
+        for field in fields(self.cfg):
             min = None
             max = None
             if (field.name.startswith("_")):
@@ -37,17 +38,23 @@ class Options:
                 self.opt_rend.add_input(field.name, value, int)
             elif (annotation is str):
                 self.opt_rend.add_input(field.name, value, str)
+            elif (annotation is bool):
+                self.opt_rend.add_dropdown(field.name,
+                                           value,
+                                           get_args(Literal[True, False]))
             elif (annotation is tuple):
                 self.opt_rend.add_input(field.name + " X", value.x, int)
                 self.opt_rend.add_input(field.name + " Y", value.y, int)
             elif (get_origin(annotation) is Literal):
-                self.opt_rend.add_dropdown(field.name, value, get_args(annotation))
+                self.opt_rend.add_dropdown(field.name,
+                                           value,
+                                           get_args(annotation))
         
         self.is_active = False
     
     def put_to_config(self, fields: list):
         """ vars: 0 width, 1 height"""
-        for key, value  in self.cfg:
+        for key, value in self.cfg:
             try:
                 if (key.startswith("_")):
                     continue
@@ -57,7 +64,6 @@ class Options:
             except KeyError:
                 print(key, "is not handeld yet")
         self.cfg.cfg_to_file()
-            
 
     def render(self):
         self.opt_rend.render_options()
@@ -70,7 +76,7 @@ class Options:
         os.execv(sys.executable, [sys.executable] + sys.argv)
         self.is_active = False
         self.render()
-    
+
     def mouse_event(self, button, x, y, baa):
         if (self.is_active):
             if (button == 4):
@@ -81,12 +87,10 @@ class Options:
                 self.opt_rend.render_options()
             if (button == 1):
                 self.opt_rend.check_click(Vec2(x, y), self)
-        
-
 
 
 class Options_render:
-    
+
     def __init__(self):
         self.width = Window.get_siz().x
         self.height = Window.get_siz().y
@@ -101,38 +105,42 @@ class Options_render:
         path = os.path.dirname(os.path.abspath(__file__)) + "/includes/"
         
         self.imgs = {}
-        self.imgs["Bar"] = Textures.load(path,"bar.png",
-                                                 Vec2(self.bar_width * 1.05, 
-                                                      self.bar_height),
-                        						  (0,))[0]
-        self.imgs["Box"] = Textures.load(path,"box_input.png",
-                                                 Vec2(self.bar_width * 1.05,
-                                                      self.bar_height + self.top_padding),
-                        						  (0,))[0]
-        self.imgs["Arrows"] = Textures.load(path,"arrow.png",
-                                                 Vec2( self.bar_height,
-                                                       self.bar_height),
-                        						  (180, 270))
-        self.imgs["Drop_back"] = Textures.load(path,"dropdown_back.png",
-                                                 Vec2(self.bar_width * 0.5,
-                                                      self.bar_height * 1.75),
-                        						  (0,))[0]
+        self.imgs["Bar"] = Textures.load(path, "bar.png",
+                                         Vec2(self.bar_width * 1.05,
+                                              self.bar_height),
+                                         (0,))[0]
+        self.imgs["Box"] = Textures.load(path, "box_input.png",
+                                         Vec2(self.bar_width * 1.05,
+                                              self.bar_height
+                                              + self.top_padding),
+                                         (0,))[0]
+        self.imgs["Arrows"] = Textures.load(path, "arrow.png",
+                                            Vec2(self.bar_height,
+                                                 self.bar_height),
+                                            (180, 270))
+        self.imgs["Drop_back"] = Textures.load(path, "dropdown_back.png",
+                                               Vec2(self.bar_width * 0.5,
+                                                    self.bar_height * 1.75),
+                                               (0,))[0]
         self.imgs["Cursor"] = Textures.load(path, "cursor.png",
                                                  Vec2(self.bar_width / 100,
                         						 self.bar_height), (0,))[0]
         self.imgs["Save"] = Textures.load(path, "save_button.png",
-                                                 Vec2(self.width * 0.4,
-                        						 self.height * 0.1), (0,))[0]
+                                          Vec2(self.width * 0.4,
+                                               self.height * 0.1), (0,))[0]
         self.scroll = 0
 
     def render_options(self):
         Window.clear_window()
         Renderer.render_text("OPTIONS", Vec2(self.sids_padding * 2,
-                                    self.scroll))
-        Renderer.render_image(self.imgs["Save"], 
-                               Vec2(self.width * 0.3,
-                                    (self.height * 0.02) + ((self.text_siz
-                                    + self.bar_height + self.top_padding) * len(self.fields)) + self.text_siz + self.scroll))
+                                             self.scroll))
+        Renderer.render_image(self.imgs["Save"],
+                              Vec2(self.width * 0.3,
+                                   (self.height * 0.02)
+                                   + ((self.text_siz
+                                       + self.bar_height + self.top_padding)
+                                       * len(self.fields))
+                                   + self.text_siz + self.scroll))
         for field in self.fields:
             if (self.fields[field]["TYPE"] == "cursor"):
                 self.render_cursor(field)
@@ -140,7 +148,6 @@ class Options_render:
                 self.render_input(field)
             if (self.fields[field]["TYPE"] == "dropdown"):
                 self.render_dropdown(field)
-        
 
     def add_cursor(self, name: str, unit: str, vals: tuple):
         """ "vals 0 min, 1 default, 2 max"""
@@ -154,7 +161,7 @@ class Options_render:
             "INDEX": len(self.fields),
             "TYPE": "cursor"
         }
-        
+
     def add_input(self, name: str, val, type):
         """ "vals 0 min, 1 default, 2 max"""
         self.fields[name] = {
@@ -165,7 +172,7 @@ class Options_render:
             "DATA_TYPE": type,
             "TYPE": "input"
         }
-        
+
     def add_dropdown(self, name: str, val, posibles: list):
         """ "vals 0 min, 1 default, 2 max"""
         self.fields[name] = {
@@ -176,46 +183,76 @@ class Options_render:
             "TYPE": "dropdown",
             "OPEN": False
         }
-    
+
     def render_dropdown(self, name: str):
         if name not in self.fields:
             print("Field not found !")
         indicator = f'{name}: {self.fields[name]["VAL"]}'
         # print("indicators len is :", len(indicator))
         Renderer.render_text(indicator, Vec2(self.sids_padding * 1.5,
-                                self.height * 0.02 + ((self.text_siz+ self.bar_height + self.top_padding)
-                                                      * self.fields[name]["INDEX"]) + self.scroll))
+                                             self.height * 0.02
+                                             + ((self.text_siz
+                                                 + self.bar_height
+                                                 + self.top_padding)
+                                                 * self.fields[name]["INDEX"])
+                                             + self.scroll))
         if self.fields[name]["OPEN"]:
-            Renderer.render_image(self.imgs["Arrows"][1],#
-                               Vec2(self.sids_padding * 1.6 + len(indicator) * 10,
-                                    self.height * 0.02 + ((self.text_siz+ self.bar_height + self.top_padding)
-                                                      * self.fields[name]["INDEX"]) + self.scroll))
+            Renderer.render_image(self.imgs["Arrows"][1],
+                                  Vec2(self.sids_padding * 1.6
+                                       + len(indicator) * 10,
+                                       self.height * 0.02
+                                       + ((self.text_siz
+                                           + self.bar_height
+                                           + self.top_padding)
+                                           * self.fields[name]["INDEX"])
+                                       + self.scroll))
             i = 1
             for value in self.fields[name]["POSSIBLE"]:
-                Renderer.render_image(self.imgs["Drop_back"], Vec2(int(self.sids_padding * 2),
-                                                    int(self.height * 0.02 + ((self.text_siz + self.bar_height
-                                                                               + self.top_padding) * self.fields[name]["INDEX"]) + self.text_siz * i + self.scroll)))
-                
-                Renderer.render_text(str(value), Vec2(int(self.sids_padding * 2),
-                                                    int(self.height * 0.02 + ((self.text_siz
-                                    	            + self.bar_height + self.top_padding) * self.fields[name]["INDEX"]) + self.text_siz * i + self.scroll)), 0)
+                Renderer.render_image(self.imgs["Drop_back"],
+                                      Vec2(int(self.sids_padding * 2),
+                                           int(self.height * 0.02
+                                               + ((self.text_siz
+                                                   + self.bar_height
+                                                   + self.top_padding)
+                                                  * self.fields[name]["INDEX"])
+                                               + self.text_siz * i
+                                               + self.scroll)))
+
+                Renderer.render_text(str(value),
+                                     Vec2(int(self.sids_padding * 2),
+                                          int(self.height * 0.02
+                                              + ((self.text_siz
+                                                  + self.bar_height
+                                                  + self.top_padding)
+                                                 * self.fields[name]["INDEX"])
+                                              + self.text_siz * i
+                                              + self.scroll)), 0)
                 i += 1
-                
+
         else:
             Renderer.render_image(self.imgs["Arrows"][0],
-                               Vec2(int(self.sids_padding * 1.6 + len(indicator) * 10),
-                                    self.height * 0.025 + ((self.text_siz+ self.bar_height + self.top_padding)
-                                                      * self.fields[name]["INDEX"]) + self.scroll))
-        print("Indicator is:", len(indicator))
+                                  Vec2(int(self.sids_padding * 1.6
+                                           + len(indicator) * 10),
+                                       self.height * 0.025
+                                       + ((self.text_siz
+                                           + self.bar_height
+                                           + self.top_padding)
+                                          * self.fields[name]["INDEX"])
+                                       + self.scroll))
             
     def render_input(self, name: str):
         if name not in self.fields:
             print("Field not found !")
-        Renderer.render_text(f'{name}: {self.fields[name]["VAL"]}', Vec2(self.sids_padding * 1.5,
-                                self.height * 0.02 + ((self.text_siz+ self.bar_height + self.top_padding)
-                                                      * self.fields[name]["INDEX"]) + self.scroll))
+        Renderer.render_text(f'{name}: {self.fields[name]["VAL"]}',
+                             Vec2(self.sids_padding * 1.5,
+                                  self.height * 0.02
+                                  + ((self.text_siz
+                                      + self.bar_height
+                                      + self.top_padding)
+                                     * self.fields[name]["INDEX"])
+                                  + self.scroll))
         Renderer.render_image(self.imgs["Box"],
-                               Vec2(int(self.sids_padding * 0.95),
+                              Vec2(int(self.sids_padding * 0.95),
                                     int(self.height * 0.02 + ((self.text_siz
                                     	+ self.bar_height + self.top_padding) * self.fields[name]["INDEX"]) + self.text_siz + self.scroll)))
         if self.fields[name]["INPUT"] is None:

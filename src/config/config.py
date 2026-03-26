@@ -17,10 +17,8 @@ from typing import Literal
 from pydantic import ConfigDict, Field, model_validator
 from pydantic.dataclasses import dataclass
 from dataclasses import fields
-
 from helper import Vec2
 
-# maxw = 30
 
 @dataclass
 class Config:
@@ -39,9 +37,9 @@ class Config:
     color: Literal[0, 1, 2] = 0
     gen_algo: Literal["Dfs", "prim", "swinder", "wilson"] = "Dfs"
 
-
     def is_grid(self, vec: Vec2) -> bool:
-        """Check if a vector lives in the grid and return a border value if not.
+        """Check if a vector lives in the grid
+        and return a border value if not.
 
         Args:
             vec (Vec2): the coordinates to check if exist in grid
@@ -60,25 +58,6 @@ class Config:
             )
         # print(vec)
         return vec
-
-    # @field_validator("width", "height", mode="before")
-    # @classmethod
-    # def valid_sz(cls, value: int) -> int:
-    #     """Check if value is within bounds (1, 30).
-
-    #     Args:
-    #         value (int): value to check against.
-
-    #     Returns:
-    #         type: Int the bvalue itself.
-
-    #     Raises:
-    #         ExceptionType: When out of bountds .
-    #     """
-    #     if 1 <= value <= maxw:
-    #         cls.maxw = value
-    #         return value
-    #     raise ValueError(f"range (1, 30); value = {value}")
 
     @model_validator(mode="after")
     def is_valid(self):
@@ -185,37 +164,37 @@ class Config:
     def __iter__(self):
         for v in fields(self):
             yield v.name, getattr(self, v.name)
-            
+
     @property
     def entry(self):
         # print(self)
         return Vec2(self._entry[0], self._entry[1])
-    
+
     @entry.setter
     def entry(self, val: Vec2):
         print("entred setter")
-        if (val.x < 0 or val.y < 0
-            or val.x > self.width or val.y > self.height):
+        if (val.x < 0 or val.y < 0 or
+           val.x > self.width or val.y > self.height):
             raise ValueError
         self._entry = (val.x, val.y)
-        
+
     @property
     def exit(self):
         # print(Vec2(self._exit[0], self._exit[1]))
         return Vec2(self._exit[0], self._exit[1])
-    
+
     @exit.setter
     def exit(self, val: Vec2):
         print("entred setter")
         if (val.x < 0 or val.y < 0
-            or val.x > self.width or val.y > self.height):
+           or val.x > self.width or val.y > self.height):
             raise ValueError
         self._exit = (val.x, val.y)
-        
+
     @property
     def window_siz(self):
         return Vec2(self._window_siz[0], self._window_siz[1])
-    
+
     @window_siz.setter
     def window_siz(self, val: Vec2):
         self._window_siz = (val.x, val.y)
