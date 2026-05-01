@@ -5,9 +5,9 @@
 #    config.py                                         :+:      :+:    :+:    #
 #                                                    +:+ +:+         +:+      #
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
-#                                               +#+#+#+#+#+   +#+            #
+#                                               +#+#+#+#+#+   +#+             #
 #    Created: 2026/02/03 21:19:22 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/01 11:34:44 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/01 21:08:36 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Configuration module for maze generation and rendering."""
@@ -31,7 +31,7 @@ class Config:
     width: int = Field(ge=5, le=30, default=10)
     height: int = Field(ge=5, le=30, default=10)
     entry: Vec2 = Field(default=Vec2(0, 0))
-    exit: Vec2 = Field(default=Vec2(5, 0))
+    exit: Vec2 = Field(default=Vec2(5, 0))  # chekc for in pic
     seed: int = Field(default=0)
     perfect: bool = Field(default=True)
     pic: Literal[1, 2, 3] = Field(default=1)

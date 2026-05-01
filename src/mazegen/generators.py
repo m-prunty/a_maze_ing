@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/07 03:02:45 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/01 14:37:36 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/01 21:42:38 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
@@ -76,6 +76,15 @@ class Generators:
         generator.add_stage(RmStage())
         [*generator.generate()]
 
+    @staticmethod
+    def retryIO(self, loc: Vec2):
+        """Retry opening entry or exit if they are  in the picture."""
+        print(f"Location {loc} is in the picture, adjusting...")
+        return Vec2(
+            (loc.x + 1) % self.config.width,
+            (loc.y + 1) % self.config.height,
+        )
+
     def gen_pic(self, select: int):
         """Generate the maze grid based on the picture data."""
         self.grid.pic = Pic.get_pic(select)
@@ -84,6 +93,10 @@ class Generators:
         pic = Pic(GenGraph(self.grid), self.config)
         pic.add_stage(MkStage())
         [*pic.generate()]
+        while self.grid[self.config.entry].ispic:
+            self.config.entry = self.retryIO(self.config.entry)
+        while self.grid[self.config.exit].ispic:
+            self.config.exit = self.retryIO(self.config.exit)
 
     def driver(self):
         """Thes becomes open walls and give the hande to the animator."""

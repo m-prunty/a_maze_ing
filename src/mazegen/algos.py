@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/01 08:04:43 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/01 14:35:28 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/01 21:30:00 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
@@ -32,13 +32,16 @@ class BaseStrat(ABC):
     def __init__(self, graph: Graph, cfg: Config) -> None:
         """Initializes BaseStrat with a graph and config."""
         self.config = cfg
-        self.rng = random.Random(cfg.seed)
+        self.rng = (
+            random.Random() if cfg.seed == 0 else random.Random(cfg.seed)
+        )
         self.stages: list[BaseStage] = []
         self.graph = graph
         self.grid = graph.grid
-        self._n_imperfect = ((self.width * self.height) ** 0.5) * int(
+        self._n_imperfect = ((self.width * self.height) ** 0.7) * int(
             not self.config.perfect
         )
+        print(f"n_imperfect: {self._n_imperfect}")
 
     def add_stage(self, stage: BaseStage) -> None:
         """Adds a stage to the strategy."""
@@ -51,6 +54,7 @@ class BaseStrat(ABC):
         self.exit_cell = self.grid[self.config.exit]
         self._open_entry_exit(self.entry_cell)
         self._open_entry_exit(self.exit_cell)
+        self._imperfect()
 
     def _imperfect(self) -> None:
         """Carve random walls to make maze imperfect."""
@@ -262,17 +266,17 @@ class Pic(BaseStrat):
             ]
         elif select == 2:
             pic = [
-                0b111010001011101110111,
-                0b101011111010100010100,
-                0b111010101011100100111,
-                0b101010101010101000100,
-                0b101010101010101110111,
+                0b001111010001011101110111,
+                0b001101011111010100010100,
+                0b001111010101011100100111,
+                0b001101010101010101000100,
+                0b001101010101010101110111,
             ]
         elif select == 3:
             pic = [
                 0b000000011110000011111111,
-                0b000001110100001110000111,
-                0b000111011100000000011100,
+                0b000001111100001110000111,
+                0b000111001100000000011100,
                 0b011100111000000011100000,
                 0b111111111100011100000000,
                 0b000011100001110000000000,

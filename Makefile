@@ -6,7 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.de  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/01 13:25:26 by maprunty          #+#    #+#              #
-#    Updated: 2026/05/01 05:20:57 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/01 21:01:01 by maprunty        ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 # • install: Install project dependencies using pip, uv, pipx, or any other package
@@ -32,7 +32,7 @@ CFG := FILENAME=config.txt\\nWIDTH=25\\nHEIGHT=25\\nENTRY=0,0\\nEXIT=0,25\
 
 .PHONY: run
 run: $(IMG_CACHE) ## Execute the main script. 
-	uv run ./a-maze-ing.py
+	uv run ./a_maze_ing.py
 
 .PHONY: install
 install: uv dev## Install dependencies using uv
