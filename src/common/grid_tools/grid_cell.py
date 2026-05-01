@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:38:19 by maprunty         #+#    #+#              #
-#    Updated: 2026/03/26 09:41:19 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/01 13:17:06 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """TODO: Short module summary.
@@ -15,10 +15,11 @@
 Optional longer description.
 """
 
+from collections.abc import Generator
 from enum import IntFlag
+from typing import Protocol, Self
 
 from .vector import Vec2
-from typing import Protocol, Self, Generator
 
 
 class HasSize(Protocol):
@@ -45,22 +46,33 @@ class Dir(IntFlag):
     # def __add__(self, other)-> Self:
 
     def opps(self) -> "Dir":
-        return {
-            Dir.N: Dir.S,
-            Dir.E: Dir.W,
-            Dir.S: Dir.N,
-            Dir.W: Dir.E,
-            Dir.A: Dir.non,
-            Dir.non: Dir.A,
-        }[self]
+        return _OPPOSITE[self]
 
-    def v(self) -> int:
-        return {
-            Dir.N: Vec2(0, -1),
-            Dir.E: Vec2(1, 0),
-            Dir.S: Vec2(0, 1),
-            Dir.W: Vec2(-1, 0),
-        }[self]
+    def v(self) -> "Vec2":
+        return Vec2(*_DIR_TO_VEC[self])
+
+    @classmethod
+    def from_vec(cls, v: "Vec2") -> "Dir":
+        return _VEC_TO_DIR[(v.x, v.y)]
+
+
+_VEC_TO_DIR = {
+    (0, -1): Dir.N,
+    (1, 0): Dir.E,
+    (0, 1): Dir.S,
+    (-1, 0): Dir.W,
+}
+
+_DIR_TO_VEC = {v: k for k, v in _VEC_TO_DIR.items()}
+
+_OPPOSITE = {
+    Dir.N: Dir.S,
+    Dir.E: Dir.W,
+    Dir.S: Dir.N,
+    Dir.W: Dir.E,
+    Dir.A: Dir.non,
+    Dir.non: Dir.A,
+}
 
 
 class Cell:
@@ -101,6 +113,12 @@ class Cell:
         r_str = f"{self.loc} "
         r_str += f"{self.wall}"
         return r_str
+
+    def __sub__(self, other) -> Dir:
+        """Subtract two cells to get the direction from self to other."""
+        if abs(self.loc - other.loc) != 1:
+            raise ValueError("Cells are not adjacent")
+        return Dir.from_vec(other.loc - self.loc)
 
     @property
     def loc(self) -> Vec2:
@@ -218,6 +236,7 @@ class Grid:
             for y in range(self.height)
         ]
         self.get_cell_neighbours()
+        self.pic = []
 
     def __getitem__(self, key: tuple[int, int] | Vec2) -> Cell | None:
         """TODO: Docstring."""
@@ -231,14 +250,19 @@ class Grid:
                     f"\
 {x} or {y} is out of range {self.width},{self.height}"
                 )
-        except ValueError as ve:
-            print(f"Grid key error:{key} not a valid tuple {ve}")
+        except ValueError:
+            # print(
+            #    f"Grid key error:{key} not a valid tuple {ve}", file=sys.stderr
+            # )
             return None
 
     def isvalid(self, v: Vec2) -> int | Vec2:
-        if (v.x is not None and v.y is not None and
-           0 <= v.x <= self.width and
-           0 <= v.y <= self.height):
+        if (
+            v.x is not None
+            and v.y is not None
+            and 0 <= v.x <= self.width
+            and 0 <= v.y <= self.height
+        ):
             return v
         return 0
 
@@ -279,18 +303,6 @@ class Grid:
     def get_cell_neighbours(self) -> None:
         for c in self:
             c.get_neighbours(self)
-
-    #
-    #    @property
-    #    def width(self):
-    #        """Get WIDTH from config file."""
-    #        return self._width
-    #
-    #    @property
-    #    def height(self):
-    #        """Get HEIGHT from config file."""
-    #        return self._height
-    #
 
     def neighbour(self, pos: Vec2) -> dict[str, int]:
         """Get four closest cells."""

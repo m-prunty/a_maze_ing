@@ -7,16 +7,17 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                               +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/03 21:19:22 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/01 05:03:31 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/01 11:34:44 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Configuration module for maze generation and rendering."""
 
+import ast
 import random
 from collections.abc import Generator
 from typing import Any, Literal
 
-from pydantic import ConfigDict, Field, model_validator
+from pydantic import ConfigDict, Field, field_validator, model_validator
 from pydantic.dataclasses import dataclass
 
 from ..grid_tools import Vec2
@@ -39,7 +40,10 @@ class Config:
     output_file: str = Field(default="maze.txt")
     model_config = ConfigDict(revalidate_instances="always")
     color: Literal[0, 1, 2] = 0
-    gen_algo: Literal["Dfs", "prim", "swinder", "wilson"] = "Dfs"
+    gen_algo: Literal["dfs", "prim", "swinder", "wilson", "dijkstra"] = "dfs"
+    path_algo: Literal["dfs", "prim", "swinder", "wilson", "dijkstra"] = (
+        "dijkstra"
+    )
 
     def is_grid(self, vec: Vec2) -> Vec2:
         """Check if a Vec2 instance is within the grid bounds."""
@@ -55,97 +59,54 @@ class Config:
         return vec
 
     @model_validator(mode="after")
-    def is_valid(self):
-        """Validate the entry and exit points are within the grid bounds."""
-        try:
-            self.exit = self.is_grid(self.exit)
-            return self
-        except Exception as e:
-            print(e)
+    def validate_bounds(self) -> "Config":
+        """Validate that the entry and exit are within the grid bounds."""
+        if not (0 <= self.exit.x < self.width) or not (
+            0 <= self.exit.y < self.height
+        ):
+            raise ValueError("exit out of bounds")
+        if not (0 <= self.entry.x < self.width) or not (
+            0 <= self.entry.y < self.height
+        ):
+            raise ValueError("entry out of bounds")
+        return self
 
+    @field_validator("entry", "exit", "window_siz", mode="before")
     @classmethod
-    def cfg_from_filemap(cls, hexlist):
-        """Create a Config instance from a hexlist repr of the maze."""
-        vlst = []
-        c_dct = {"width": len(hexlist[1])}
-        for i, j in enumerate(hexlist[1:]):
-            if "," in j:
-                vlst += j.split(",")
-                i -= 1
-        c_dct["height"] = i - 3
-        c_dct["entry"] = Vec2(vlst[0], vlst[1])
-        c_dct["exit"] = Vec2(vlst[2], vlst[3])
-        return cls(**c_dct)
+    def parse_vec2(cls, v) -> Vec2:
+        """Parse a string repr of a Vec2 instance into a Vec2 instance."""
+        if isinstance(v, str):
+            x, y = ast.literal_eval(v)
+        if isinstance(v, tuple) and len(v) == 2:
+            x, y = v
+        if isinstance(v, Vec2):
+            return Vec2(x, y)
+        else:
+            try:
+                x, y = int(x), int(y)
+                return Vec2(x, y)
+            except Exception as e:
+                raise ValueError(
+                    f"Expected a Vec2, got {type(v).__name__} with value {v}"
+                ) from e
 
-    def get_pic(self, select: int):
-        """Get the picture data for the maze based on the selected option."""
-        if select == 1:
-            self.pic = [
-                0b1010111,
-                0b1010001,
-                0b1110111,
-                0b0010100,
-                0b0010111,
-            ]
-        elif select == 2:
-            self.pic = [
-                0b111010001011101110111,
-                0b101011111010100010100,
-                0b111010101011100100111,
-                0b101010101010101000100,
-                0b101010101010101110111,
-            ]
-        elif select == 3:
-            self.pic = [
-                0b000000011110000011111111,
-                0b000001110100001110000111,
-                0b000111011100000000011100,
-                0b011100111000000011100000,
-                0b111111111100011100000000,
-                0b000011100001110000000000,
-                0b000111000111111110110000,
-            ]
-
+    @field_validator("filename", "output_file", "gen_algo", mode="before")
     @classmethod
-    def cfg_from_file(cls, filename: str) -> "Config":
-        """Create a Config instance from a configuration file."""
-        c_dct = {"filename": filename}
-        with open(filename) as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith("#"):
-                    try:
-                        k, v = line.split("=")
-                        k = k.strip().lower()
-                        if "[" in v:
-                            v = Vec2(*[e.strip(",[]") for e in (v.split(","))])
-                        elif "(" in v:
-                            v = Vec2(
-                                *[int(e.strip(",()")) for e in (v.split(","))]
-                            )
-                        elif v == "None":
-                            v = None
-                        elif "," in v:
-                            v = v.split(",")
-                            v = (v[0], v[1])
-                        elif v.lower() in ("true", "false"):
-                            v = v.lower() == "true"
-                        elif v.isnumeric():
-                            v = int(v)
-                    except ValueError as ve:
-                        print(
-                            f"Error: {ve} something's not right with config\
-                                        {k}:{v} "
-                        )
-                    c_dct.update({k: v})
-                    # print(c_dct)
-        return cls(**c_dct)
+    def parse_str(cls, v: Any) -> str:
+        """Parse a string repr of a str into a str."""
+        if isinstance(v, str):
+            return v.strip("\"' ").lower()
+        raise ValueError(f"Expected a string, got {type(v).__name__}")
 
-    def cfg_to_file(self) -> None:
-        """Write the Config instance to a configuration file."""
-        with open(self.filename, "w") as f:
-            for k, v in vars(self).items():
-                f.write(f"{k.upper()}={v.__str__()}\n")
+    @field_validator("pic", "color", mode="before")
+    @classmethod
+    def parse_int(cls, v) -> int:
+        """Parse a string repr of an int into an int."""
+        if isinstance(v, str):
+            return ast.literal_eval(v)
+        if isinstance(v, int):
+            return v
+        raise ValueError(f"Expected an int, got {type(v).__name__}")
 
     def __iter__(self) -> Generator[tuple[str, Any], None, None]:
         """Iterate over the fields of the Config instance."""
@@ -153,6 +114,89 @@ class Config:
             yield v.name, getattr(self, v.name)
 
 
+class ConfigIO:
+    @staticmethod
+    def from_file(path: str) -> Config:
+        """Create a Config instance from a configuration file."""
+        try:
+            with open(path) as f:
+                data = {}
+                for line in f:
+                    key, value = line.strip().split("=", 1)
+                    data[key.lower()] = value
+                return Config(**data)
+        except Exception as e:
+            raise ConfigError(f"Error reading config from file: {e}") from e
+
+    @staticmethod
+    def from_filemap(path: str) -> Config:
+        """Create a Config instance from a hexlist repr of the maze."""
+        with open(path) as f:
+            hexlist = f.read().split("\n")
+        vlst = []
+        c_dct: dict[str, Any] = {"width": len(hexlist[1])}
+        for i, j in enumerate(hexlist[1:]):
+            if "," in j:
+                vlst += j.split(",")
+                i -= 1
+        c_dct["height"] = i - 3
+        c_dct["entry"] = Vec2(vlst[0], vlst[1])
+        c_dct["exit"] = Vec2(vlst[2], vlst[3])
+        return Config(**c_dct)
+
+    @staticmethod
+    def to_file(cfg: Config, path: str | None = None) -> None:
+        """Write the Config instance to a configuration file."""
+        if path is None:
+            path = cfg.filename
+        try:
+            with open(path, "w") as f:
+                for k, v in vars(cfg).items():
+                    f.write(f"{k.upper()}={v.__str__()}\n")
+        except Exception as e:
+            raise ConfigError(f"Error writing config to file: {e}") from e
+
+
+class ConfigError(Exception):
+    """Custom exception for configuration errors."""
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+#    def cfg_from_file(cls, filename: str) -> "Config":
+#        """Create a Config instance from a configuration file."""
+#        c_dct = {"filename": filename}
+#        with open(filename) as f:
+#            for line in f:
+#                line = line.strip()
+#                if line and not line.startswith("#"):
+#                    try:
+#                        k, v = line.split("=")
+#                        k = k.strip().lower()
+#                        if "[" in v:
+#                            v = Vec2(*[e.strip(",[]") for e in (v.split(","))])
+#                        elif "(" in v:
+#                            v = Vec2(
+#                                *[int(e.strip(",()")) for e in (v.split(","))]
+#                            )
+#                        elif v == "None":
+#                            v = None
+#                        elif "," in v:
+#                            v = v.split(",")
+#                            v = (v[0], v[1])
+#                        elif v.lower() in ("true", "false"):
+#                            v = v.lower() == "true"
+#                        elif v.isnumeric():
+#                            v = int(v)
+#                    except ValueError as ve:
+#                        print(
+#                            f"Error: {ve} something's not right with config\
+#                                        {k}:{v} "
+#                        )
+#                    c_dct.update({k: v})
+# print(c_dct)
+#        return cls(**c_dct)
 #
 #    @property
 #    def entry(self) -> Vec2:

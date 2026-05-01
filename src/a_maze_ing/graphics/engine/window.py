@@ -13,7 +13,6 @@ class Window:
         if cls._initialized:
             raise RuntimeError("MlxContext already initialized")
         cls._siz = siz
-        print(type(siz), siz)
         cls._win_ptr = Mlx_context._mlx.mlx_new_window(
             Mlx_context.get(), siz.x, siz.y, name
         )

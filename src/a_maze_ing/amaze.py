@@ -6,7 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/24 07:55:50 by maprunty         #+#    #+#              #
-#    Updated: 2026/04/30 23:58:06 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/01 13:19:33 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """First attempts at the A-Maze-ing project."""
@@ -34,12 +34,15 @@ class AMaze:
 
     def startup(self) -> None:
         """Start the maze generation and animation."""
+        # try:
         g = Generators(self.grid, self.config)
-        g.gen_grid()
+        g.driver()
         Animations.grid(0.02)
         self.is_a_path = False
         Event_loop.add_key_hook(self.launch_animation, None)
         self.maze_tofile(self.config.output_file)
+        # except Exception as e:
+        #    print(f"Error during startup: {e}")
 
     def launch_animation(self, key: int) -> None:
         """Launch the path animation when the spacebar is pressed."""
@@ -52,10 +55,12 @@ class AMaze:
     def maze_tofile(self, filename: str) -> None:
         """Write the maze to a file."""
         hexlist = self.grid.dump_grid()
+        print(f"{filename} created with maze data.")
         try:
             f = open(filename, "w")
-        except FileNotFoundError:
+        except FileNotFoundError as e:
             f = open(filename, "x")
+            raise FileNotFoundError(e) from e
         for y in hexlist:
             f.write("\n")
             for x in y:
@@ -63,6 +68,10 @@ class AMaze:
         f.write("\n")
         f.write(f"\n{self.config.entry}\n")
         f.write(f"{self.config.exit}\n")
+        f.write(
+            f"{''.join(list(map(lambda p, q: f'{p - q}', self.grid.path, self.grid.path[1:])))}\n"
+        )
+        f.close()
 
     @classmethod
     def maze_fromfile(cls, filename: str) -> Grid:

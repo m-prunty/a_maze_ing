@@ -6,7 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:37:00 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/01 04:58:44 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/01 05:40:40 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """TODO: Short module summary.
@@ -15,7 +15,6 @@ Optional longer description.
 """
 
 from math import sqrt
-from typing import Self
 
 from pydantic import Field
 from pydantic.dataclasses import dataclass
@@ -28,7 +27,7 @@ class Vec2:
     x: int | float = Field(default=0)
     y: int | float = Field(default=0)
 
-    def normalized(self) -> Self:
+    def normalized(self) -> "Vec2":
         mag = abs(self)
         if mag == 0:
             raise ValueError("Cannot normalize zero vector")

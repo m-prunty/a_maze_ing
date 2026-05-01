@@ -6,7 +6,7 @@
 #    By: sdeppe <sdeppe@student.42heilbronn.de>    +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:26:52 by sdeppe           #+#    #+#              #
-#    Updated: 2026/05/01 04:56:44 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/01 11:40:01 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Main file to run A-maze-ing."""
@@ -17,7 +17,7 @@ import sys
 from src.a_maze_ing import AMaze
 from src.a_maze_ing.graphics import Event_loop, Renderer, Textures, Window
 from src.a_maze_ing.options import Options
-from src.common.config import Config
+from src.common.config import Config, ConfigIO
 from src.common.grid_tools import Vec2
 
 sys.setrecursionlimit(2000)
@@ -29,14 +29,15 @@ class Start:
     def __init__(self) -> None:
         """Initialize the start screen."""
         # self.options = Options(1000, 1000)
-        self.on_start = True
-        self.cfg = Config.cfg_from_file("config.txt")
-        print(self.cfg)
-        print(type(self.cfg.window_siz), self.cfg.window_siz)
-        Window.create(self.cfg.window_siz, " -- A-maze-ing -- ")
-        self.opt = Options(self.cfg)
-        self.a = AMaze(self.cfg)
-        self.render_start()
+        try:
+            self.on_start = True
+            self.cfg = ConfigIO.from_file("config.txt")
+            Window.create(self.cfg.window_siz, " -- A-maze-ing -- ")
+            self.opt = Options(self.cfg)
+            self.a = AMaze(self.cfg)
+            self.render_start()
+        except Exception as e:
+            print(f"Error during initialization: {e}")
 
     def render_start(self) -> None:
         """Render the start screen."""
@@ -94,8 +95,11 @@ class Start:
 
 def main4() -> None:
     """Drive the main loop."""
-    start = Start()
-    start.render_start()
+    try:
+        start = Start()
+        start.render_start()
+    except Exception as e:
+        print(f"Error during main loop: {e}")
 
 
 def main2() -> None:
