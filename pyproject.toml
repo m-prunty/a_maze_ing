@@ -6,7 +6,8 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
   	"Pillow>=10.0.0",
-  	"Mlx",
+	"types-Pillow",
+	"mlx==2.2",
 	"pydantic",
 	"Xlib"
 ]
@@ -15,4 +16,4 @@ dependencies = [
 where = [".", "src"]
 
 [tool.uv.sources]
-mlx = { path = "mlx-2.2-py3-none-any.whl" }
+mlx = { path = "wheels/mlx-2.2-py3-none-any.whl" }

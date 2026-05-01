@@ -6,7 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.de  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/01 13:25:26 by maprunty          #+#    #+#              #
-#    Updated: 2026/02/04 16:39:59 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/01 05:20:57 by maprunty        ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 # • install: Install project dependencies using pip, uv, pipx, or any other package
@@ -24,7 +24,7 @@ SHELL := bash
 
 IMG_CACHE := **/resized/*.png 
 
-RMFILES :=__pycache__ .*.sw* *.egg-info dist build $(IMG_CACHE) .venv 
+RMFILES :=__pycache__ .*.sw* *.egg-info dist build $(IMG_CACHE) .venv uv.lock .mypy_cache .python-version
 
 CFG := FILENAME=config.txt\\nWIDTH=25\\nHEIGHT=25\\nENTRY=0,0\\nEXIT=0,25\
 \\nOUTPUT_FILE=maze.txt\\nPERFECT=True\\nPIC_SCALAR=1\\nPIC=[87, 81, 119, 20, 23]

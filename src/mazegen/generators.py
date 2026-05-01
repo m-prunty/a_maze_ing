@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/07 03:02:45 by maprunty         #+#    #+#              #
-#    Updated: 2026/03/26 10:55:26 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/01 00:35:18 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
@@ -19,8 +19,8 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Any, Protocol
 
-from config import Config
-from helper import Cell, Dir, Grid, Path, Vec2
+from common.config import Config
+from common.grid_tools import Cell, Dir, Grid, Path, Vec2
 
 
 class EType(Enum):
