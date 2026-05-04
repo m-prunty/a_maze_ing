@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/07 03:02:45 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/01 21:42:38 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/03 10:02:04 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
@@ -52,7 +52,7 @@ class Generators:
         """Converts a list of Vec2 to a path."""
         return reversed(v_lst)
 
-    def gen_path(self, algo: str):
+    def gen_path(self, algo: str) -> None:
         """Generate a path through the maze using the specified algorithm."""
         path_algo = self.ADAPT.get(algo.lower())
         if not path_algo:
@@ -66,7 +66,7 @@ class Generators:
         ]
         print(self.grid.path)
 
-    def gen_grid(self, algo: str = "dfs"):
+    def gen_grid(self, algo: str = "dfs") -> None:
         """Generate the maze grid using the specified algorithm."""
         gen_algo = self.ADAPT.get(algo.lower())
         if not gen_algo:
@@ -77,15 +77,15 @@ class Generators:
         [*generator.generate()]
 
     @staticmethod
-    def retryIO(self, loc: Vec2):
+    def retryIO(loc: Vec2, config: Config, neg: int) -> Vec2:
         """Retry opening entry or exit if they are  in the picture."""
         print(f"Location {loc} is in the picture, adjusting...")
         return Vec2(
-            (loc.x + 1) % self.config.width,
-            (loc.y + 1) % self.config.height,
+            (loc.x + (1 * neg)) % config.width,
+            (loc.y + (1 * neg)) % config.height,
         )
 
-    def gen_pic(self, select: int):
+    def gen_pic(self, select: int) -> None:
         """Generate the maze grid based on the picture data."""
         self.grid.pic = Pic.get_pic(select)
         if not self.grid.pic:
@@ -93,12 +93,18 @@ class Generators:
         pic = Pic(GenGraph(self.grid), self.config)
         pic.add_stage(MkStage())
         [*pic.generate()]
-        while self.grid[self.config.entry].ispic:
-            self.config.entry = self.retryIO(self.config.entry)
-        while self.grid[self.config.exit].ispic:
-            self.config.exit = self.retryIO(self.config.exit)
+        while (
+            self.grid[self.config.entry] and self.grid[self.config.entry].ispic
+        ):
+            self.config.entry = self.retryIO(
+                self.config.entry, self.config, -1
+            )
+        while (
+            self.grid[self.config.exit] and self.grid[self.config.exit].ispic
+        ):
+            self.config.exit = self.retryIO(self.config.exit, self.config, 1)
 
-    def driver(self):
+    def driver(self) -> None:
         """Thes becomes open walls and give the hande to the animator."""
         try:
             self.gen_pic(self.config.pic)

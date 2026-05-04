@@ -1,9 +1,5 @@
 import os
 import sys
-from dataclasses import fields
-from typing import Literal, get_args, get_origin
-
-from annotated_types import Ge, Le
 
 from common.config import Config
 from common.grid_tools import Vec2
@@ -15,41 +11,42 @@ class Options:
     def __init__(self, config: Config):
         self.cfg = config
         self.opt_rend = Options_render()
-        for field in fields(self.cfg):
-            min = None
-            max = None
-            if field.name.startswith("_"):
-                field.name = field.name[1:]
-                value = getattr(self.cfg, field.name)
-                annotation = field.type
-            else:
-                value = getattr(self.cfg, field.name)
-                annotation = field.type
-                for meta in self.cfg.__pydantic_fields__[field.name].metadata:
-                    if isinstance(meta, Ge):
-                        min = meta.ge
-                    if isinstance(meta, Le):
-                        max = meta.le
-                if min is not None and max is not None:
-                    self.opt_rend.add_cursor(
-                        field.name, "", (min, value, max + 1)
-                    )
-            if annotation is int and min is None:
-                self.opt_rend.add_input(field.name, value, int)
-            elif annotation is str:
-                self.opt_rend.add_input(field.name, value, str)
-            elif annotation is bool:
-                self.opt_rend.add_dropdown(
-                    field.name, value, get_args(Literal[True, False])
-                )
-            elif annotation is tuple:
-                self.opt_rend.add_input(field.name + " X", value.x, int)
-                self.opt_rend.add_input(field.name + " Y", value.y, int)
-            elif get_origin(annotation) is Literal:
-                self.opt_rend.add_dropdown(
-                    field.name, value, get_args(annotation)
-                )
-        self.is_active = False
+
+    #        for field in self.cfg.__pydantic_fields__:
+    #            min = None
+    #            max = None
+    #            if field.name.startswith("_"):
+    #                field.name = field.name[1:]
+    #                value = getattr(self.cfg, field.name)
+    #                annotation = field.type
+    #            else:
+    #                value = getattr(self.cfg, field.name)
+    #                annotation = field.type
+    #                for meta in self.cfg.__pydantic_fields__[field.name].metadata:
+    #                    if isinstance(meta, Ge):
+    #                        min = meta.ge
+    #                    if isinstance(meta, Le):
+    #                        max = meta.le
+    #                if min is not None and max is not None:
+    #                    self.opt_rend.add_cursor(
+    #                        field.name, "", (min, value, max + 1)
+    #                    )
+    #            if annotation is int and min is None:
+    #                self.opt_rend.add_input(field.name, value, int)
+    #            elif annotation is str:
+    #                self.opt_rend.add_input(field.name, value, str)
+    #            elif annotation is bool:
+    #                self.opt_rend.add_dropdown(
+    #                    field.name, value, get_args(Literal[True, False])
+    #                )
+    #            elif annotation is tuple:
+    #                self.opt_rend.add_input(field.name + " X", value.x, int)
+    #                self.opt_rend.add_input(field.name + " Y", value.y, int)
+    #            elif get_origin(annotation) is Literal:
+    #                self.opt_rend.add_dropdown(
+    #                    field.name, value, get_args(annotation)
+    #                )
+    #        self.is_active = False
 
     def put_to_config(self, fields: list):
         """vars: 0 width, 1 height"""
@@ -72,7 +69,14 @@ class Options:
 
     def save(self) -> None:
         Event_loop.close(None)
-        os.execv(sys.executable, [sys.executable] + sys.argv)
+        print(
+            sys.executable, [sys.executable] + sys.argv + [self.cfg.filename]
+        )
+        os.execv(
+            sys.executable,
+            [sys.executable] + sys.argv[:1] + [self.cfg.filename],
+        )
+        print("Options saved, restarting the program...")
         self.is_active = False
         self.render()
 

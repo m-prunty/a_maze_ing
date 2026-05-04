@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:38:19 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/01 13:17:06 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/03 11:59:41 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """TODO: Short module summary.
@@ -23,11 +23,20 @@ from .vector import Vec2
 
 
 class HasSize(Protocol):
+    """Protocol for objects that have width and height attributes."""
+
     width: int
     height: int
 
 
 class Dir(IntFlag):
+    """Direction class for maze generation and pathfinding.
+
+    N, E, S, W are represented as 1, 2, 4, 8 respectively.
+    A is the bitwise OR of all four directions.
+    non is 0.
+    """
+
     non = 0
     N = 1 << 0
     E = 1 << 1
@@ -36,36 +45,38 @@ class Dir(IntFlag):
     A = N | E | S | W
 
     def __repr__(self) -> str:
-        """Return a tuple represantation of a Vec2 instance."""
+        """An evalutable string representation of a Dir instance."""
         cls = self.__class__.__name__
-        return f"{cls}.{self.name}"
+        return f"{cls}({self.name})"
 
     def __str__(self) -> str:
+        """String representation of a Dir instance."""
         return f"{self.name}"
 
-    # def __add__(self, other)-> Self:
-
     def opps(self) -> "Dir":
+        """Return the opposite direction of a Dir instance."""
         return _OPPOSITE[self]
 
-    def v(self) -> "Vec2":
+    def v(self) -> Vec2:
+        """Return the vector representation of a Dir instance."""
         return Vec2(*_DIR_TO_VEC[self])
 
     @classmethod
-    def from_vec(cls, v: "Vec2") -> "Dir":
-        return _VEC_TO_DIR[(v.x, v.y)]
+    def from_vec(cls, v: Vec2) -> "Dir":
+        """Return the Dir instance corresponding to a Vec2 instance."""
+        return _VEC_TO_DIR[v]
 
 
-_VEC_TO_DIR = {
-    (0, -1): Dir.N,
-    (1, 0): Dir.E,
-    (0, 1): Dir.S,
-    (-1, 0): Dir.W,
+_VEC_TO_DIR: dict[Vec2, Dir] = {
+    Vec2(0, -1): Dir.N,
+    Vec2(1, 0): Dir.E,
+    Vec2(0, 1): Dir.S,
+    Vec2(-1, 0): Dir.W,
 }
 
-_DIR_TO_VEC = {v: k for k, v in _VEC_TO_DIR.items()}
+_DIR_TO_VEC: dict[Dir, Vec2] = {v: k for k, v in _VEC_TO_DIR.items()}
 
-_OPPOSITE = {
+_OPPOSITE: dict[Dir, Dir] = {
     Dir.N: Dir.S,
     Dir.E: Dir.W,
     Dir.S: Dir.N,
@@ -76,11 +87,17 @@ _OPPOSITE = {
 
 
 class Cell:
-    """Docstring for Cell.
+    """Cell class has a location and a wall attribute.
 
-    wall is a 4-bit represantaion. i.e
+    The wall is a 4-bit represantaion. i.e
     0000 has all walls
     0100 has one opening to south
+    Args:
+        a (int): First number.
+        b (int): Second number.
+
+    Returns:
+        int: Product of a and b.
     """
 
     N = Dir.N
@@ -89,23 +106,23 @@ class Cell:
     W = Dir.W
 
     def __init__(self, loc: Vec2):
-        """TODO: to be defined."""
+        """Init a cell with a Vec2 location and all walls."""
         self.wall = Dir.A
         self.loc = loc
         self.ispath = False
         self.ispic = False
         self.visited = False
 
-    def debug(self):
+    def debug(self) -> str:
         r_str = ""
         for k, v in vars(self).items():
             r_str += f"{k}:{v} "
         return r_str
 
-    def __repr__(self):
-        """Return a tuple represantation of a Vec2 instance."""
+    def __repr__(self) -> str:
+        """An evalutable string representation of a Cell instance."""
         cls = self.__class__.__name__
-        r_str = f"{cls}(loc={self.loc})"
+        r_str = f"{cls}({self.loc})"
         return r_str
 
     def __str__(self):

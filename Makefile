@@ -6,7 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.de  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/01 13:25:26 by maprunty          #+#    #+#              #
-#    Updated: 2026/05/01 21:01:01 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/03 04:59:06 by maprunty        ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 # • install: Install project dependencies using pip, uv, pipx, or any other package
@@ -22,7 +22,7 @@
 # • lint-strict (optional): Execute the commands flake8 . and mypy . --strict
 SHELL := bash
 
-IMG_CACHE := **/resized/*.png 
+IMG_CACHE := includes/resized/*.png 
 
 RMFILES :=__pycache__ .*.sw* *.egg-info dist build $(IMG_CACHE) .venv uv.lock .mypy_cache .python-version
 

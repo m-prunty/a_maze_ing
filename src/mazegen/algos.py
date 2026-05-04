@@ -7,13 +7,14 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/01 08:04:43 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/01 21:30:00 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/03 11:20:38 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
 import math
 import random
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 
 from common.config import Config
 from common.grid_tools import Cell, Dir, Path, Vec2
@@ -42,23 +43,23 @@ class BaseStrat(ABC):
             not self.config.perfect
         )
         print(f"n_imperfect: {self._n_imperfect}")
+        self.entry_cell = self.grid[self.config.entry]
+        self.exit_cell = self.grid[self.config.exit]
+        self._open_entry_exit(self.entry_cell)
+        self._open_entry_exit(self.exit_cell)
 
     def add_stage(self, stage: BaseStage) -> None:
         """Adds a stage to the strategy."""
         self.stages.append(stage)
 
     @abstractmethod
-    def generate(self):
+    def generate(self) -> Iterable[Vec2]:
         """Generates a maze or path."""
-        self.entry_cell = self.grid[self.config.entry]
-        self.exit_cell = self.grid[self.config.exit]
-        self._open_entry_exit(self.entry_cell)
-        self._open_entry_exit(self.exit_cell)
-        self._imperfect()
+        ...
 
     def _imperfect(self) -> None:
         """Carve random walls to make maze imperfect."""
-        while self._n_imperfect >= 0:
+        while self._n_imperfect > 0:
             cell = self.entry_cell
             while cell in (self.entry_cell, self.exit_cell) or cell.ispic:
                 cell = self.grid[
@@ -67,16 +68,15 @@ class BaseStrat(ABC):
                         self.rng.randint(0, self.height - 1),
                     )
                 ]
-            n_lst = [
-                n[0]
-                for n in self.graph.neighbours(cell)
-                if n[1] and not n[1].ispic
+            dir_list = [
+                direction
+                for direction, neighbour in self.graph.neighbours(cell)
+                if neighbour and not neighbour.ispic
             ]
-            print(cell.ispic, n_lst, not n_lst)
-            self.rng.shuffle(n_lst)
-            if n_lst:
-                n = self.rng.randint(1, len(n_lst))
-                for _ in n_lst[:n]:
+            self.rng.shuffle(dir_list)
+            if dir_list:
+                n = self.rng.randint(1, len(dir_list))
+                for _ in dir_list[:n]:
                     cell.rm_wall_nb(_)
             self._n_imperfect -= 1
 
@@ -119,14 +119,13 @@ class BaseStrat(ABC):
 class Dfs(BaseStrat):
     """Depth-first search maze generation."""
 
-    def generate(self):
+    def generate(self) -> Iterable[Vec2]:
         """Generates a maze using depth-first search."""
-        super().generate()
         self._imperfect()
         start = self.config.entry
         yield from self._dfs(start)
 
-    def _dfs(self, pos: Vec2 = Vec2):
+    def _dfs(self, pos: Vec2 = Vec2) -> Iterable[Vec2]:
         """TODO: Docstring for gen_rand.
 
         Args:
@@ -197,17 +196,16 @@ class Dijkstra(BaseStrat):
                     replace existing node with n
     """
 
-    def generate(self):
+    def generate(self) -> Iterable[Vec2]:
         super().generate()
         self._imperfect()
         start = self.config.entry
         yield from self._dijks(start)
 
-    def _dijks(self, pos: Vec2 = Vec2):
+    def _dijks(self, pos: Vec2) -> Iterable[Vec2]:
         node: Cell = self.grid[pos]
         frontier: list[Cell] = [(0, node)]
         expanded: set[Cell] = set()
-
         parent: dict[Cell, Cell] = {node: None}
         while True:
             if not frontier:
@@ -248,7 +246,9 @@ class Dijkstra(BaseStrat):
 
 
 class Pic(BaseStrat):
-    def generate(self):
+    """Picture maze generation."""
+
+    def generate(self) -> Iterable[Vec2]:
         super().generate()
         # start = self.config.entry
         yield from self._gen_pic(self.config.pic_scalar)
@@ -288,7 +288,7 @@ class Pic(BaseStrat):
         print(pic)
         return pic
 
-    def _gen_pic(self, pic_scalar: int):
+    def _gen_pic(self, pic_scalar: int) -> Iterable[Vec2]:
         """Prep for 42pic Check pic dimension against h / w.
 
         Calculate topleft and botright and passes to pic_lst
@@ -389,11 +389,11 @@ class Prim(BaseStrat):
             frontier.add((cell, neighbour, dir))
     """
 
-    def generate(self):
+    def generate(self) -> Iterable[Vec2]:
         super().generate()
         yield from self._prim()
 
-    def _prim(self):
+    def _prim(self) -> Iterable[Vec2]:
         head = self.entry_cell
         head.visited = True
         visited = {head}
@@ -426,11 +426,10 @@ class Prim(BaseStrat):
 
 
 class Sidewinder(BaseStrat):
-    def generate(self, grid):
-        super().generate(grid)
+    def generate(self) -> Iterable[Vec2]:
         yield from self._sidewind()
 
-    def _sidewind(self):
+    def _sidewind(self) -> Iterable[Vec2]:
         """Function generate_sidewinder(grid):.
 
         for each row y in grid:
@@ -498,11 +497,12 @@ class Sidewinder(BaseStrat):
 
 
 class Wilson(BaseStrat):
-    def generate(self, grid):
-        super().generate(grid)
+    """Wilson's algorithm."""
+
+    def generate(self) -> Iterable[Vec2]:
         yield from self._wilson()
 
-    def _wilson(self):
+    def _wilson(self) -> Iterable[Vec2]:
         current = self.grid[self.config.entry]
         ngrid = {*self.grid}
         path = {current: None, "walls": Path()}
@@ -522,12 +522,10 @@ class Wilson(BaseStrat):
             current = next_cell
             yield current
 
-    def _rewind(self, path, current):
+    def _rewind(self, path, current) -> tuple[dict, set]:
         curr = current
         r_set: set = set()
         while curr in path:
-            # tmp = curr
-            # print(curr)
             curr = path[curr]
             # print("pop", path.pop(tmp))
             curr.visited = False
