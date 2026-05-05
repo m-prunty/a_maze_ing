@@ -2,12 +2,12 @@
 # *************************************************************************** #
 #                                                                             #
 #                                                        :::      ::::::::    #
-#    generators.py                                     :+:      :+:    :+:    #
+#    mazegenerator.py                                  :+:      :+:    :+:    #
 #                                                    +:+ +:+         +:+      #
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/07 03:02:45 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/03 10:02:04 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/04 11:23:37 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
@@ -26,16 +26,10 @@ from .staging import (
 )
 
 
-class Generators:
-    """TODO: Summary of the class.
+class MazeGenerator:
+    """Generate a maze grid and a path through it."""
 
-    Optional longer descrgiption.
-
-    Attributes:
-        attr (type): Description.
-    """
-
-    ADAPT = {
+    ALGOS = {
         "dfs": Dfs,
         "prim": Prim,
         "swinder": Sidewinder,
@@ -44,17 +38,17 @@ class Generators:
     }
 
     def __init__(self, grid: Grid, cfg: Config) -> None:
-        self.grid = grid
-        self.config = cfg
-        self.path = []
+        """Initializes MazeGenerator with a grid and a config."""
+        self.grid: Grid = grid
+        self.config: Config = cfg
 
     def to_path(self, v_lst: list[Vec2]) -> list[Vec2]:
         """Converts a list of Vec2 to a path."""
-        return reversed(v_lst)
+        return list(reversed(v_lst))
 
     def gen_path(self, algo: str) -> None:
         """Generate a path through the maze using the specified algorithm."""
-        path_algo = self.ADAPT.get(algo.lower())
+        path_algo = self.ALGOS.get(algo.lower())
         if not path_algo:
             raise ValueError(f"Algorithm '{algo}' not recognized.")
         path = path_algo(PathGraph(self.grid), self.config)
@@ -64,11 +58,10 @@ class Generators:
         self.grid.path = [*self.to_path([*path.generate()])] + [
             Cell(self.config.exit)
         ]
-        print(self.grid.path)
 
     def gen_grid(self, algo: str = "dfs") -> None:
         """Generate the maze grid using the specified algorithm."""
-        gen_algo = self.ADAPT.get(algo.lower())
+        gen_algo = self.ALGOS.get(algo.lower())
         if not gen_algo:
             raise ValueError(f"Algorithm '{algo}' not recognized.")
         generator = gen_algo(GenGraph(self.grid), self.config)
@@ -105,7 +98,7 @@ class Generators:
             self.config.exit = self.retryIO(self.config.exit, self.config, 1)
 
     def driver(self) -> None:
-        """Thes becomes open walls and give the hande to the animator."""
+        """Driver function to generate the maze and path."""
         try:
             self.gen_pic(self.config.pic)
             self.gen_grid(self.config.gen_algo)

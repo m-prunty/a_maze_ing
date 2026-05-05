@@ -7,15 +7,14 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                               +#+#+#+#+#+   +#+             #
 #    Created: 2026/02/03 21:19:22 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/01 21:08:36 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/04 09:24:57 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Configuration module for maze generation and rendering."""
 
 import ast
 import random
-from collections.abc import Generator
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 from pydantic import ConfigDict, Field, field_validator, model_validator
 from pydantic.dataclasses import dataclass
@@ -27,17 +26,17 @@ from ..grid_tools import Vec2
 class Config:
     """Configuration class for maze generation and rendering."""
 
-    window_siz: Vec2 = Field(default=Vec2(900, 900))
     width: int = Field(ge=5, le=30, default=10)
     height: int = Field(ge=5, le=30, default=10)
     entry: Vec2 = Field(default=Vec2(0, 0))
-    exit: Vec2 = Field(default=Vec2(5, 0))  # chekc for in pic
-    seed: int = Field(default=0)
+    exit: Vec2 = Field(default=Vec2(5, 0))
+    output_file: str = Field(default="maze.txt")
     perfect: bool = Field(default=True)
+    seed: int = Field(default=0)
+    window_siz: Vec2 = Field(default=Vec2(900, 900))
     pic: Literal[1, 2, 3] = Field(default=1)
     pic_scalar: float = Field(default=1.0)
     filename: str = Field(default="config.txt")
-    output_file: str = Field(default="maze.txt")
     model_config = ConfigDict(revalidate_instances="always")
     color: Literal[0, 1, 2] = 0
     gen_algo: Literal["dfs", "prim", "swinder", "wilson", "dijkstra"] = "dfs"
@@ -73,7 +72,7 @@ class Config:
 
     @field_validator("entry", "exit", "window_siz", mode="before")
     @classmethod
-    def parse_vec2(cls, v) -> Vec2:
+    def parse_vec2(cls, v: Any) -> Vec2:
         """Parse a string repr of a Vec2 instance into a Vec2 instance."""
         if isinstance(v, str):
             x, y = ast.literal_eval(v)
@@ -100,21 +99,24 @@ class Config:
 
     @field_validator("pic", "color", mode="before")
     @classmethod
-    def parse_int(cls, v) -> int:
+    def parse_int(cls, v: Any) -> int:
         """Parse a string repr of an int into an int."""
         if isinstance(v, str):
-            return ast.literal_eval(v)
+            return cast(int, ast.literal_eval(v))
         if isinstance(v, int):
             return v
         raise ValueError(f"Expected an int, got {type(v).__name__}")
 
-    def __iter__(self) -> Generator[tuple[str, Any], None, None]:
-        """Iterate over the fields of the Config instance."""
-        for v in fields(self):
-            yield v.name, getattr(self, v.name)
+
+#    def __iter__(self) -> Generator[tuple[str, Any], None, None]:
+#        """Iterate over the fields of the Config instance."""
+#        for v in fields(self):
+#            yield v.name, getattr(self, v.name)
 
 
 class ConfigIO:
+    """Class for handling input and output of Config instances."""
+
     @staticmethod
     def from_file(path: str) -> Config:
         """Create a Config instance from a configuration file."""
@@ -140,8 +142,8 @@ class ConfigIO:
                 vlst += j.split(",")
                 i -= 1
         c_dct["height"] = i - 3
-        c_dct["entry"] = Vec2(vlst[0], vlst[1])
-        c_dct["exit"] = Vec2(vlst[2], vlst[3])
+        c_dct["entry"] = Vec2(int(vlst[0]), int(vlst[1]))
+        c_dct["exit"] = Vec2(int(vlst[2]), int(vlst[3]))
         return Config(**c_dct)
 
     @staticmethod

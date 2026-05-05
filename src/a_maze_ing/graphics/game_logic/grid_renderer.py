@@ -128,7 +128,7 @@ class Render_cell:
 
     @classmethod
     def render(cls, pos: Vec2, canva: Canvas):
-        """ " Pos is dependent on the canva"""
+        """Pos is dependent on the canva."""
 
         def set_pic_color(color: int):
             match color:
@@ -142,7 +142,7 @@ class Render_cell:
         if not cls._init:
             cls.create()
         hex = cls._grid[pos].wall
-        n = cls._grid.neighbour(pos)
+        n = cls._grid.neighbour_walls(pos)
         if pos == Render_grid._cfg.entry:
             special = 1
         elif pos == Render_grid._cfg.exit:

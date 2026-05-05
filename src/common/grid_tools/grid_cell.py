@@ -7,17 +7,14 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:38:19 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/03 11:59:41 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/05 22:11:43 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
-"""TODO: Short module summary.
+"""Module for grid and cell classes."""
 
-Optional longer description.
-"""
-
-from collections.abc import Generator
+from collections.abc import Generator, Iterator
 from enum import IntFlag
-from typing import Protocol, Self
+from typing import Protocol
 
 from .vector import Vec2
 
@@ -93,8 +90,7 @@ class Cell:
     0000 has all walls
     0100 has one opening to south
     Args:
-        a (int): First number.
-        b (int): Second number.
+        loc (Vec2): The location of the cell in the grid.
 
     Returns:
         int: Product of a and b.
@@ -114,6 +110,7 @@ class Cell:
         self.visited = False
 
     def debug(self) -> str:
+        """Debug string representation of a Cell instance."""
         r_str = ""
         for k, v in vars(self).items():
             r_str += f"{k}:{v} "
@@ -125,191 +122,115 @@ class Cell:
         r_str = f"{cls}({self.loc})"
         return r_str
 
-    def __str__(self):
-        """TODO: Docstring."""
+    def __str__(self) -> str:
+        """String representation of a Cell instance."""
         r_str = f"{self.loc} "
         r_str += f"{self.wall}"
         return r_str
 
-    def __sub__(self, other) -> Dir:
+    def __sub__(self, other: "Cell") -> Dir:
         """Subtract two cells to get the direction from self to other."""
         if abs(self.loc - other.loc) != 1:
             raise ValueError("Cells are not adjacent")
         return Dir.from_vec(other.loc - self.loc)
 
+    def __iter__(self) -> Iterator[float | int]:
+        """Iterate over the fields of a Vec2 instance."""
+        return iter((self.x, self.y))
+
     @property
     def loc(self) -> Vec2:
-        """TODO: Docstring."""
+        """Return the location of a Cell instance as a Vec2."""
         return self._loc
 
     @loc.setter
-    def loc(self, value: Vec2):
+    def loc(self, value: Vec2) -> None:
+        """Set the location of a Cell instance and update x and y."""
         self.x, self.y = value
         self._loc = value
 
     @property
-    def neighbours(self):
-        return self._neighbours
-
-    def get_neighbours(self, grid) -> dict[Dir, "Cell"]:
-        """Doc"""
-        self._neighbours: dict[Dir, Cell] = {}
-        for k in Dir:
-            try:
-                if grid.isvalid(k.v() + self.loc):
-                    self._neighbours.update({k: grid[k.v() + self.loc]})
-            except AttributeError as ae:
-                print(f"Neighbours is none {ae}")
-        return self._neighbours
-
-    @property
     def visited(self) -> bool:
-        """TODO: Docstring."""
+        """Return the visited status of a Cell instance."""
         return self._visited
 
     @visited.setter
-    def visited(self, value: bool):
-        """TODO: Docstring."""
+    def visited(self, value: bool) -> None:
+        """Set the visited status of a Cell instance."""
         self._visited = value
 
-    def has_wall(self, direction):
-        """TODO: Docstring."""
+    def has_wall(self, direction: Dir) -> Dir:
+        """Check if a wall exists in the given direction."""
         return self.wall & direction
 
-    def add_wall(self, direction):
-        """TODO: Docstring."""
+    def add_wall(self, direction: Dir) -> None:
+        """Add a wall in the given direction."""
         self.wall |= direction
 
-    def rm_wall(self, direction):
-        """TODO: Docstring."""
+    def rm_wall(self, direction: Dir) -> None:
+        """Remove a wall in the given direction."""
         self.wall &= ~direction
 
-    def rm_wall_nb(self, direction):
-        neighbour = self.neighbours[direction]
+    def rm_wall_nb(self, neighbour: "Cell", direction: Dir) -> None:
+        """Remove a wall in the given direction and the neighbour wall."""
         self.rm_wall(direction)
         neighbour.rm_wall(direction.opps())
 
 
-class Path:
-    __slots__ = ["_bits"]
-    CELL_BITS = 4
-    CELL_MASK = (1 << CELL_BITS) - 1
-
-    def __init__(self, bits: Dir = Dir.non, loc: Vec2 = Vec2(0, 0)):
-        self._bits = bits
-
-    def __str__(self):
-        r_str = ""
-        print(f"{self._bits:b}")
-        for d in self.path_yd_rev():
-            r_str += str(f"{d.name}, ")
-        return r_str
-
-    @property
-    def bits(self) -> int:
-        """Doc"""
-        # print(f"{self.bits:b}")
-        return self._bits
-
-    def __add__(self, dir_: Dir):
-        # print(dir_, "3", self._bits << self.CELL_BITS | dir_)
-        return (self._bits << self.CELL_BITS) | dir_
-
-    def add(self, dir_: Dir):
-        self._bits = (self._bits << self.CELL_BITS) | dir_
-
-    def add_rec(self, dir_: Dir):
-        return Path((self._bits << self.CELL_BITS) | dir_)
-
-    #  def path_add(self, dir_: int):
-    # print(f"{self.bits:b}")
-
-    def path_yd(self):
-        path = self.bits
-        while path:
-            p = Dir(path & self.CELL_MASK)
-            path >>= self.CELL_BITS
-            # print("11", p)
-            yield p
-
-    def path_yd_rev(self):
-        path = []
-        for p in self.path_yd():
-            path += [Dir(p)]
-        path.reverse()
-        for p in path:
-            yield p
-
-
 class Grid:
-    """Docstring for Grid."""
+    """Grid class has a width, height, and a 2D list of Cell instances."""
 
     def __init__(self, width: int, height: int):
-        """TODO: to be defined."""
+        """Init a grid with the given width and height of Cell instances."""
         self.width, self.height = width, height
-        self.path = []
+        self.path: list[Dir] = []
+        print(f"Creating grid of size {self.width}x{self.height}")
         self.grid = [
             [Cell(Vec2(x, y)) for x in range(self.width)]
             for y in range(self.height)
         ]
-        self.get_cell_neighbours()
-        self.pic = []
+        self.pic: list[int] = []
 
-    def __getitem__(self, key: tuple[int, int] | Vec2) -> Cell | None:
-        """TODO: Docstring."""
+    def __getitem__(self, key: tuple[int, int] | Vec2 | Cell) -> Cell:
+        """Get a cell from the grid using a tuple of (x, y) or a Vec2 instance.
+
+        Where th key is out of bounds, return a Cell with location (-1, -1)
+        and all walls.
+        """
         try:
-            x, y = key
-            # print(x,y)
-            if 0 <= x < self.width and 0 <= y < self.height:
-                return self.grid[y][x]
+            if self.isvalid(key):
+                x, y = key
+                return self.grid[int(y)][int(x)]
             else:
-                raise ValueError(
-                    f"\
-{x} or {y} is out of range {self.width},{self.height}"
-                )
-        except ValueError:
-            # print(
-            #    f"Grid key error:{key} not a valid tuple {ve}", file=sys.stderr
-            # )
-            return None
+                raise IndexError(f"Key {key} is out of bounds")
+        except Exception:
+            return Cell(Vec2(-1, -1))
 
-    def isvalid(self, v: Vec2) -> int | Vec2:
-        if (
+    def isvalid(self, v: Vec2 | tuple[int, int] | Cell) -> bool:
+        """Check if a Vec2 instance is within the bounds of the grid."""
+        if isinstance(v, tuple):
+            v = Vec2(*v)
+        return (
             v.x is not None
             and v.y is not None
             and 0 <= v.x <= self.width
             and 0 <= v.y <= self.height
-        ):
-            return v
-        return 0
+        )
 
     def __iter__(self) -> Generator[Cell, None, None]:
+        """Iterate over all cells in the grid."""
         for y in self.grid:
-            for x in y:
-                yield x
-
-    # def path_mk(self, start):
-    #     pos = self[start]
-    #     # print(">>>>", self.path)
-    #     for s in self.path.path_yd_rev():
-    #         print(s, "asjkld", pos, type(pos))
-    #         try:
-    #             print(pos.neighbours, type(s), s)
-    #             pos.ispath = True
-    #             pos = pos.neighbours[s]
-    #         except Exception:
-    #             print("AAAAAA")
+            yield from y
 
     @classmethod
-    def fill_grid_from_map(cls, hexlist: list[Dir], cfg: HasSize) -> Self:
+    def fill_grid_from_map(cls, hexlist: list[str], cfg: HasSize) -> "Grid":
+        """Fill a grid from a list of lists of hex values repr walls."""
         c = cls(cfg.width, cfg.height)
-        # print(hexlist)
         for y, row in enumerate(hexlist[1:]):
             if y < c.height:
                 for x, i in enumerate(row):
                     if x < c.width:
-                        c[x, y].wall = i
-        # print(hexlist)
+                        c[x, y].wall = Dir(int(i))
         return c
 
     def dump_grid(self) -> list[list[str]]:
@@ -317,20 +238,20 @@ class Grid:
         hexlist = [[f"{hex(c.wall)[2:]}" for c in r] for r in self.grid]
         return hexlist
 
-    def get_cell_neighbours(self) -> None:
-        for c in self:
-            c.get_neighbours(self)
-
-    def neighbour(self, pos: Vec2) -> dict[str, int]:
+    def neighbour(self, pos: Vec2 | Cell) -> dict[Dir, Cell]:
         """Get four closest cells."""
-        n = dict()
-        for k, v in self[pos].neighbours.items():
-            try:
-                if v:
-                    n[k] = v.wall
-            except AttributeError as ae:
-                print(f"is none {k}: {v} - {ae}")
-        # print(n)
+        n: dict[Dir, Cell] = {}
+        cell = self[pos]
+        for d in Dir:
+            pos = self[cell.loc + d.v()]
+            if self.isvalid(pos) and pos.loc != Vec2(-1, -1):
+                n[d] = self[pos]
+        return n
+
+    def neighbour_walls(self, pos: Vec2 | Cell) -> dict[Dir, int]:
+        n: dict[Dir, int] = {}
+        for k, v in self.neighbour(pos).items():
+            n[k] = v.wall
         return n
 
     def reset(self) -> None:
@@ -338,7 +259,6 @@ class Grid:
         for row in self.grid:
             for cell in row:
                 cell.visited = False
-                # print(cell)
 
     def debug(self) -> str:
         r_str = ""
@@ -353,11 +273,13 @@ class Grid:
         return r_str
 
     def __repr__(self) -> str:
+        """An evalutable string representation of a Grid instance."""
         cls = self.__class__.__name__
         return f"{cls}(width={self.width}, height={self.height})"
 
-    def __str__(self, cursor: Vec2) -> str:
-        """TODO: Docstring."""
+    def __str__(self) -> str:
+        """String representation of a Grid instance."""
+        cursor = None
         r_str = ""
         for x in range(self.width):
             cell = self[x, 0]

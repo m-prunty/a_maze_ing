@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/01 08:05:00 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/01 14:11:14 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/04 11:41:34 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 from dataclasses import dataclass
@@ -33,7 +33,7 @@ class MazeEvent:
     neighbour: Cell | None = None
     _dir: Dir | None = None
     etype: EType = EType.ENTER
-    found: bool = None
+    found: bool = False
 
 
 class BaseStage(Protocol):
@@ -44,13 +44,13 @@ class BaseStage(Protocol):
         ...
 
 
-class IOStage:
-    """Stage for opening entry and exit of maze."""
-
-    def process(self, e: MazeEvent) -> bool:
-        """Opens entry and exit of maze."""
-        self._open_entry_exit(e.cell)
-        return e
+# class IOStage:
+#    """Stage for opening entry and exit of maze."""
+#
+#    def process(self, e: MazeEvent) -> bool:
+#        """Opens entry and exit of maze."""
+#        self._open_entry_exit(e.cell)
+#        return e
 
 
 class MkStage:
@@ -107,18 +107,19 @@ class RmStage:
         """Removes walls between cells."""
         if e.etype != EType.EDGE:
             return True
-        e.cell.rm_wall_nb(e._dir)
+        assert e.neighbour and e._dir
+        e.cell.rm_wall_nb(e.neighbour, e._dir)
         return True
 
 
 class GoalStage:
     """Stage for checking if goal is reached."""
 
-    def __init__(self, goal):
+    def __init__(self, goal: Cell) -> None:
         """Initializes GoalStage with a goal."""
         self.goal = goal
 
-    def process(self, e) -> bool:
+    def process(self, e: MazeEvent) -> bool:
         """Checks if goal is reached."""
         if e.etype == EType.ENTER and e.cell.loc == self.goal:
             e.found = True

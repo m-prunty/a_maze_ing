@@ -7,9 +7,10 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/01 08:04:43 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/03 11:20:38 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/05 22:55:07 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
+"""Maze generation and pathfinding algorithms."""
 
 import math
 import random
@@ -17,7 +18,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Iterable
 
 from common.config import Config
-from common.grid_tools import Cell, Dir, Path, Vec2
+from common.grid_tools import Cell, Dir, Vec2
 
 from .graph import Graph
 from .staging import (
@@ -42,7 +43,6 @@ class BaseStrat(ABC):
         self._n_imperfect = ((self.width * self.height) ** 0.7) * int(
             not self.config.perfect
         )
-        print(f"n_imperfect: {self._n_imperfect}")
         self.entry_cell = self.grid[self.config.entry]
         self.exit_cell = self.grid[self.config.exit]
         self._open_entry_exit(self.entry_cell)
@@ -69,15 +69,15 @@ class BaseStrat(ABC):
                     )
                 ]
             dir_list = [
-                direction
+                (direction, neighbour)
                 for direction, neighbour in self.graph.neighbours(cell)
                 if neighbour and not neighbour.ispic
             ]
             self.rng.shuffle(dir_list)
             if dir_list:
                 n = self.rng.randint(1, len(dir_list))
-                for _ in dir_list[:n]:
-                    cell.rm_wall_nb(_)
+                for d, nb in dir_list[:n]:
+                    cell.rm_wall_nb(nb, d)
             self._n_imperfect -= 1
 
     def _dispatch(self, event: MazeEvent) -> bool:
@@ -91,7 +91,7 @@ class BaseStrat(ABC):
                 return False
         return True
 
-    def _open_entry_exit(self, cell: Cell):
+    def _open_entry_exit(self, cell: Cell) -> None:
         """Open entry/exits gaps on border."""
         if cell:
             if cell.loc.x == 0:
@@ -106,12 +106,12 @@ class BaseStrat(ABC):
             print(Exception(f"cell={cell}; dosent exist"))
 
     @property
-    def width(self):
+    def width(self) -> int:
         """Get WIDTH from config file."""
         return self.config.width
 
     @property
-    def height(self):
+    def height(self) -> int:
         """Get HEIGHT from config file."""
         return self.config.height
 
@@ -125,19 +125,12 @@ class Dfs(BaseStrat):
         start = self.config.entry
         yield from self._dfs(start)
 
-    def _dfs(self, pos: Vec2 = Vec2) -> Iterable[Vec2]:
-        """TODO: Docstring for gen_rand.
-
-        Args:
-            arg1 (TODO): TODO
-
-        Returns: TODO
-
-        """
+    def _dfs(self, pos: Vec2) -> Iterable[Vec2]:
+        """Recursive depth-first search from a position."""
         cell = self.grid[pos]
         enter = MazeEvent(cell, etype=EType.ENTER)
         if not self._dispatch(enter):
-            return enter.found
+            return
         directions = [*self.graph.neighbours(cell)]
         self.rng.shuffle(directions)
 
@@ -148,11 +141,10 @@ class Dfs(BaseStrat):
             if not self._dispatch(e):
                 continue
             yield neighbour.loc
-            if (yield from self._dfs(neighbour.loc)):
-                return True
+            yield from self._dfs(neighbour.loc)
         back = MazeEvent(cell, etype=EType.EXIT)
         self._dispatch(back)
-        return False
+        return
 
 
 class Dijkstra(BaseStrat):
@@ -197,19 +189,19 @@ class Dijkstra(BaseStrat):
     """
 
     def generate(self) -> Iterable[Vec2]:
-        super().generate()
+        """Generates using Dijkstra's algorithm."""
         self._imperfect()
         start = self.config.entry
         yield from self._dijks(start)
 
     def _dijks(self, pos: Vec2) -> Iterable[Vec2]:
         node: Cell = self.grid[pos]
-        frontier: list[Cell] = [(0, node)]
+        frontier: list[tuple[int, Cell]] = [(0, node)]
         expanded: set[Cell] = set()
-        parent: dict[Cell, Cell] = {node: None}
+        parent: dict[Cell | None, Cell | None] = {node: None}
         while True:
             if not frontier:
-                return False
+                return  # False
             i = min(frontier, key=lambda f: f[0])
             frontier.remove(i)
             cost, node = i
@@ -241,7 +233,8 @@ class Dijkstra(BaseStrat):
             self._dispatch(back)
         cell = parent[self.exit_cell]
         while cell != self.entry_cell:
-            yield cell
+            assert cell is not None, "No path found from entry to exit."
+            yield cell.loc
             cell = parent[cell]
 
 
@@ -249,8 +242,7 @@ class Pic(BaseStrat):
     """Picture maze generation."""
 
     def generate(self) -> Iterable[Vec2]:
-        super().generate()
-        # start = self.config.entry
+        """Generates a picture to place in the maze."""
         yield from self._gen_pic(self.config.pic_scalar)
 
     @staticmethod
@@ -284,17 +276,15 @@ class Pic(BaseStrat):
             ]
         else:
             pic = [0b1111111, 0b1000001, 0b1011101, 0b1010101, 0b1010111]
-        print(f"== PIC SELECTED: {select} ==")
-        print(pic)
         return pic
 
-    def _gen_pic(self, pic_scalar: int) -> Iterable[Vec2]:
+    def _gen_pic(self, pic_scalar: int | float) -> Iterable[Vec2]:
         """Prep for 42pic Check pic dimension against h / w.
 
         Calculate topleft and botright and passes to pic_lst
 
         Raises:
-            ExceptionType: When this is raised.
+            Excepetion
         """
         try:
             if not self.grid.pic:
@@ -320,7 +310,9 @@ class Pic(BaseStrat):
             bright = self.grid[tleft.loc + Vec2(wpic, hpic)]
             yield from self._pic_lst(tleft, bright, pic)
 
-    def _pic_lst(self, tleft: Vec2, bright: Vec2, pic: list[bin]) -> any:
+    def _pic_lst(
+        self, tleft: Cell, bright: Cell, pic: list[int]
+    ) -> Iterable[Vec2]:
         """Check and set if elements of subgrid from tleft to bright are ispic.
 
         gets a list of cells that will be ispic and steps through marking ispic
@@ -339,7 +331,7 @@ class Pic(BaseStrat):
             ExceptionType: When this is raised.
         """
         delta = bright.loc - tleft.loc
-        r_lst: list[Cell] = []
+        r_lst: list[Vec2] = []
         j = 0
         while j < delta.y:
             i = 0
@@ -390,7 +382,7 @@ class Prim(BaseStrat):
     """
 
     def generate(self) -> Iterable[Vec2]:
-        super().generate()
+        """Generates using Prim's algorithm."""
         yield from self._prim()
 
     def _prim(self) -> Iterable[Vec2]:

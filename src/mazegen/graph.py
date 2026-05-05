@@ -7,20 +7,22 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/01 08:04:28 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/01 08:12:32 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/04 11:34:43 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
 from collections.abc import Iterable
 from typing import Protocol
 
-from common.grid_tools import Cell, Grid
+from common.grid_tools import Cell, Dir, Grid
 
 
 class Graph(Protocol):
     """Graph protocol for maze generation and pathfinding."""
 
-    def neighbours(self, cell: Cell) -> Iterable[Cell]:
+    grid: Grid
+
+    def neighbours(self, cell: Cell) -> Iterable[tuple[Dir, Cell]]:
         """Returns list of neighbours of cell."""
         ...
 
@@ -35,9 +37,10 @@ class GenGraph:
         """Initializes GenGraph with a grid."""
         self.grid = grid
 
-    def neighbours(self, cell: Cell) -> Iterable[Cell]:
-        """Returns list of neighbours of cell."""
-        yield from list(cell.neighbours.items())
+    def neighbours(self, cell: Cell) -> Iterable[tuple[Dir, Cell]]:
+        """Returns list of neighbours of cell as (dir, cell) tuples."""
+        cell_nb = self.grid.neighbour(cell)
+        yield from list(cell_nb.items())
 
 
 class PathGraph:
@@ -50,10 +53,9 @@ class PathGraph:
         """Initializes PathGraph with a grid."""
         self.grid = grid
 
-    def neighbours(self, cell: Cell) -> Iterable[Cell]:
+    def neighbours(self, cell: Cell) -> Iterable[tuple[Dir, Cell]]:
         """Returns list of neighbours if no wall between cell and dir."""
-        c_list = [
-            c for c in list(cell.neighbours.items()) if not cell.has_wall(c[0])
-        ]
+        cell_nb = self.grid.neighbour(cell)
+        c_list = [c for c in list(cell_nb.items()) if not cell.has_wall(c[0])]
         c_list.sort(key=lambda x: (x[0], x[1].loc.x, x[1].loc.y))
         yield from c_list

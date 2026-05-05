@@ -6,11 +6,11 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/01 14:12:03 by maprunty         #+#    #+#              #
-#    Updated: 2026/02/03 16:08:56 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/04 08:35:21 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
 
-from .generators import Generators
+from .mazegenerator import MazeGenerator
 
-__all__ = ["Generators"]
+__all__ = ["MazeGenerator"]
