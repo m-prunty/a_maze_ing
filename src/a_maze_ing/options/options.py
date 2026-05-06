@@ -1,7 +1,10 @@
 import os
 import sys
+from typing import Literal, get_args, get_origin
 
-from common.config import Config
+from annotated_types import Ge, Le
+
+from common.config import Config, ConfigIO
 from common.grid_tools import Vec2
 
 from ..graphics import Event_loop, Renderer, Textures, Window
@@ -12,54 +15,55 @@ class Options:
         self.cfg = config
         self.opt_rend = Options_render()
 
-    #        for field in self.cfg.__pydantic_fields__:
-    #            min = None
-    #            max = None
-    #            if field.name.startswith("_"):
-    #                field.name = field.name[1:]
-    #                value = getattr(self.cfg, field.name)
-    #                annotation = field.type
-    #            else:
-    #                value = getattr(self.cfg, field.name)
-    #                annotation = field.type
-    #                for meta in self.cfg.__pydantic_fields__[field.name].metadata:
-    #                    if isinstance(meta, Ge):
-    #                        min = meta.ge
-    #                    if isinstance(meta, Le):
-    #                        max = meta.le
-    #                if min is not None and max is not None:
-    #                    self.opt_rend.add_cursor(
-    #                        field.name, "", (min, value, max + 1)
-    #                    )
-    #            if annotation is int and min is None:
-    #                self.opt_rend.add_input(field.name, value, int)
-    #            elif annotation is str:
-    #                self.opt_rend.add_input(field.name, value, str)
-    #            elif annotation is bool:
-    #                self.opt_rend.add_dropdown(
-    #                    field.name, value, get_args(Literal[True, False])
-    #                )
-    #            elif annotation is tuple:
-    #                self.opt_rend.add_input(field.name + " X", value.x, int)
-    #                self.opt_rend.add_input(field.name + " Y", value.y, int)
-    #            elif get_origin(annotation) is Literal:
-    #                self.opt_rend.add_dropdown(
-    #                    field.name, value, get_args(annotation)
-    #                )
-    #        self.is_active = False
+        print(self.cfg)
+        for field in self.cfg:
+            print("}}}}}}}", field)  #
+            # print(self.cfg[field])
+
+            # field = self.cfg[field.model_field]
+
+            name = field["name"]
+            annotation = field["type"]
+            value = field["value"]
+
+            print(name, annotation, value)
+            min = None
+            max = None
+            for meta in self.cfg.__pydantic_fields__[name].metadata:
+                if isinstance(meta, Ge):
+                    min = meta.ge
+                if isinstance(meta, Le):
+                    max = meta.le
+            if min is not None and max is not None:
+                self.opt_rend.add_cursor(name, "", (min, value, max + 1))
+            if annotation is int and min is None:
+                self.opt_rend.add_input(name, value, int)
+            elif annotation is str:
+                self.opt_rend.add_input(name, value, str)
+            elif annotation is bool:
+                self.opt_rend.add_dropdown(
+                    name, value, get_args(Literal[True, False])
+                )
+            elif annotation is tuple:
+                self.opt_rend.add_input(name + " X", value.x, int)
+                self.opt_rend.add_input(name + " Y", value.y, int)
+            elif get_origin(annotation) is Literal:
+                self.opt_rend.add_dropdown(name, value, get_args(annotation))
+            self.is_active = False
 
     def put_to_config(self, fields: list):
         """vars: 0 width, 1 height"""
-        for key, value in self.cfg:
+        print("ptc", self.cfg, fields)
+        for value in self.cfg:
             try:
-                if key.startswith("_"):
-                    continue
-                val = type(value)(fields[key]["VAL"])
+                key = value["name"]
+                val = fields[key]["VAL"]
                 setattr(self.cfg, key, val)
+                print("field is ", key, value, val)  #
                 # print(key, " successfully changed to", val)
             except KeyError:
                 print(key, "is not handeld yet")
-        self.cfg.cfg_to_file()
+        ConfigIO.to_file(self.cfg, self.cfg.filename)
 
     def render(self) -> None:
         self.opt_rend.render_options()

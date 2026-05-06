@@ -7,33 +7,37 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                               +#+#+#+#+#+   +#+             #
 #    Created: 2026/02/03 21:19:22 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/04 09:24:57 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/06 05:55:42 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Configuration module for maze generation and rendering."""
 
 import ast
 import random
-from typing import Any, Literal, cast
+from typing import Any, Literal
 
-from pydantic import ConfigDict, Field, field_validator, model_validator
-from pydantic.dataclasses import dataclass
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+    model_validator,
+)
 
 from ..grid_tools import Vec2
 
 
-@dataclass
-class Config:
+class Config(BaseModel):
     """Configuration class for maze generation and rendering."""
 
     width: int = Field(ge=5, le=30, default=10)
     height: int = Field(ge=5, le=30, default=10)
-    entry: Vec2 = Field(default=Vec2(0, 0))
-    exit: Vec2 = Field(default=Vec2(5, 0))
+    entry: Vec2 = Field(default_factory=lambda: Vec2(0, 0))
+    exit: Vec2 = Field(default_factory=lambda: Vec2(5, 0))
     output_file: str = Field(default="maze.txt")
     perfect: bool = Field(default=True)
     seed: int = Field(default=0)
-    window_siz: Vec2 = Field(default=Vec2(900, 900))
+    window_siz: Vec2 = Field(default_factory=lambda: Vec2(900, 900))
     pic: Literal[1, 2, 3] = Field(default=1)
     pic_scalar: float = Field(default=1.0)
     filename: str = Field(default="config.txt")
@@ -73,23 +77,41 @@ class Config:
     @field_validator("entry", "exit", "window_siz", mode="before")
     @classmethod
     def parse_vec2(cls, v: Any) -> Vec2:
-        """Parse a string repr of a Vec2 instance into a Vec2 instance."""
+        """Parse input into a Vec2."""
+        if isinstance(v, Vec2):
+            return v
+
         if isinstance(v, str):
-            x, y = ast.literal_eval(v)
+            try:
+                v = ast.literal_eval(v)
+            except Exception as e:
+                raise ValueError(f"Invalid Vec2 string: {v}") from e
+
         if isinstance(v, tuple) and len(v) == 2:
             x, y = v
-        if isinstance(v, Vec2):
-            return Vec2(x, y)
-        else:
-            try:
-                x, y = int(x), int(y)
-                return Vec2(x, y)
-            except Exception as e:
-                raise ValueError(
-                    f"Expected a Vec2, got {type(v).__name__} with value {v}"
-                ) from e
+            return Vec2(int(x), int(y))
 
-    @field_validator("filename", "output_file", "gen_algo", mode="before")
+        raise ValueError(
+            f"Expected Vec2-compatible value, got {type(v).__name__}: {v}"
+        )
+
+    #        if isinstance(v, str):
+    #            x, y = ast.literal_eval(v)
+    #        if isinstance(v, tuple) and len(v) == 2:
+    #            x, y = v
+    #        if isinstance(v, Vec2):
+    #            assert isinstance(v.x, int) and isinstance(v.y, int)
+    #            return x, y
+    #        else:
+    #            try:
+    #                x, y = int(x), int(y)
+    #                return x, y
+    #            except Exception as e:
+    #                raise ValueError(
+    #                    f"Expected a Vec2, got {type(v).__name__} with value {v}"
+    #                ) from e
+    #
+    @field_validator("filename", "output_file", mode="before")
     @classmethod
     def parse_str(cls, v: Any) -> str:
         """Parse a string repr of a str into a str."""
@@ -97,21 +119,62 @@ class Config:
             return v.strip("\"' ").lower()
         raise ValueError(f"Expected a string, got {type(v).__name__}")
 
-    @field_validator("pic", "color", mode="before")
+    @field_validator("perfect", mode="before")
+    @classmethod
+    def parse_bool(cls, v: Any) -> bool:
+        """Parse a string repr of a bool into a bool."""
+        if isinstance(v, bool):
+            return v
+        if isinstance(v, str):
+            return v.strip().lower() in ("true", "1", "yes")
+        raise ValueError(f"Expected a boolean, got {type(v).__name__}")
+
+    @field_validator("gen_algo", "path_algo", "color", "pic", mode="before")
+    @classmethod
+    def parse_Literal(cls, v: Any) -> Any:
+        if isinstance(v, int):
+            return v if v in (0, 1, 2) else 0
+        if isinstance(v, str):
+            v = v.strip().lower()
+            if v in ("dfs", "prim", "swinder", "wilson", "dijkstra"):
+                return v
+            if v in ("0", "1", "2"):
+                return int(v)
+        raise ValueError(
+            f"Expected a valid gen_algo/path_algo/color value, got {type(v).__name__}: {v}"
+        )
+
+    @field_validator("width", "height", "seed", "pic", mode="before")
     @classmethod
     def parse_int(cls, v: Any) -> int:
         """Parse a string repr of an int into an int."""
+        print("Parsing int:", v, type(v), int(eval(v)))
+        if isinstance(v, float):
+            return int(v)
         if isinstance(v, str):
-            return cast(int, ast.literal_eval(v))
+            return int(ast.literal_eval(v))
         if isinstance(v, int):
             return v
         raise ValueError(f"Expected an int, got {type(v).__name__}")
 
+    def __iter__(self):
+        #        print("iter called", self.__dir__())
+        # yield from self.__dataclass_fields__.keys()
+        #        print("model fields", self.model_fields)
+        #        print("model keys", self.model_fields.keys())
+        #        print("model values", self.model_fields.values())
+        #        print("model items", self.model_fields.items())
+        for field in self.model_fields.items():
+            name = field[0]
+            print(">>>>>>", name, dict[field, getattr(self, name)])
+            yield {
+                "name": name,
+                "value": getattr(self, name),
+                "type": type(getattr(self, name)),
+            }
 
-#    def __iter__(self) -> Generator[tuple[str, Any], None, None]:
-#        """Iterate over the fields of the Config instance."""
-#        for v in fields(self):
-#            yield v.name, getattr(self, v.name)
+    #        for name, field in self.model_fields.items():
+    #            yield name, field, getattr(self, name)
 
 
 class ConfigIO:
@@ -122,10 +185,11 @@ class ConfigIO:
         """Create a Config instance from a configuration file."""
         try:
             with open(path) as f:
-                data = {}
+                data: dict[str, Any] = {}
                 for line in f:
                     key, value = line.strip().split("=", 1)
                     data[key.lower()] = value
+                print("Data read from file:", data)
                 return Config(**data)
         except Exception as e:
             raise ConfigError(f"Error reading config from file: {e}") from e

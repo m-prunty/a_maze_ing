@@ -6,7 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/24 07:55:50 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/04 09:55:32 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/06 02:19:35 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """First attempts at the A-Maze-ing project."""
@@ -34,7 +34,6 @@ class Start:
 
     def __init__(self) -> None:
         """Initialize the start screen."""
-        # self.options = Options(1000, 1000)
         try:
             self.on_start = True
             if len(sys.argv) == 2:
