@@ -1,5 +1,0 @@
-Pillow>=10.0.0
-types-Pillow
-mlx==2.2
-pydantic
-Xlib
