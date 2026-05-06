@@ -144,7 +144,7 @@ class Config(BaseModel):
             f"Expected a valid gen_algo/path_algo/color value, got {type(v).__name__}: {v}"
         )
 
-    @field_validator("width", "height", "seed", "pic", mode="before")
+    @field_validator("width", "height", "seed", mode="before")
     @classmethod
     def parse_int(cls, v: Any) -> int:
         """Parse a string repr of an int into an int."""

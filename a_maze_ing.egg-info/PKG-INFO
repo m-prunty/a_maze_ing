@@ -1,0 +1,11 @@
+Metadata-Version: 2.4
+Name: a_maze_ing
+Version: 0.1.0
+Summary: Add your description here
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: Pillow>=10.0.0
+Requires-Dist: types-Pillow
+Requires-Dist: mlx==2.2
+Requires-Dist: pydantic
+Requires-Dist: Xlib

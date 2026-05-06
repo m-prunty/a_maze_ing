@@ -24,9 +24,10 @@ class Options:
 
             name = field["name"]
             annotation = field["type"]
+            field_info = self.cfg.__pydantic_fields__[name]
             value = field["value"]
 
-            print(name, annotation, value)
+            print(f"{name}: {annotation} is litterale: ", field_info.annotation)
             min = None
             max = None
             for meta in self.cfg.__pydantic_fields__[name].metadata:
@@ -36,7 +37,9 @@ class Options:
                     max = meta.le
             if min is not None and max is not None:
                 self.opt_rend.add_cursor(name, "", (min, value, max + 1))
-            if annotation is int and min is None:
+            elif get_origin(field_info.annotation) is Literal:
+                self.opt_rend.add_dropdown(name, value, get_args(field_info.annotation))
+            elif annotation is int and min is None:
                 self.opt_rend.add_input(name, value, int)
             elif annotation is str:
                 self.opt_rend.add_input(name, value, str)
@@ -44,11 +47,9 @@ class Options:
                 self.opt_rend.add_dropdown(
                     name, value, get_args(Literal[True, False])
                 )
-            elif annotation is tuple:
+            elif annotation is Vec2:
                 self.opt_rend.add_input(name + " X", value.x, int)
                 self.opt_rend.add_input(name + " Y", value.y, int)
-            elif get_origin(annotation) is Literal:
-                self.opt_rend.add_dropdown(name, value, get_args(annotation))
             self.is_active = False
 
     def put_to_config(self, fields: list):
