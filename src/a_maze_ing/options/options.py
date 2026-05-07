@@ -1,6 +1,6 @@
 import os
 import sys
-from typing import Literal, get_args, get_origin
+from typing import Any, Literal, get_args, get_origin
 
 from annotated_types import Ge, Le
 
@@ -16,52 +16,51 @@ class Options:
         self.opt_rend = Options_render()
 
         print(self.cfg)
-        for field in self.cfg:
-            print("}}}}}}}", field)  #
-            # print(self.cfg[field])
+        try:
+            for field in self.cfg:
+                name = field[0]
+                annotation = field[1]["type"]
+                field_info = self.cfg.__pydantic_fields__[name]
+                value = field[1]["value"]
+                min = None
+                max = None
+                for meta in self.cfg.__pydantic_fields__[name].metadata:
+                    if isinstance(meta, Ge):
+                        min = meta.ge
+                    if isinstance(meta, Le):
+                        max = meta.le
+                if min is not None and max is not None:
+                    self.opt_rend.add_cursor(name, "", (min, value, max + 1))
+                elif get_origin(field_info.annotation) is Literal:
+                    self.opt_rend.add_dropdown(
+                        name, value, get_args(field_info.annotation)
+                    )
+                elif annotation is int and min is None:
+                    self.opt_rend.add_input(name, value, int)
+                elif annotation is str:
+                    self.opt_rend.add_input(name, value, str)
+                elif annotation is bool:
+                    self.opt_rend.add_dropdown(
+                        name, value, get_args(Literal[True, False])
+                    )
+                elif annotation is Vec2:
+                    self.opt_rend.add_input(name + " X", value.x, int)
+                    self.opt_rend.add_input(name + " Y", value.y, int)
+                self.is_active = False
+        except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
+            print(f"Error creating options: {e}")
+            raise Exception(e) from e
 
-            # field = self.cfg[field.model_field]
-
-            name = field["name"]
-            annotation = field["type"]
-            field_info = self.cfg.__pydantic_fields__[name]
-            value = field["value"]
-
-            print(f"{name}: {annotation} is litterale: ", field_info.annotation)
-            min = None
-            max = None
-            for meta in self.cfg.__pydantic_fields__[name].metadata:
-                if isinstance(meta, Ge):
-                    min = meta.ge
-                if isinstance(meta, Le):
-                    max = meta.le
-            if min is not None and max is not None:
-                self.opt_rend.add_cursor(name, "", (min, value, max + 1))
-            elif get_origin(field_info.annotation) is Literal:
-                self.opt_rend.add_dropdown(name, value, get_args(field_info.annotation))
-            elif annotation is int and min is None:
-                self.opt_rend.add_input(name, value, int)
-            elif annotation is str:
-                self.opt_rend.add_input(name, value, str)
-            elif annotation is bool:
-                self.opt_rend.add_dropdown(
-                    name, value, get_args(Literal[True, False])
-                )
-            elif annotation is Vec2:
-                self.opt_rend.add_input(name + " X", value.x, int)
-                self.opt_rend.add_input(name + " Y", value.y, int)
-            self.is_active = False
-
-    def put_to_config(self, fields: list):
-        """vars: 0 width, 1 height"""
-        print("ptc", self.cfg, fields)
+    def put_to_config(self, fields: dict[str, Any]) -> None:
         for value in self.cfg:
             try:
-                key = value["name"]
+                key = value[0]
                 val = fields[key]["VAL"]
                 setattr(self.cfg, key, val)
                 print("field is ", key, value, val)  #
-                # print(key, " successfully changed to", val)
             except KeyError:
                 print(key, "is not handeld yet")
         ConfigIO.to_file(self.cfg, self.cfg.filename)

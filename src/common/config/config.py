@@ -7,13 +7,14 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                               +#+#+#+#+#+   +#+             #
 #    Created: 2026/02/03 21:19:22 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/06 05:55:42 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/07 21:37:34 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Configuration module for maze generation and rendering."""
 
 import ast
 import random
+from collections.abc import Generator
 from typing import Any, Literal
 
 from pydantic import (
@@ -95,22 +96,6 @@ class Config(BaseModel):
             f"Expected Vec2-compatible value, got {type(v).__name__}: {v}"
         )
 
-    #        if isinstance(v, str):
-    #            x, y = ast.literal_eval(v)
-    #        if isinstance(v, tuple) and len(v) == 2:
-    #            x, y = v
-    #        if isinstance(v, Vec2):
-    #            assert isinstance(v.x, int) and isinstance(v.y, int)
-    #            return x, y
-    #        else:
-    #            try:
-    #                x, y = int(x), int(y)
-    #                return x, y
-    #            except Exception as e:
-    #                raise ValueError(
-    #                    f"Expected a Vec2, got {type(v).__name__} with value {v}"
-    #                ) from e
-    #
     @field_validator("filename", "output_file", mode="before")
     @classmethod
     def parse_str(cls, v: Any) -> str:
@@ -132,6 +117,7 @@ class Config(BaseModel):
     @field_validator("gen_algo", "path_algo", "color", "pic", mode="before")
     @classmethod
     def parse_Literal(cls, v: Any) -> Any:
+        """Parse a string repr of a Literal into the appropriate type."""
         if isinstance(v, int):
             return v if v in (0, 1, 2) else 0
         if isinstance(v, str):
@@ -141,14 +127,14 @@ class Config(BaseModel):
             if v in ("0", "1", "2"):
                 return int(v)
         raise ValueError(
-            f"Expected a valid gen_algo/path_algo/color value, got {type(v).__name__}: {v}"
+            "Expected a valid gen_algo/path_algo/color value,"
+            + " got {type(v).__name__}: {v}"
         )
 
     @field_validator("width", "height", "seed", mode="before")
     @classmethod
     def parse_int(cls, v: Any) -> int:
         """Parse a string repr of an int into an int."""
-        print("Parsing int:", v, type(v), int(eval(v)))
         if isinstance(v, float):
             return int(v)
         if isinstance(v, str):
@@ -157,24 +143,17 @@ class Config(BaseModel):
             return v
         raise ValueError(f"Expected an int, got {type(v).__name__}")
 
-    def __iter__(self):
-        #        print("iter called", self.__dir__())
-        # yield from self.__dataclass_fields__.keys()
-        #        print("model fields", self.model_fields)
-        #        print("model keys", self.model_fields.keys())
-        #        print("model values", self.model_fields.values())
-        #        print("model items", self.model_fields.items())
+    def __iter__(self) -> Generator[tuple[str, Any], None, None]:
+        """Iterate over the model fields and their values."""
         for field in self.model_fields.items():
             name = field[0]
-            print(">>>>>>", name, dict[field, getattr(self, name)])
-            yield {
-                "name": name,
-                "value": getattr(self, name),
-                "type": type(getattr(self, name)),
-            }
-
-    #        for name, field in self.model_fields.items():
-    #            yield name, field, getattr(self, name)
+            yield (
+                name,
+                {
+                    "value": getattr(self, name),
+                    "type": type(getattr(self, name)),
+                },
+            )
 
 
 class ConfigIO:
@@ -189,11 +168,11 @@ class ConfigIO:
                 for line in f:
                     key, value = line.strip().split("=", 1)
                     data[key.lower()] = value
-                print("Data read from file:", data)
                 return Config(**data)
         except Exception as e:
             raise ConfigError(f"Error reading config from file: {e}") from e
 
+    # needs work
     @staticmethod
     def from_filemap(path: str) -> Config:
         """Create a Config instance from a hexlist repr of the maze."""
@@ -227,75 +206,5 @@ class ConfigError(Exception):
     """Custom exception for configuration errors."""
 
     def __init__(self, message: str):
+        """Initialize the ConfigError with a message."""
         super().__init__(message)
-
-
-#    def cfg_from_file(cls, filename: str) -> "Config":
-#        """Create a Config instance from a configuration file."""
-#        c_dct = {"filename": filename}
-#        with open(filename) as f:
-#            for line in f:
-#                line = line.strip()
-#                if line and not line.startswith("#"):
-#                    try:
-#                        k, v = line.split("=")
-#                        k = k.strip().lower()
-#                        if "[" in v:
-#                            v = Vec2(*[e.strip(",[]") for e in (v.split(","))])
-#                        elif "(" in v:
-#                            v = Vec2(
-#                                *[int(e.strip(",()")) for e in (v.split(","))]
-#                            )
-#                        elif v == "None":
-#                            v = None
-#                        elif "," in v:
-#                            v = v.split(",")
-#                            v = (v[0], v[1])
-#                        elif v.lower() in ("true", "false"):
-#                            v = v.lower() == "true"
-#                        elif v.isnumeric():
-#                            v = int(v)
-#                    except ValueError as ve:
-#                        print(
-#                            f"Error: {ve} something's not right with config\
-#                                        {k}:{v} "
-#                        )
-#                    c_dct.update({k: v})
-# print(c_dct)
-#        return cls(**c_dct)
-#
-#    @property
-#    def entry(self) -> Vec2:
-#        """Get the entry point as a Vec2 instance."""
-#        return Vec2(self.entry[0], self.entry[1])
-#
-#    @entry.setter
-#    def entry(self, val: Vec2) -> None:
-#        """Set the entry point, ensuring it is within the grid bounds."""
-#        print("entred setter")
-#        if val.x < 0 or val.y < 0 or val.x > self.width or val.y > self.height:
-#            raise ValueError
-#        self.entry = Vec2(val.x, val.y)
-#
-#    @property
-#    def exit(self) -> Vec2:
-#        """Get the exit point as a Vec2 instance."""
-#        return Vec2(self.exit[0], self.exit[1])
-#
-#    @exit.setter
-#    def exit(self, val: Vec2) -> None:
-#        """Set the exit point, ensuring it is within the grid bounds."""
-#        print("entred setter")
-#        if val.x < 0 or val.y < 0 or val.x > self.width or val.y > self.height:
-#            raise ValueError
-#        self.exit = Vec2(val.x, val.y)
-#
-#    @property
-#    def window_siz(self) -> Vec2:
-#        """Get the window size as a Vec2 instance."""
-#        return Vec2(self.window_siz[0], self.window_siz[1])
-#
-#    @window_siz.setter
-#    def window_siz(self, val: Vec2) -> None:
-#        """Set the window size, ensuring it is positive."""
-#        self.window_siz = Vec2(val.x, val.y)
