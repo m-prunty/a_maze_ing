@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/01 08:04:43 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/05 22:55:07 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/07 23:44:54 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Maze generation and pathfinding algorithms."""
@@ -385,26 +385,41 @@ class Prim(BaseStrat):
         """Generates using Prim's algorithm."""
         yield from self._prim()
 
+
+"""
     def _prim(self) -> Iterable[Vec2]:
+        start = self.entry_cell
+        start.visited = True
+        if not self._dispatch(MazeEvent(start, etype=EType.ENTER)):
+            return
+        frontier
+
+
+
+
         head = self.entry_cell
         head.visited = True
         visited = {head}
         enter = MazeEvent(head, etype=EType.ENTER)
+        print("enter>>>>", enter)
         if not self._dispatch(enter):
-            return enter.found
+            return
         frontier = {v for k, v in [*self.graph.neighbours(head)]}
+        print("frontier>>>>", frontier)
         while frontier:
             cell = frontier.pop()
-            # print(cell.neighbours)
+            print(self.grid.neighbour(cell))
             v = [
                 k
-                for k, c in cell.neighbours.items()
-                if c and c.visited and not c.ispic
+                for k, c in self.graph.neighbours(cell)
+                if c and not c.visited and not c.ispic
             ]
-            # print("neighbours>>>>", v)
+            print("neighbours>>>>", v)
             self.rng.shuffle(v)
             direction = v[0] if len(v) else None
-            neighbour = cell.neighbours[direction] if direction else None
+            neighbour = (
+                self.graph.neighbours(cell)[direction] if direction else None
+            )
 
             self._dispatch(MazeEvent(cell, neighbour, direction))
             cell.visited = True
@@ -415,6 +430,7 @@ class Prim(BaseStrat):
             }
             # print(frontier)
             yield frontier
+"""
 
 
 class Sidewinder(BaseStrat):

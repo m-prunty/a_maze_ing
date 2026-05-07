@@ -7,15 +7,15 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/07 03:02:45 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/04 11:23:37 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/07 23:05:55 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
-
+"""MazeGenerator class to generate a maze grid and a path through it."""
 
 from common.config import Config
 from common.grid_tools import Cell, Grid, Vec2
 
-from .algos import Dfs, Dijkstra, Pic, Prim, Sidewinder, Wilson
+from .algos import BaseStrat, Dfs, Dijkstra, Pic, Prim, Sidewinder, Wilson
 from .graph import GenGraph, PathGraph
 from .staging import (
     GoalStage,
@@ -29,7 +29,7 @@ from .staging import (
 class MazeGenerator:
     """Generate a maze grid and a path through it."""
 
-    ALGOS = {
+    ALGOS: dict[str, type[BaseStrat]] = {
         "dfs": Dfs,
         "prim": Prim,
         "swinder": Sidewinder,
@@ -54,9 +54,9 @@ class MazeGenerator:
         path = path_algo(PathGraph(self.grid), self.config)
         path.add_stage(VisitStage())
         path.add_stage(PathStage())
-        path.add_stage(GoalStage(self.config.exit))
-        self.grid.path = [*self.to_path([*path.generate()])] + [
-            Cell(self.config.exit)
+        path.add_stage(GoalStage(Cell(self.config.exit)))
+        self.grid.path = [
+            *self.to_path([*path.generate()]) + [Cell(self.config.exit).loc]
         ]
 
     def gen_grid(self, algo: str = "dfs") -> None:

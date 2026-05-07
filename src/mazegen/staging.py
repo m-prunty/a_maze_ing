@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/01 08:05:00 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/04 11:41:34 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/07 21:46:11 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 from dataclasses import dataclass
@@ -42,15 +42,6 @@ class BaseStage(Protocol):
     def process(self, e: MazeEvent) -> bool:
         """Processes a maze."""
         ...
-
-
-# class IOStage:
-#    """Stage for opening entry and exit of maze."""
-#
-#    def process(self, e: MazeEvent) -> bool:
-#        """Opens entry and exit of maze."""
-#        self._open_entry_exit(e.cell)
-#        return e
 
 
 class MkStage:
