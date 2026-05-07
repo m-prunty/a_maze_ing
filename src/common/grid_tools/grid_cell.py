@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:38:19 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/05 22:11:43 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/07 21:59:31 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Module for grid and cell classes."""
@@ -183,7 +183,7 @@ class Grid:
     def __init__(self, width: int, height: int):
         """Init a grid with the given width and height of Cell instances."""
         self.width, self.height = width, height
-        self.path: list[Dir] = []
+        self.path: list[Vec2] = []
         print(f"Creating grid of size {self.width}x{self.height}")
         self.grid = [
             [Cell(Vec2(x, y)) for x in range(self.width)]
