@@ -1,12 +1,12 @@
 # **************************************************************************** #
 #                                                                              #
 #                                                         :::      ::::::::    #
-#    Makefile                                          :+:      :+:    :+:    #
+#    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
 #    By: maprunty <maprunty@student.42heilbronn.de  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/01 13:25:26 by maprunty          #+#    #+#              #
-#    Updated: 2026/05/07 22:01:58 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/08 03:24:28 by maprunty         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 # • install: Install project dependencies using pip, uv, pipx, or any other package
@@ -29,15 +29,30 @@ RMFILES :=__pycache__ .*.sw* *.egg-info dist build $(IMG_CACHE) .venv uv.lock .m
 CFG := FILENAME=config.txt\\nWIDTH=25\\nHEIGHT=25\\nENTRY=0,0\\nEXIT=0,25\
 \\nOUTPUT_FILE=maze.txt\\nPERFECT=True\\nPIC_SCALAR=1\\nPIC=[87, 81, 119, 20, 23]
 
+PYTHON=/usr/bin/python3
 
 .PHONY: run
 run: $(IMG_CACHE) ## Execute the main script. 
-	uv run ./a_maze_ing.py $(ARGS)
+# 	uv run ./a_maze_ing.py
+	python3 main.py
 
 .PHONY: install
-install: uv dev## Install dependencies using uv
-	uv sync --frozen
-	uv pip install -e .
+install: ## Install dependencies
+	rm -rf wheels/*
+	$(PYTHON) -m pip install build --break-system-packages
+# 	$(PYTHON) -m pip uninstall common graphics mazegen
+	# build libs
+	cd libs/common && $(PYTHON) -m build --wheel --outdir ../../wheels
+	$(PYTHON) -m pip install wheels/common*.whl --force-reinstall
+	
+	cd libs/graphics && $(PYTHON) -m build --wheel --outdir ../../wheels
+	cd libs/mazegen && $(PYTHON) -m build --wheel --outdir ../../wheels
+	cd libs/mlx/python && $(PYTHON) -m build --wheel --outdir ../../../wheels
+
+	# install local deps
+	$(PYTHON) -m pip install wheels/graphics*.whl --force-reinstall
+	$(PYTHON) -m pip install wheels/mazegen*.whl --force-reinstall
+	$(PYTHON) -m pip install wheels/mlx*.whl --force-reinstall
 
 .PHONY: clean
 clean: ## Cleans up residual files
