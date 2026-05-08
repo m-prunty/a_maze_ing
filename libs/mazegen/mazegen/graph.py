@@ -7,14 +7,25 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/01 08:04:28 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/07 23:43:20 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/08 02:39:03 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
+"""Graph classes for maze generation and pathfinding."""
 
 from collections.abc import Iterable
+from dataclasses import dataclass
 from typing import Protocol
 
 from common.grid_tools import Cell, Dir, Grid
+
+
+@dataclass(frozen=True)
+class Edge:
+    """Edge class for maze generation and pathfinding."""
+
+    a: Cell
+    b: Cell
+    dir: Dir
 
 
 class Graph(Protocol):
@@ -22,12 +33,12 @@ class Graph(Protocol):
 
     grid: Grid
 
-    def neighbours(self, cell: Cell) -> Iterable[tuple[Dir, Cell]]:
-        """Returns list of neighbours of cell."""
+    def edges(self, cell: Cell) -> Iterable[Edge]:
+        """Returns list of edges of cell."""
         ...
 
 
-class GenGraph:
+class GridGraph:
     """Graph for maze generation.
 
     Returns all neighbours of cell, even if wall between them.
@@ -37,13 +48,14 @@ class GenGraph:
         """Initializes GenGraph with a grid."""
         self.grid = grid
 
-    def neighbours(self, cell: Cell) -> Iterable[tuple[Dir, Cell]]:
-        """Returns list of neighbours of cell as (dir, cell) tuples."""
+    def edges(self, cell: Cell) -> Iterable[Edge]:
+        """Returns list of edges of cell."""
         cell_nb = self.grid.neighbour(cell)
-        yield from list(cell_nb.items())
+        for dir, nb in cell_nb.items():
+            yield Edge(cell, nb, dir)
 
 
-class PathGraph:
+class MazeGraph:
     """Graph for pathfinding.
 
     Returns only neighbours of cell if no wall between them.
@@ -53,9 +65,9 @@ class PathGraph:
         """Initializes PathGraph with a grid."""
         self.grid = grid
 
-    def neighbours(self, cell: Cell) -> Iterable[tuple[Dir, Cell]]:
-        """Returns list of neighbours if no wall between cell and dir."""
+    def edges(self, cell: Cell) -> Iterable[Edge]:
+        """Returns list of edges of cell if no wall between cell and dir."""
         cell_nb = self.grid.neighbour(cell)
-        c_list = [c for c in list(cell_nb.items()) if not cell.has_wall(c[0])]
-        c_list.sort(key=lambda x: (x[0], x[1].loc.x, x[1].loc.y))
-        yield from c_list
+        for dir, nb in cell_nb.items():
+            if not cell.has_wall(dir):
+                yield Edge(cell, nb, dir)

@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/01 08:05:00 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/07 21:46:11 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/08 02:40:17 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 from dataclasses import dataclass
@@ -15,6 +15,8 @@ from enum import Enum, auto
 from typing import Protocol
 
 from common.grid_tools import Cell, Dir
+
+from .graph import Edge
 
 
 class EType(Enum):
@@ -29,9 +31,7 @@ class EType(Enum):
 class MazeEvent:
     """Event class for maze generation and pathfinding."""
 
-    cell: Cell
-    neighbour: Cell | None = None
-    _dir: Dir | None = None
+    edge: Edge
     etype: EType = EType.ENTER
     found: bool = False
 
