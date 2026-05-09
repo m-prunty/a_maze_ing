@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:38:19 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/07 21:59:31 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/08 07:08:48 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Module for grid and cell classes."""
@@ -70,7 +70,7 @@ _VEC_TO_DIR: dict[Vec2, Dir] = {
     Vec2(0, -1): Dir.N,
     Vec2(1, 0): Dir.E,
     Vec2(0, 1): Dir.S,
-    Vec2(-1, 0): Dir.W
+    Vec2(-1, 0): Dir.W,
 }
 
 _DIR_TO_VEC: dict[Dir, Vec2] = {v: k for k, v in _VEC_TO_DIR.items()}
@@ -256,6 +256,7 @@ class Grid:
         return n
 
     def neighbour_walls(self, pos: Vec2 | Cell) -> dict[Dir, int]:
+        """Get the wall values of the four closest cells."""
         n: dict[Dir, int] = {}
         for k, v in self.neighbour(pos).items():
             n[k] = v.wall
@@ -268,6 +269,7 @@ class Grid:
                 cell.visited = False
 
     def debug(self) -> str:
+        """Debug string representation of a Grid instance."""
         r_str = ""
         tmp = ""
         for k, v in vars(self).items():
@@ -286,36 +288,24 @@ class Grid:
 
     def __str__(self) -> str:
         """String representation of a Grid instance."""
-        cursor = None
         r_str = ""
         for x in range(self.width):
             cell = self[x, 0]
-            if cell is None:
-                continue
             r_str += "+"
             r_str += "---" if cell.has_wall(Dir.N) else "   "
         r_str += "+\n"
         for y in range(self.height):
             for x in range(self.width):
                 cell = self[x, y]
-                if cell is None:
-                    continue
                 if cell.has_wall(Dir.W):
                     r_str += "|"
                 else:
                     r_str += " "
-                if cursor and cursor == cell.loc:
-                    r_str += " @ "
-                else:
-                    r_str += "   " if not cell.ispic else " X "
-            if cell is None:
-                continue
+                r_str += "   " if not cell.ispic else " X "
             r_str += "|\n" if cell.has_wall(Dir.E) else " \n"
             for x in range(self.width):
                 cell = self[x, y]
                 r_str += "+"
-                if cell is None:
-                    continue
                 if cell.has_wall(Dir.S):
                     r_str += "---"
                 else:

@@ -6,7 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/24 07:55:50 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/06 02:19:35 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/07 22:07:38 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """First attempts at the A-Maze-ing project."""
@@ -14,9 +14,7 @@
 import os
 import sys
 
-from common import Config, ConfigIO, Grid, Vec2, Cell
-from mazegen import MazeGenerator
-
+from common import Config, ConfigIO, Grid, Vec2
 from graphics import (
     Animations,
     Event_loop,
@@ -26,6 +24,8 @@ from graphics import (
     Textures,
     Window,
 )
+from mazegen import MazeGenerator
+
 from .options import Options
 
 
@@ -46,9 +46,13 @@ class Start:
                     print("Aborted")
                     sys.exit(0)
             Window.create(self.cfg.window_siz, " -- A-maze-ing -- ")
+
             self.opt = Options(self.cfg)
             self.a = AMaze(self.cfg)
         except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
             print(f"Error during initialization: {e}")
             raise Exception(e) from e
 
@@ -164,13 +168,13 @@ class AMaze:
             print(f"Error writing maze to file: {e}")
             raise Exception(e) from e
 
+    # needs work
     @classmethod
     def maze_fromfile(cls, filename: str) -> "AMaze":
         """Create a maze from a file."""
-        hexlist = []
+        cfg = ConfigIO.from_filemap(filename)
+        c = cls(cfg)
         with open(filename) as f:
             hexlist = f.read().split("\n")
-        cfg = ConfigIO.from_filemap(hexlist)
-        c = cls(cfg)
         c.grid.fill_grid_from_map(hexlist, cfg)
         return c

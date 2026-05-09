@@ -1,5 +1,6 @@
 pyproject.toml
 graphics/__init__.py
+graphics/py.typed
 graphics.egg-info/PKG-INFO
 graphics.egg-info/SOURCES.txt
 graphics.egg-info/dependency_links.txt

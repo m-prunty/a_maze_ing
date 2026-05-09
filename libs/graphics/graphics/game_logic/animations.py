@@ -52,10 +52,10 @@ class Animations:
         cls._path_step = 0
         Animator.animate(cls.path_step, None, delay)
         texture = Textures.load(
-            os.path.dirname(os.path.abspath(__file__)) + "/includes/sprits/",
+            os.path.dirname(os.path.abspath(__file__)) + "/includes/",
             "path.png",
             Vec2(Render_grid._tile_siz.x + 2, Render_grid._tile_siz.y + 2),
-            (0,),
+            (0, 180),
         )[0]
         Render_grid.load_path(path, texture)
 

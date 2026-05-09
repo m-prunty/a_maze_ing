@@ -7,23 +7,25 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/01 08:04:43 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/07 23:44:54 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/09 01:36:11 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Maze generation and pathfinding algorithms."""
 
 import math
+import os
 import random
+import sys
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
 
 from common.config import Config
 from common.grid_tools import Cell, Dir, Vec2
 
-from .graph import Graph
+from .graph import Edge, Graph
 from .staging import (
     BaseStage,
-    EType,
+    EventType,
     MazeEvent,
 )
 
@@ -127,24 +129,29 @@ class Dfs(BaseStrat):
 
     def _dfs(self, pos: Vec2) -> Iterable[Vec2]:
         """Recursive depth-first search from a position."""
-        cell = self.grid[pos]
-        enter = MazeEvent(cell, etype=EType.ENTER)
-        if not self._dispatch(enter):
-            return
-        directions = [*self.graph.neighbours(cell)]
-        self.rng.shuffle(directions)
+        try:
+            cell = self.grid[pos]
 
-        for direction, neighbour in directions:
-            if not neighbour:
-                continue
-            e = MazeEvent(cell, neighbour, direction, EType.EDGE)
-            if not self._dispatch(e):
-                continue
-            yield neighbour.loc
-            yield from self._dfs(neighbour.loc)
-        back = MazeEvent(cell, etype=EType.EXIT)
-        self._dispatch(back)
-        return
+            enter = MazeEvent(Edge(cell), etype=EventType.ENTER)
+            if not self._dispatch(enter):
+                return
+            directions = [*self.graph.edges(cell)]
+            self.rng.shuffle(directions)
+
+            for edge in directions:
+                if not edge:
+                    continue
+                e = MazeEvent(edge, EventType.EDGE)
+                if not self._dispatch(e):
+                    continue
+                assert edge.b is not None, "Edge must have a destination cell."
+                yield edge.b.loc
+                yield from self._dfs(edge.b.loc)
+            back = MazeEvent(Edge(cell), etype=EventType.EXIT)
+            self._dispatch(back)
+            return
+        except Exception:
+            raise MazeError(f"Error in {self.__class__.__name__}") from None
 
 
 class Dijkstra(BaseStrat):
@@ -190,52 +197,60 @@ class Dijkstra(BaseStrat):
 
     def generate(self) -> Iterable[Vec2]:
         """Generates using Dijkstra's algorithm."""
-        self._imperfect()
-        start = self.config.entry
-        yield from self._dijks(start)
+        try:
+            self._imperfect()
+            yield from self._dijks(self.entry_cell)
+        except Exception:
+            raise MazeError(f"Error in {self.__class__.__name__}") from None
 
-    def _dijks(self, pos: Vec2) -> Iterable[Vec2]:
-        node: Cell = self.grid[pos]
-        frontier: list[tuple[int, Cell]] = [(0, node)]
-        expanded: set[Cell] = set()
-        parent: dict[Cell | None, Cell | None] = {node: None}
-        while True:
-            if not frontier:
-                return  # False
-            i = min(frontier, key=lambda f: f[0])
-            frontier.remove(i)
-            cost, node = i
+    def _dijks(self, start: Cell) -> Iterable[Vec2]:
+        try:
+            frontier: list[tuple[int, Cell]] = [(0, start)]
 
-            if node in expanded:
-                continue
-            enter = MazeEvent(cell=node, etype=EType.ENTER)
-            if not self._dispatch(enter):
-                break
-            expanded.add(node)
-            for direction, neighbour in self.graph.neighbours(node):
-                if not neighbour:
+            cell: Cell | None = None
+            dist: dict[Cell, int] = {start: 0}
+            parent: dict[Cell | None, Cell | None] = {start: None}
+            visited: set[Cell] = set()
+            while frontier:
+                i = min(frontier, key=lambda f: f[0])
+                frontier.remove(i)
+                cost, cell = i
+                if cell in visited:
                     continue
-                e = MazeEvent(node, neighbour, direction, EType.EDGE)
-                if not self._dispatch(e):
-                    continue
+                enter = MazeEvent(Edge(cell), etype=EventType.ENTER)
+                if not self._dispatch(enter):
+                    break
+                visited.add(cell)
 
-                if neighbour not in expanded:
-                    _neighbour = next(
-                        (f for f in frontier if f[1] == neighbour), None
-                    )
-                    if not _neighbour:
-                        frontier.append((cost + 1, neighbour))
-                    elif _neighbour[0] > (cost + 1):
-                        frontier.remove(_neighbour)
-                        frontier.append((cost + 1, neighbour))
-                    parent[neighbour] = node
-            back = MazeEvent(node, etype=EType.EXIT)
-            self._dispatch(back)
-        cell = parent[self.exit_cell]
-        while cell != self.entry_cell:
-            assert cell is not None, "No path found from entry to exit."
-            yield cell.loc
-            cell = parent[cell]
+                for edge in self.graph.edges(cell):
+                    if not edge.b:
+                        continue
+                    e = MazeEvent(edge, EventType.EDGE)
+                    if not self._dispatch(e):
+                        continue
+                    nb = edge.b
+                    new_cost = cost + 1
+                    if nb not in dist or new_cost < dist[nb]:
+                        dist[nb] = new_cost
+                        parent[nb] = cell
+                        existing = next(
+                            (f for f in frontier if f[1] == nb), None
+                        )
+                        if not existing:
+                            frontier.append((new_cost, nb))
+                        elif existing[0] > (new_cost):
+                            frontier.remove(existing)
+                            frontier.append((new_cost, nb))
+
+                back = MazeEvent(Edge(cell), etype=EventType.EXIT)
+                self._dispatch(back)
+            cell = parent[self.exit_cell]
+            while cell != self.entry_cell:
+                assert cell is not None, "No path found from entry to exit."
+                yield cell.loc
+                cell = parent[cell]
+        except Exception:
+            raise MazeError(f"Error in {self.__class__.__name__}") from None
 
 
 class Pic(BaseStrat):
@@ -289,26 +304,26 @@ class Pic(BaseStrat):
         try:
             if not self.grid.pic:
                 raise Exception("No picture data found in grid.")
-        except Exception as e:
-            print(f"Error in _gen_pic: {e}")
-        pic = self.grid.pic
-        wpic = int(math.log2(max(pic)) * (pic_scalar)) - 1
-        hpic = int(len(pic) * pic_scalar)
-        mx = max(wpic, hpic)
-        mn = min(self.height, self.width)
-        if mx < int(mn / 5) * 3:
-            pic_scalar = int(((mn / 5) * 3) / mx)
-            wpic = int((math.log2(max(pic))) * (pic_scalar))
+            pic = self.grid.pic
+            wpic = int(math.log2(max(pic)) * (pic_scalar)) - 1
             hpic = int(len(pic) * pic_scalar)
-        self.config.pic_scalar = pic_scalar
+            mx = max(wpic, hpic)
+            mn = min(self.height, self.width)
+            if mx < int(mn / 5) * 3:
+                pic_scalar = int(((mn / 5) * 3) / mx)
+                wpic = int((math.log2(max(pic))) * (pic_scalar))
+                hpic = int(len(pic) * pic_scalar)
+            self.config.pic_scalar = pic_scalar
 
-        if self.width >= wpic + 2 and self.height >= hpic + 2:
-            tleft = self.grid[
-                int((self.width - wpic) / 2),
-                int((self.height - hpic) / 2),
-            ]
-            bright = self.grid[tleft.loc + Vec2(wpic, hpic)]
-            yield from self._pic_lst(tleft, bright, pic)
+            if self.width >= wpic + 2 and self.height >= hpic + 2:
+                tleft = self.grid[
+                    int((self.width - wpic) / 2),
+                    int((self.height - hpic) / 2),
+                ]
+                bright = self.grid[tleft.loc + Vec2(wpic, hpic)]
+                yield from self._pic_lst(tleft, bright, pic)
+        except Exception as e:
+            raise MazeError(f"Error in {self.__class__.__name__}: {e}") from e
 
     def _pic_lst(
         self, tleft: Cell, bright: Cell, pic: list[int]
@@ -330,23 +345,26 @@ class Pic(BaseStrat):
         Raises:
             ExceptionType: When this is raised.
         """
-        delta = bright.loc - tleft.loc
-        r_lst: list[Vec2] = []
-        j = 0
-        while j < delta.y:
-            i = 0
-            while i <= delta.x:
-                curr = tleft.loc + (Dir.E.v() * i) + (Dir.S.v() * j)
-                cell = self.grid[curr]
-                r_lst.append(cell.loc)
-                if pic[int(j / self.config.pic_scalar)] & (
-                    1 << int((delta.x - i) / self.config.pic_scalar)
-                ):
-                    self._dispatch(MazeEvent(cell=cell, _dir=Dir.N))
-                    self._dispatch(MazeEvent(cell=cell, _dir=Dir.S))
-                i += 1
-            j += 1
-        yield from r_lst
+        try:
+            delta = bright.loc - tleft.loc
+            r_lst: list[Vec2] = []
+            j = 0
+            while j < delta.y:
+                i = 0
+                while i <= delta.x:
+                    curr = tleft.loc + (Dir.E.v() * i) + (Dir.S.v() * j)
+                    cell = self.grid[curr]
+                    r_lst.append(cell.loc)
+                    if pic[int(j / self.config.pic_scalar)] & (
+                        1 << int((delta.x - i) / self.config.pic_scalar)
+                    ):
+                        self._dispatch(MazeEvent(Edge(cell)))
+                        self._dispatch(MazeEvent(Edge(cell)))
+                    i += 1
+                j += 1
+            yield from r_lst
+        except Exception as e:
+            raise MazeError(f"Error in {self.__class__.__name__}: {e}") from e
 
 
 class Prim(BaseStrat):
@@ -390,7 +408,7 @@ class Prim(BaseStrat):
     def _prim(self) -> Iterable[Vec2]:
         start = self.entry_cell
         start.visited = True
-        if not self._dispatch(MazeEvent(start, etype=EType.ENTER)):
+        if not self._dispatch(MazeEvent(start, etype=EventType.ENTER)):
             return
         frontier
 
@@ -400,7 +418,7 @@ class Prim(BaseStrat):
         head = self.entry_cell
         head.visited = True
         visited = {head}
-        enter = MazeEvent(head, etype=EType.ENTER)
+        enter = MazeEvent(head, etype=EventType.ENTER)
         print("enter>>>>", enter)
         if not self._dispatch(enter):
             return
@@ -538,3 +556,19 @@ class Wilson(BaseStrat):
             # print("pop", path.pop(tmp))
             curr.visited = False
         return (path, r_set)
+
+
+class MazeError(Exception):
+    """Custom exception for maze generation and pathfinding errors."""
+
+    def __init__(self, message: str) -> None:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+
+        if exc_tb:
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            line_no = exc_tb.tb_lineno
+            full_message = f"{message} | Error: {exc_type.__name__} in {fname} at line {line_no}"
+        else:
+            full_message = message
+
+        super().__init__(full_message)

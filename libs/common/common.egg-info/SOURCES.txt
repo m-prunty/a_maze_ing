@@ -1,5 +1,6 @@
 pyproject.toml
 common/__init__.py
+common/py.typed
 common.egg-info/PKG-INFO
 common.egg-info/SOURCES.txt
 common.egg-info/dependency_links.txt

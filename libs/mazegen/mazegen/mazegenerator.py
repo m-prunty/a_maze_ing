@@ -7,20 +7,20 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/07 03:02:45 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/07 23:05:55 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/09 00:42:41 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """MazeGenerator class to generate a maze grid and a path through it."""
 
 from common.config import Config
-from common.grid_tools import Cell, Grid, Vec2
+from common.grid_tools import Grid, Vec2
 
 from .algos import BaseStrat, Dfs, Dijkstra, Pic, Prim, Sidewinder, Wilson
-from .graph import GenGraph, PathGraph
+from .graph import GridGraph, MazeGraph
 from .staging import (
     GoalStage,
-    MkStage,
     PathStage,
+    PicStage,
     RmStage,
     VisitStage,
 )
@@ -51,12 +51,13 @@ class MazeGenerator:
         path_algo = self.ALGOS.get(algo.lower())
         if not path_algo:
             raise ValueError(f"Algorithm '{algo}' not recognized.")
-        path = path_algo(PathGraph(self.grid), self.config)
+        path = path_algo(MazeGraph(self.grid), self.config)
         path.add_stage(VisitStage())
         path.add_stage(PathStage())
-        path.add_stage(GoalStage(Cell(self.config.exit)))
+        path.add_stage(GoalStage(self.grid[self.config.exit]))
         self.grid.path = [
-            *self.to_path([*path.generate()]) + [Cell(self.config.exit).loc]
+            *self.to_path([*path.generate()])
+            + [self.grid[self.config.exit].loc]
         ]
 
     def gen_grid(self, algo: str = "dfs") -> None:
@@ -64,7 +65,7 @@ class MazeGenerator:
         gen_algo = self.ALGOS.get(algo.lower())
         if not gen_algo:
             raise ValueError(f"Algorithm '{algo}' not recognized.")
-        generator = gen_algo(GenGraph(self.grid), self.config)
+        generator = gen_algo(GridGraph(self.grid), self.config)
         generator.add_stage(VisitStage())
         generator.add_stage(RmStage())
         [*generator.generate()]
@@ -83,8 +84,8 @@ class MazeGenerator:
         self.grid.pic = Pic.get_pic(select)
         if not self.grid.pic:
             raise ValueError(f"Picture selection '{select}' not recognized.")
-        pic = Pic(GenGraph(self.grid), self.config)
-        pic.add_stage(MkStage())
+        pic = Pic(GridGraph(self.grid), self.config)
+        pic.add_stage(PicStage())
         [*pic.generate()]
         while (
             self.grid[self.config.entry] and self.grid[self.config.entry].ispic

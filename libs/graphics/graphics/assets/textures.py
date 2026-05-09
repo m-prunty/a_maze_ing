@@ -2,22 +2,24 @@
 
 import os
 
-from PIL import Image
-
 from common.grid_tools import Vec2
+from PIL import Image
 
 from ..mlx_context import Mlx_context
 
 
 class Textures:
-    _textures: list= [tuple]
+    """Class for loading and handling textures."""
+
+    _textures: list = [tuple]
     _sizes: list = []
 
-    def __new__(cls, id: int):
+    def __new__(cls, id: int) -> int:
         return cls._textures[id]
 
     @classmethod
     def get_siz(cls, id: int):
+        print(cls._sizes, id, len(cls._sizes))
         return cls._sizes[id]
 
     @classmethod

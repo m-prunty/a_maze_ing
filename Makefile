@@ -1,12 +1,12 @@
 # **************************************************************************** #
 #                                                                              #
 #                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
+#    Makefile                                          :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
 #    By: maprunty <maprunty@student.42heilbronn.de  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/01 13:25:26 by maprunty          #+#    #+#              #
-#    Updated: 2026/05/08 03:24:28 by maprunty         ###   ########.fr        #
+#    Updated: 2026/05/08 05:42:57 by maprunty        ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 # • install: Install project dependencies using pip, uv, pipx, or any other package
@@ -39,7 +39,7 @@ run: $(IMG_CACHE) ## Execute the main script.
 .PHONY: install
 install: ## Install dependencies
 	rm -rf wheels/*
-	$(PYTHON) -m pip install build --break-system-packages
+	$(PYTHON) -m pip install build #--break-system-packages
 # 	$(PYTHON) -m pip uninstall common graphics mazegen
 	# build libs
 	cd libs/common && $(PYTHON) -m build --wheel --outdir ../../wheels
@@ -69,6 +69,10 @@ help:  ## Display this help
 .PHONY: mkconfig 
 mkconfig: ## mk config file from defaults defined at top of make 
 	echo -e $(CFG) > config.txt
+
+lint: 
+	flake8 . --exclude=libs/mlx 
+	mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs  --exclude=libs/mlx
 
 .PHONY: uv
 uv:  ## Install uv if it's not present.

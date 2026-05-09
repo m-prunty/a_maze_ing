@@ -1,18 +1,16 @@
-#!/usr/bin/python3
+#! /usr/bin/env python3
 # *************************************************************************** #
 #                                                                             #
 #                                                        :::      ::::::::    #
-#    a_maze_ing.py                                     :+:      :+:    :+:    #
+#    main.py                                           :+:      :+:    :+:    #
 #                                                    +:+ +:+         +:+      #
 #    By: sdeppe <sdeppe@student.42heilbronn.de>    +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:26:52 by sdeppe           #+#    #+#              #
-#    Updated: 2026/05/04 08:34:52 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/08 04:06:38 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Main file to run A-maze-ing."""
-
-
 
 from src import Start
 
