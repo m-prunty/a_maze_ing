@@ -60,7 +60,7 @@ class Options:
                 key = value[0]
                 val = fields[key]["VAL"]
                 setattr(self.cfg, key, val)
-                print("field is ", key, value, val)  #
+                print("field is ", key, value, val) 
             except KeyError:
                 print(key, "is not handeld yet")
         ConfigIO.to_file(self.cfg, self.cfg.filename)
@@ -74,7 +74,7 @@ class Options:
     def save(self) -> None:
         Event_loop.close(None)
         print(
-            sys.executable, [sys.executable] + sys.argv + [self.cfg.filename]
+            sys.executable, [sys.executable] + sys.argv 
         )
         os.execv(
             sys.executable,

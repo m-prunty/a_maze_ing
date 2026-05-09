@@ -19,7 +19,6 @@ class Textures:
 
     @classmethod
     def get_siz(cls, id: int):
-        print(cls._sizes, id, len(cls._sizes))
         return cls._sizes[id]
 
     @classmethod

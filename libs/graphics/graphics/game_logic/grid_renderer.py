@@ -15,6 +15,7 @@ class Render_grid:
     _cfg: Config
     _path: list[Vec2]
     _path_texture: int
+    is_a_path: bool
     # _canva = None
 
     @classmethod
@@ -103,10 +104,14 @@ class Render_cell:
     def render_path(cls, iteration: int, canva: Canvas):
         path: list[Dir] = Render_grid._grid.path
         curent: Dir= path[iteration]
-        if iteration != 0:
+        color = Render_grid._cfg.color
+        # print(Render_grid.is_a_path)
+        if (iteration != 0
+            and curent != Render_grid._cfg.entry):
             prev: Vec2 = path[iteration - 1]
             canva.add_image(
-                Render_grid._path_texture,
+                Render_grid._path_texture if Render_grid.is_a_path
+                else Render_grid._tiles[color * 28],
                 Vec2(
                     int(
                         curent.x * cls._tile_siz.x * 2
@@ -124,18 +129,15 @@ class Render_cell:
             and curent != Render_grid._cfg.exit
         ):
             canva.add_image(
-                Render_grid._path_texture,
+                Render_grid._path_texture if Render_grid.is_a_path
+                else Render_grid._tiles[color * 28],
                 Vec2(
                     int(curent.x * cls._tile_siz.x * 2 + 1 * cls._tile_siz.x),
                     int(curent.y * cls._tile_siz.y * 2 + 1 * cls._tile_siz.y),
                 ),
             )
-
-    @classmethod
-    def render(cls, pos: Vec2, canva: Canvas):
-        """Pos is dependent on the canva."""
-
-        def set_pic_color(color: int):
+    
+    def set_pic_color(color: int):
             match color:
                 case 0:
                     return 1
@@ -143,6 +145,12 @@ class Render_cell:
                     return 0
                 case 2:
                     return 0
+
+    @classmethod
+    def render(cls, pos: Vec2, canva: Canvas):
+        """Pos is dependent on the canva."""
+
+        
 
         if not cls._init:
             cls.create()
@@ -156,7 +164,7 @@ class Render_cell:
         else:
             special = 0
         if cls._grid[pos].ispic:
-            color = set_pic_color(Render_grid._cfg.color)
+            color = cls.set_pic_color(Render_grid._cfg.color)
         else:
             color = Render_grid._cfg.color
 

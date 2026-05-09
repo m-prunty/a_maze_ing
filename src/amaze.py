@@ -48,7 +48,6 @@ class Start:
             Window.create(self.cfg.window_siz, " -- A-maze-ing -- ")
 
             self.opt = Options(self.cfg)
-            self.a = AMaze(self.cfg)
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -101,12 +100,30 @@ class Start:
                 self.on_start = False
                 self.opt.render()
             if button == 1 and x > 300 and x < 600 and y > 150 and y < 240:
+                self.a = AMaze(self.cfg)
                 self.on_start = False
                 Window.clear_window()
                 # Render_grid.render_grid()
                 # Mlx_context._mlx.mlx_do_sync(Mlx_context.get())
                 # Event_loop.add_key_hook(self.restart, None)
+                Render_grid.is_a_path = False
                 self.a.startup()
+                self.a.grid.path.insert(0, Render_grid._cfg.entry)
+                Event_loop.add_key_hook(self.a.launch_animation, None)
+                Animations.grid(0.02)
+
+            if button == 1 and x > 300 and x < 600 and y > 300 and y < 640:
+                self.on_start = False
+                Window.clear_window()
+                # Render_grid.render_grid()
+                # Mlx_context._mlx.mlx_do_sync(Mlx_context.get())
+                # Event_loop.add_key_hook(self.restart, None)
+                
+                Render_grid.is_a_path = False
+                self.a = AMaze.maze_fromfile("maze.txt")
+                self.a.grid.path.insert(0, Render_grid._cfg.entry)
+                Event_loop.add_key_hook(self.a.launch_animation, None)
+                Animations.grid(0.02)
 
 
 class AMaze:
@@ -129,16 +146,16 @@ class AMaze:
         """Start the maze generation and animation."""
         g = MazeGenerator(self.grid, self.config)
         g.driver()
-        Animations.grid(0.02)
-        self.is_a_path = False
-        Event_loop.add_key_hook(self.launch_animation, None)
         self.maze_tofile(self.config.output_file)
 
     def launch_animation(self, key: int) -> None:
         """Launch the path animation when the spacebar is pressed."""
-        if key == 32 and not self.is_a_path:
+        if key == 32 and not Render_grid.is_a_path:
             Animations.path()
-            self.is_a_path = True
+            Render_grid.is_a_path = True
+        elif key == 32 and Render_grid.is_a_path:
+            Animations.path()
+            Render_grid.is_a_path = False
 
     def maze_tofile(self, filename: str) -> None:
         """Write the maze to a file."""

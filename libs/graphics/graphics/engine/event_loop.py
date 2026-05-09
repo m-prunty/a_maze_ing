@@ -76,6 +76,7 @@ class Event_loop:
                         cls._repeatables.remove(animation)
                 else:
                     if animation[0]() == -1:
+                        print("removed animation")
                         cls._repeatables.remove(animation)
                 animation[2] = now + animation[1]
         # cls._repeatables.clear()

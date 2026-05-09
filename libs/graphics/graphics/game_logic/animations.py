@@ -44,18 +44,17 @@ class Animations:
         if not cls._grid:
             cls._grid = Render_grid._grid
         path = cls._grid.path
-        path.insert(0, Render_grid._cfg.entry)
-        cls._path_canvas = Render_grid.grid_canva(
-            Vec2(cls._grid.width, cls._grid.height), Vec2(0, 0)
-        )
+        # cls._path_canvas = Render_grid.grid_canva(
+        #     Vec2(cls._grid.width, cls._grid.height), Vec2(0, 0)
+        # )
         cls._path_steps = len(path)
         cls._path_step = 0
         Animator.animate(cls.path_step, None, delay)
         texture = Textures.load(
-            os.path.dirname(os.path.abspath(__file__)) + "/includes/",
+            os.path.dirname(os.path.abspath(__file__)) + "/includes/sprits/",
             "path.png",
-            Vec2(Render_grid._tile_siz.x + 2, Render_grid._tile_siz.y + 2),
-            (0, 180),
+            Vec2(Render_grid._tile_siz.x + 1, Render_grid._tile_siz.y + 1),
+            (0, 180)
         )[0]
         Render_grid.load_path(path, texture)
 
@@ -63,7 +62,7 @@ class Animations:
     def path_step(cls):
         if cls._path_step >= cls._path_steps:
             return -1
-        Render_cell.render_path(cls._path_step, cls._path_canvas)
+        Render_cell.render_path(cls._path_step, cls._canvas)
         cls._path_step += 1
-        cls._path_canvas.put_canva()
+        cls._canvas.put_canva()
         return 1
