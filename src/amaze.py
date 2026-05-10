@@ -103,9 +103,6 @@ class Start:
                 self.a = AMaze(self.cfg)
                 self.on_start = False
                 Window.clear_window()
-                # Render_grid.render_grid()
-                # Mlx_context._mlx.mlx_do_sync(Mlx_context.get())
-                # Event_loop.add_key_hook(self.restart, None)
                 Render_grid.is_a_path = False
                 self.a.startup()
                 self.a.grid.path.insert(0, Render_grid._cfg.entry)
@@ -115,9 +112,6 @@ class Start:
             if button == 1 and x > 300 and x < 600 and y > 300 and y < 640:
                 self.on_start = False
                 Window.clear_window()
-                # Render_grid.render_grid()
-                # Mlx_context._mlx.mlx_do_sync(Mlx_context.get())
-                # Event_loop.add_key_hook(self.restart, None)
                 
                 Render_grid.is_a_path = False
                 self.a = AMaze.maze_fromfile("maze.txt")
