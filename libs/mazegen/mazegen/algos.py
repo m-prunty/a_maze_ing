@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/01 08:04:43 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/10 18:31:03 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/11 08:28:26 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Maze generation and pathfinding algorithms."""
@@ -18,10 +18,10 @@ from abc import ABC, abstractmethod
 from collections.abc import Iterable
 
 from common.config import Config
-from common.errors import MazeError
+from common.errors import AlgoError
 from common.grid_tools import Cell, Dir, Vec2
 
-from .graph import Edge, Graph
+from .graph import Graph
 from .staging import (
     BaseStage,
     EventType,
@@ -69,16 +69,14 @@ class BaseStrat(ABC):
                         self.rng.randint(0, self.height - 1),
                     )
                 ]
-            dir_list = [
-                (direction, neighbour)
-                for direction, neighbour in self.graph.neighbours(cell)
-                if neighbour and not neighbour.ispic
+            e_list = [
+                e
+                for e in self.graph.edges(cell)
+                if e.b and not e.b.ispic and cell.has_wall(e.dir)
             ]
-            self.rng.shuffle(dir_list)
-            if dir_list:
-                n = self.rng.randint(1, len(dir_list))
-                for d, nb in dir_list[:n]:
-                    cell.rm_wall_nb(nb, d)
+            self.rng.shuffle(e_list)
+            if len(e_list):
+                e_list[0].rm_walls()
             self._n_imperfect -= 1
 
     def _dispatch(self, event: MazeEvent) -> bool:
@@ -86,11 +84,14 @@ class BaseStrat(ABC):
 
         Return: True if all stages accept the event, False if stage rejects it.
         """
-        for stage in self.stages:
-            result = stage.process(event)
-            if result is False:
-                return False
-        return True
+        try:
+            for stage in self.stages:
+                result = stage.process(event)
+                if result is False:
+                    return False
+            return True
+        except Exception as e:
+            raise AlgoError(f"Error in {self.__class__.__name__}: {e}") from e
 
     def _open_entry_exit(self, cell: Cell) -> None:
         """Open entry/exits gaps on border."""
@@ -131,7 +132,7 @@ class Dfs(BaseStrat):
         try:
             cell = self.grid[pos]
 
-            enter = MazeEvent(Edge(cell), etype=EventType.ENTER)
+            enter = MazeEvent(cell, etype=EventType.ENTER)
             if not self._dispatch(enter):
                 return
             directions = [*self.graph.edges(cell)]
@@ -146,11 +147,11 @@ class Dfs(BaseStrat):
                 assert edge.b is not None, "Edge must have a destination cell."
                 yield edge.b.loc
                 yield from self._dfs(edge.b.loc)
-            back = MazeEvent(Edge(cell), etype=EventType.EXIT)
+            back = MazeEvent(cell, etype=EventType.EXIT)
             self._dispatch(back)
             return
-        except Exception:
-            raise MazeError(f"Error in {self.__class__.__name__}") from None
+        except Exception as e:
+            raise AlgoError(f"Error in {self.__class__.__name__}: {e}") from e
 
 
 class Dijkstra(BaseStrat):
@@ -196,11 +197,8 @@ class Dijkstra(BaseStrat):
 
     def generate(self) -> Iterable[Vec2]:
         """Generates using Dijkstra's algorithm."""
-        try:
-            self._imperfect()
-            yield from self._dijks(self.entry_cell)
-        except Exception:
-            raise MazeError(f"Error in {self.__class__.__name__}") from None
+        self._imperfect()
+        yield from self._dijks(self.entry_cell)
 
     def _dijks(self, start: Cell) -> Iterable[Vec2]:
         try:
@@ -208,7 +206,7 @@ class Dijkstra(BaseStrat):
 
             cell: Cell | None = None
             dist: dict[Cell, int] = {start: 0}
-            parent: dict[Cell | None, Cell | None] = {start: None}
+            parent: dict[Cell, Cell | None] = {start: None}
             visited: set[Cell] = set()
             while frontier:
                 i = min(frontier, key=lambda f: f[0])
@@ -216,7 +214,7 @@ class Dijkstra(BaseStrat):
                 cost, cell = i
                 if cell in visited:
                     continue
-                enter = MazeEvent(Edge(cell), etype=EventType.ENTER)
+                enter = MazeEvent(cell, etype=EventType.ENTER)
                 if not self._dispatch(enter):
                     break
                 visited.add(cell)
@@ -241,15 +239,15 @@ class Dijkstra(BaseStrat):
                             frontier.remove(existing)
                             frontier.append((new_cost, nb))
 
-                back = MazeEvent(Edge(cell), etype=EventType.EXIT)
+                back = MazeEvent(cell, etype=EventType.EXIT)
                 self._dispatch(back)
             cell = parent[self.exit_cell]
             while cell != self.entry_cell:
                 assert cell is not None, "No path found from entry to exit."
                 yield cell.loc
                 cell = parent[cell]
-        except Exception:
-            raise MazeError(f"Error in {self.__class__.__name__}") from None
+        except Exception as e:
+            raise AlgoError(f"Error in {self.__class__.__name__}: {e}") from e
 
 
 class Pic(BaseStrat):
@@ -262,7 +260,7 @@ class Pic(BaseStrat):
     @staticmethod
     def get_pic(select: int) -> list[int]:
         """Get the picture data for the maze based on the selected option."""
-        if select == 1:
+        if select == 0:
             pic = [
                 0b1010111,
                 0b1010001,
@@ -270,7 +268,7 @@ class Pic(BaseStrat):
                 0b0010100,
                 0b0010111,
             ]
-        elif select == 2:
+        elif select == 1:
             pic = [
                 0b001111010001011101110111,
                 0b001101011111010100010100,
@@ -278,7 +276,7 @@ class Pic(BaseStrat):
                 0b001101010101010101000100,
                 0b001101010101010101110111,
             ]
-        elif select == 3:
+        elif select == 2:
             pic = [
                 0b000000011110000011111111,
                 0b000001111100001110000111,
@@ -288,8 +286,6 @@ class Pic(BaseStrat):
                 0b000011100001110000000000,
                 0b000111000111111110110000,
             ]
-        else:
-            pic = [0b1111111, 0b1000001, 0b1011101, 0b1010101, 0b1010111]
         return pic
 
     def _gen_pic(self, pic_scalar: int | float) -> Iterable[Vec2]:
@@ -322,7 +318,7 @@ class Pic(BaseStrat):
                 bright = self.grid[tleft.loc + Vec2(wpic, hpic)]
                 yield from self._pic_lst(tleft, bright, pic)
         except Exception as e:
-            raise MazeError(f"Error in {self.__class__.__name__}: {e}") from e
+            raise AlgoError(f"Error in {self.__class__.__name__}: {e}") from e
 
     def _pic_lst(
         self, tleft: Cell, bright: Cell, pic: list[int]
@@ -357,13 +353,12 @@ class Pic(BaseStrat):
                     if pic[int(j / self.config.pic_scalar)] & (
                         1 << int((delta.x - i) / self.config.pic_scalar)
                     ):
-                        self._dispatch(MazeEvent(Edge(cell)))
-                        self._dispatch(MazeEvent(Edge(cell)))
+                        self._dispatch(MazeEvent(cell))
                     i += 1
                 j += 1
             yield from r_lst
         except Exception as e:
-            raise MazeError(f"Error in {self.__class__.__name__}: {e}") from e
+            raise AlgoError(f"Error in {self.__class__.__name__}: {e}") from e
 
 
 class Prim(BaseStrat):
