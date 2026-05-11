@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/10 07:46:29 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/11 04:31:46 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/11 06:25:26 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Custom exceptions for A-Maze-ing."""
@@ -61,3 +61,11 @@ class AlgoError(MazeError):
     def __init__(self, message: str) -> None:
         """Initialize the AlgoError."""
         super().__init__(f"AlgoError: {message}")
+
+
+class StageError(MazeError):
+    """Exception raised for errors in staging."""
+
+    def __init__(self, message: str) -> None:
+        """Initialize the StageError."""
+        super().__init__(f"StageError: {message}")
