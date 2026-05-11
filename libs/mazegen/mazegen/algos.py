@@ -7,19 +7,18 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/01 08:04:43 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/09 01:36:11 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/10 18:31:03 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Maze generation and pathfinding algorithms."""
 
 import math
-import os
 import random
-import sys
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
 
 from common.config import Config
+from common.errors import MazeError
 from common.grid_tools import Cell, Dir, Vec2
 
 from .graph import Edge, Graph
@@ -528,47 +527,34 @@ class Wilson(BaseStrat):
     def generate(self) -> Iterable[Vec2]:
         yield from self._wilson()
 
-    def _wilson(self) -> Iterable[Vec2]:
-        current = self.grid[self.config.entry]
-        ngrid = {*self.grid}
-        path = {current: None, "walls": Path()}
-        # print("\n\n>>>>", type(ngrid))
-        while len(ngrid) and current:
-            n = [*current.neighbours]
-            self.rng.shuffle(n)
-            next_cell = current.neighbours[n[0]]
-            if next_cell and next_cell not in path:
-                path[current] = next_cell
-                path["walls"] += next_cell.wall
-                current.visited = True
-                ngrid.discard(current)
-            else:
-                path, r_set = self._rewind(path, next_cell)
-                ngrid |= r_set
-            current = next_cell
-            yield current
 
-    def _rewind(self, path, current) -> tuple[dict, set]:
-        curr = current
-        r_set: set = set()
-        while curr in path:
-            curr = path[curr]
-            # print("pop", path.pop(tmp))
-            curr.visited = False
-        return (path, r_set)
-
-
-class MazeError(Exception):
-    """Custom exception for maze generation and pathfinding errors."""
-
-    def __init__(self, message: str) -> None:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-
-        if exc_tb:
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            line_no = exc_tb.tb_lineno
-            full_message = f"{message} | Error: {exc_type.__name__} in {fname} at line {line_no}"
-        else:
-            full_message = message
-
-        super().__init__(full_message)
+#
+#    def _wilson(self) -> Iterable[Vec2]:
+#        current = self.grid[self.config.entry]
+#        ngrid = {*self.grid}
+# path = {current: None, "walls": Path()}
+# print("\n\n>>>>", type(ngrid))
+#        while len(ngrid) and current:
+#            n = [*current.neighbours]
+#            self.rng.shuffle(n)
+#            next_cell = current.neighbours[n[0]]
+#            if next_cell and next_cell not in path:
+#                path[current] = next_cell
+#                path["walls"] += next_cell.wall
+#                current.visited = True
+#                ngrid.discard(current)
+#            else:
+#                path, r_set = self._rewind(path, next_cell)
+#                ngrid |= r_set
+#            current = next_cell
+#            yield current
+#
+#    def _rewind(self, path, current) -> tuple[dict, set]:
+#        curr = current
+#        r_set: set = set()
+#        while curr in path:
+#            curr = path[curr]
+# print("pop", path.pop(tmp))
+#            curr.visited = False
+#        return (path, r_set)
+#

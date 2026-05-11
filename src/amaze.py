@@ -6,7 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/24 07:55:50 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/07 22:07:38 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/11 04:36:33 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """First attempts at the A-Maze-ing project."""
@@ -14,7 +14,7 @@
 import os
 import sys
 
-from common import Config, ConfigIO, Grid, Vec2
+from common import Config, ConfigIO, Dir, Grid, StartError, Vec2
 from graphics import (
     Animations,
     Event_loop,
@@ -49,11 +49,7 @@ class Start:
 
             self.opt = Options(self.cfg)
         except Exception as e:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            print(exc_type, fname, exc_tb.tb_lineno)
-            print(f"Error during initialization: {e}")
-            raise Exception(e) from e
+            raise StartError(f"{e}") from e
 
     def render_start(self) -> None:
         """Render the start screen."""
@@ -81,8 +77,6 @@ class Start:
         Event_loop.add_mous_hook(self.mouse_func, None)
         Event_loop.add_hook(Event_loop.close, 33, None)
         Event_loop.add_key_hook(self.restart, None)
-        # Event_loop.add_key_hook(self.restart, None)
-        # Event_loop.add_hook(self.opt.save(), 65307, None)
 
     def restart(self, input: int) -> None:
         """Restart the start screen or save options."""
@@ -95,29 +89,34 @@ class Start:
 
     def mouse_func(self, button: int, x: int, y: int, _: None) -> None:
         """Handle mouse clicks on the start screen."""
+        print(f"Mouse click at ({x}, {y}) with button {button}")
         if self.on_start:
             if button == 1 and x > 650 and x < 760 and y > 650 and y < 760:
                 self.on_start = False
                 self.opt.render()
             if button == 1 and x > 300 and x < 600 and y > 150 and y < 240:
-                self.a = AMaze(self.cfg)
+                self.a = AMaze.maze_fromconfig(self.cfg)
+
+                self.a.launch_renders()
                 self.on_start = False
+
                 Window.clear_window()
                 Render_grid.is_a_path = False
-                self.a.startup()
+
                 self.a.grid.path.insert(0, Render_grid._cfg.entry)
                 Event_loop.add_key_hook(self.a.launch_animation, None)
-                Animations.grid(0.02)
 
             if button == 1 and x > 300 and x < 600 and y > 300 and y < 640:
-                self.on_start = False
-                Window.clear_window()
-                
-                Render_grid.is_a_path = False
                 self.a = AMaze.maze_fromfile("maze.txt")
+
+                self.a.launch_renders()
+                self.on_start = False
+
+                Window.clear_window()
+                Render_grid.is_a_path = False
+
                 self.a.grid.path.insert(0, Render_grid._cfg.entry)
                 Event_loop.add_key_hook(self.a.launch_animation, None)
-                Animations.grid(0.02)
 
 
 class AMaze:
@@ -128,19 +127,17 @@ class AMaze:
         self.config = cfg
         self.grid = Grid(cfg.width, cfg.height)
         print("== GRID CREATED ==")
-        Render_grid.load(self.grid, cfg)
-        Render_cell.create()
 
     def __repr__(self) -> str:
         """Return a epresentation of the AMaze class for instantiation."""
         cls = self.__class__.__name__
         return f"{cls}({self.config})"
 
-    def startup(self) -> None:
-        """Start the maze generation and animation."""
-        g = MazeGenerator(self.grid, self.config)
-        g.driver()
-        self.maze_tofile(self.config.output_file)
+    def launch_renders(self) -> None:
+        """Launch the renders for the maze."""
+        Render_grid.load(self.grid, self.config)
+        Render_cell.create()
+        Animations.grid(0.02)
 
     def launch_animation(self, key: int) -> None:
         """Launch the path animation when the spacebar is pressed."""
@@ -150,6 +147,38 @@ class AMaze:
         elif key == 32 and Render_grid.is_a_path:
             Animations.path()
             Render_grid.is_a_path = False
+
+    @classmethod
+    def maze_fromconfig(cls, cfg: Config) -> "AMaze":
+        """Start the maze generation and animation."""
+        try:
+            c = cls(cfg)
+            c.grid.fill_empty_grid()
+            g = MazeGenerator(c.grid, c.config)
+            g.driver()
+            c.maze_tofile(c.config.output_file)
+            print(c.grid.path)
+            print(c.grid)
+            return c
+        except Exception as e:
+            raise StartError(f"Error during setup: {e}") from e
+
+    @classmethod
+    def maze_fromfile(cls, filename: str) -> "AMaze":
+        """Create a maze from a file."""
+        try:
+            cfg = ConfigIO.from_filemap(filename)
+            c = cls(cfg)
+            c.grid.fill_empty_grid()
+            with open(filename) as f:
+                hexlist = f.read().split("\n")
+            c.grid.path = [c.grid[c.config.entry].loc]
+            c.grid.fill_grid_from_map(hexlist)
+            print(c.grid.path)
+            print(c.grid)
+            return c
+        except Exception as e:
+            raise StartError(f"Error during setup: {e}") from e
 
     def maze_tofile(self, filename: str) -> None:
         """Write the maze to a file."""
@@ -167,7 +196,7 @@ class AMaze:
                     "".join(
                         list(
                             map(
-                                lambda p, q: f"{p - q}",
+                                lambda p, q: f"{Dir.from_vec(q - p)}",
                                 self.grid.path,
                                 self.grid.path[1:],
                             )
@@ -178,14 +207,3 @@ class AMaze:
         except Exception as e:
             print(f"Error writing maze to file: {e}")
             raise Exception(e) from e
-
-    # needs work
-    @classmethod
-    def maze_fromfile(cls, filename: str) -> "AMaze":
-        """Create a maze from a file."""
-        cfg = ConfigIO.from_filemap(filename)
-        c = cls(cfg)
-        with open(filename) as f:
-            hexlist = f.read().split("\n")
-        c.grid.fill_grid_from_map(hexlist, cfg)
-        return c

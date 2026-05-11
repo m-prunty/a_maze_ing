@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:38:19 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/08 07:08:48 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/11 04:41:15 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Module for grid and cell classes."""
@@ -65,6 +65,20 @@ class Dir(IntFlag):
         """Return the Dir instance corresponding to a Vec2 instance."""
         return _VEC_TO_DIR[v]
 
+    @classmethod
+    def from_str(cls, s: str) -> "Dir":
+        """Return the Dir instance corresponding to a string."""
+        return _DIR_FROM_STR[s]
+
+
+_DIR_FROM_STR: dict[str, Dir] = {
+    "N": Dir.N,
+    "E": Dir.E,
+    "S": Dir.S,
+    "W": Dir.W,
+    "A": Dir.A,
+    "non": Dir.non,
+}
 
 _VEC_TO_DIR: dict[Vec2, Dir] = {
     Vec2(0, -1): Dir.N,
@@ -186,12 +200,34 @@ class Grid:
         """Init a grid with the given width and height of Cell instances."""
         self.width, self.height = width, height
         self.path: list[Vec2] = []
+
+    def fill_empty_grid(self) -> None:
         print(f"Creating grid of size {self.width}x{self.height}")
         self.grid = [
             [Cell(Vec2(x, y)) for x in range(self.width)]
             for y in range(self.height)
         ]
-        self.pic: list[int] = []
+
+    def fill_grid_from_map(self, hexlist: list[str]) -> None:
+        """Fill a grid from a list of lists of hex values repr walls."""
+        print(f"Populating grid of size {self.width}x{self.height}")
+        for y, row in enumerate(hexlist[1 : self.height + 1]):
+            if y < self.height:
+                for x, i in enumerate(row):
+                    if x < self.width:
+                        self[x, y].wall = Dir(int(i, 16))
+                        if self[x, y].wall == Dir.A:
+                            self[x, y].ispic = True
+        self.path_from_str(hexlist[-1])
+
+    def path_from_str(self, s: str) -> None:
+        print(f"Creating path from string: {s}")
+        pos = self.path[0]
+        for c in s:
+            delta = Dir.from_str(c).v()
+            pos = Vec2(pos.x + delta.x, pos.y + delta.y)
+            self.path.append(pos)
+        print(f"Path from string: {self.path}")
 
     def __getitem__(self, key: tuple[int, int] | Vec2 | Cell) -> Cell:
         """Get a cell from the grid using a tuple of (x, y) or a Vec2 instance.
@@ -208,6 +244,11 @@ class Grid:
         except Exception:
             return Cell(Vec2(-1, -1))
 
+    def __iter__(self) -> Generator[Cell, None, None]:
+        """Iterate over all cells in the grid."""
+        for y in self.grid:
+            yield from y
+
     def isvalid(self, v: Vec2 | tuple[int, int] | Cell) -> bool:
         """Check if a Vec2 instance is within the bounds of the grid."""
         if isinstance(v, tuple):
@@ -218,22 +259,6 @@ class Grid:
             and 0 <= v.x <= self.width
             and 0 <= v.y <= self.height
         )
-
-    def __iter__(self) -> Generator[Cell, None, None]:
-        """Iterate over all cells in the grid."""
-        for y in self.grid:
-            yield from y
-
-    @classmethod
-    def fill_grid_from_map(cls, hexlist: list[str], cfg: HasSize) -> "Grid":
-        """Fill a grid from a list of lists of hex values repr walls."""
-        c = cls(cfg.width, cfg.height)
-        for y, row in enumerate(hexlist[1:]):
-            if y < c.height:
-                for x, i in enumerate(row):
-                    if x < c.width:
-                        c[x, y].wall = Dir(int(i))
-        return c
 
     def dump_grid(self) -> list[list[str]]:
         """Produce a list(list(hex))to represent the currnet layof the grid."""
