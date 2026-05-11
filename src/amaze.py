@@ -6,7 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/24 07:55:50 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/11 04:36:33 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/11 09:43:51 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """First attempts at the A-Maze-ing project."""
@@ -14,7 +14,7 @@
 import os
 import sys
 
-from common import Config, ConfigIO, Dir, Grid, StartError, Vec2
+from common import Config, ConfigError, ConfigIO, Dir, Grid, StartError, Vec2
 from graphics import (
     Animations,
     Event_loop,
@@ -36,20 +36,30 @@ class Start:
         """Initialize the start screen."""
         try:
             self.on_start = True
-            if len(sys.argv) == 2:
-                self.cfg = ConfigIO.from_file(sys.argv[1])
-            else:
-                select = input("Do you want to use default (y/n): ")
-                if select.lower() == "y":
-                    self.cfg = Config()
-                else:
-                    print("Aborted")
-                    sys.exit(0)
+            self._load_cfg()
             Window.create(self.cfg.window_siz, " -- A-maze-ing -- ")
-
             self.opt = Options(self.cfg)
         except Exception as e:
             raise StartError(f"{e}") from e
+
+    def _load_cfg(self) -> None:
+        if len(sys.argv) == 2:
+            try:
+                self.cfg = ConfigIO.from_file(sys.argv[1])
+                return
+            except (ConfigError, FileNotFoundError):
+                pass
+        self.no_cfg()
+
+    def no_cfg(self) -> None:
+        """Handle the case where no valid configuration file is provided."""
+        print("No valid configuration file provided.\n")
+        select = input("Do you want to use default (y/n): ")
+        if select.lower() == "y":
+            self.cfg = Config()
+        else:
+            print("Aborted")
+            sys.exit(0)
 
     def render_start(self) -> None:
         """Render the start screen."""
@@ -96,27 +106,18 @@ class Start:
                 self.opt.render()
             if button == 1 and x > 300 and x < 600 and y > 150 and y < 240:
                 self.a = AMaze.maze_fromconfig(self.cfg)
-
-                self.a.launch_renders()
-                self.on_start = False
-
-                Window.clear_window()
-                Render_grid.is_a_path = False
-
-                self.a.grid.path.insert(0, Render_grid._cfg.entry)
-                Event_loop.add_key_hook(self.a.launch_animation, None)
+                self.launch_maze()
 
             if button == 1 and x > 300 and x < 600 and y > 300 and y < 640:
                 self.a = AMaze.maze_fromfile("maze.txt")
+                self.launch_maze()
 
-                self.a.launch_renders()
-                self.on_start = False
-
-                Window.clear_window()
-                Render_grid.is_a_path = False
-
-                self.a.grid.path.insert(0, Render_grid._cfg.entry)
-                Event_loop.add_key_hook(self.a.launch_animation, None)
+    def launch_maze(self) -> None:
+        self.a.launch_renders()
+        self.on_start = False
+        Window.clear_window()
+        Render_grid.is_a_path = False
+        Event_loop.add_key_hook(self.a.launch_animation, None)
 
 
 class AMaze:
@@ -157,8 +158,6 @@ class AMaze:
             g = MazeGenerator(c.grid, c.config)
             g.driver()
             c.maze_tofile(c.config.output_file)
-            print(c.grid.path)
-            print(c.grid)
             return c
         except Exception as e:
             raise StartError(f"Error during setup: {e}") from e
@@ -174,8 +173,6 @@ class AMaze:
                 hexlist = f.read().split("\n")
             c.grid.path = [c.grid[c.config.entry].loc]
             c.grid.fill_grid_from_map(hexlist)
-            print(c.grid.path)
-            print(c.grid)
             return c
         except Exception as e:
             raise StartError(f"Error during setup: {e}") from e
