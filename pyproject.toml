@@ -34,6 +34,7 @@ build-backend = "setuptools.build_meta"
 [dependency-groups]
 dev = [
     "flake8>=7.3.0",
+    "flake8-pyproject>=1.2.4",
     "mypy>=2.0.0",
 ]
 
@@ -43,4 +44,7 @@ warn_unused_ignores = true
 ignore_missing_imports = true
 disallow_untyped_defs = true
 check_untyped_defs = true
+exclude= "libs/mlx"
 
+[tool.flake8]
+exclude  = ".git, __pycache__, build, dist, libs/mlx, .venv"
