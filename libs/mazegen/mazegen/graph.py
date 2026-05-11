@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/01 08:04:28 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/08 08:20:08 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/11 09:03:42 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Graph classes for maze generation and pathfinding."""
@@ -24,18 +24,24 @@ class Edge:
     """Edge class for maze generation and pathfinding."""
 
     a: Cell
-    b: Cell | None = None
+    b: Cell
     dir: Dir = field(init=False)
 
     def __post_init__(self) -> None:
         """Initializes Edge with direction from a to b."""
         try:
-            if self.b is not None:
-                object.__setattr__(self, "dir", self.a - self.b)
+            object.__setattr__(self, "dir", self.a - self.b)
         except ValueError as e:
             raise ValueError(
                 f"Cells {self.a} and {self.b} are not neighbours."
             ) from e
+
+    def rm_walls(self) -> None:
+        """Remove walls between the two cells defined by the edge."""
+        if self.b is None:
+            raise ValueError("Edge requires two cells.")
+        self.a.rm_wall(self.dir)
+        self.b.rm_wall(self.dir.opps())
 
 
 class Graph(Protocol):

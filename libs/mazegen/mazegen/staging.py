@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/01 08:05:00 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/09 00:00:10 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/11 07:32:41 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Staging classes for maze generation and pathfinding."""
@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Protocol
 
+from common.errors import StageError
 from common.grid_tools import Cell
 
 from .graph import Edge
@@ -33,9 +34,12 @@ class EventType(Enum):
 class MazeEvent:
     """Event class for maze generation and pathfinding."""
 
-    edge: Edge
+    edge: Edge | Cell
     etype: EventType = EventType.ENTER
-    found: bool = False
+
+    @property
+    def cell(self) -> Cell:
+        return self.edge if isinstance(self.edge, Cell) else self.edge.a
 
 
 class BaseStage(Protocol):
@@ -51,9 +55,12 @@ class PicStage:
 
     def process(self, e: MazeEvent) -> bool:
         """Marks picture cells."""
-        attr = "ispic"
-        setattr(e.edge.a, attr, True)
-        return True
+        try:
+            attr = "ispic"
+            setattr(e.edge, attr, True)
+            return True
+        except Exception as e:
+            raise StageError(f"Error in {self.__class__.__name__}: {e}") from e
 
 
 class VisitStage:
@@ -61,15 +68,18 @@ class VisitStage:
 
     def process(self, e: MazeEvent) -> bool:
         """Marks visited cells."""
-        if e.etype == EventType.ENTER:
-            if e.edge.a.visited or e.edge.a.ispic:
-                return False
-            e.edge.a.visited = True
+        try:
+            if e.etype == EventType.ENTER:
+                if e.cell.visited or e.cell.ispic:
+                    return False
+                e.cell.visited = True
+                return True
+            elif e.etype == EventType.EDGE:
+                if e.edge.b and (e.edge.b.visited or e.edge.b.ispic):
+                    return False
             return True
-        elif e.etype == EventType.EDGE:
-            if e.edge.b and (e.edge.b.visited or e.edge.b.ispic):
-                return False
-        return True
+        except Exception as e:
+            raise StageError(f"Error in {self.__class__.__name__}: {e}") from e
 
 
 class PathStage:
@@ -77,13 +87,16 @@ class PathStage:
 
     def process(self, e: MazeEvent) -> bool:
         """Marks path cells."""
-        if e.etype == EventType.ENTER or e.etype == EventType.EXIT:
-            e.edge.a.ispath = False
-        elif e.etype == EventType.EDGE:
-            if e.edge.b and e.edge.b.ispath:
-                return False
-            e.edge.a.ispath = True
-        return True
+        try:
+            if e.etype == EventType.ENTER or e.etype == EventType.EXIT:
+                e.cell.ispath = False
+            elif e.etype == EventType.EDGE:
+                if e.edge.b and e.edge.b.ispath:
+                    return False
+                e.edge.a.ispath = True
+            return True
+        except Exception as e:
+            raise StageError(f"Error in {self.__class__.__name__}: {e}") from e
 
 
 class RmStage:
@@ -91,11 +104,14 @@ class RmStage:
 
     def process(self, e: MazeEvent) -> bool:
         """Removes walls between cells."""
-        if e.etype != EventType.EDGE:
+        try:
+            if e.etype != EventType.EDGE:
+                return True
+            assert e.edge.b and e.edge.dir
+            e.edge.rm_walls()
             return True
-        assert e.edge.b and e.edge.dir
-        e.edge.a.rm_wall_nb(e.edge.b, e.edge.dir)
-        return True
+        except Exception as e:
+            raise StageError(f"Error in {self.__class__.__name__}: {e}") from e
 
 
 class GoalStage:
@@ -104,9 +120,13 @@ class GoalStage:
     def __init__(self, goal: Cell) -> None:
         """Initializes GoalStage with a goal."""
         self.goal = goal
+        self.found = False
 
     def process(self, e: MazeEvent) -> bool:
         """Checks if goal is reached."""
-        if e.etype == EventType.ENTER and e.edge.a.loc == self.goal:
-            e.found = True
-        return not e.found
+        try:
+            if e.etype == EventType.ENTER and e.cell.loc == self.goal:
+                self.found = True
+            return not self.found
+        except Exception as e:
+            raise StageError(f"Error in {self.__class__.__name__}: {e}") from e
