@@ -7,7 +7,7 @@
 #    By: sdeppe <sdeppe@student.42heilbronn.de>    +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:26:52 by sdeppe           #+#    #+#              #
-#    Updated: 2026/05/10 05:59:23 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/10 19:26:31 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Main file to run A-maze-ing."""
@@ -22,31 +22,6 @@ BOLD = "\033[1m"
 END = "\033[0m"
 
 
-# print("Current Python:", sys.executable)
-# print("Virtual Environment:", venv_name)
-# if venv_path:
-#    print("Environment Path:", venv_path)
-#    print(
-#        f"\n{GREEN}SUCCESS{END}:"
-#        + " You're in an isolated environment!\n"
-#        + "Safe to install packages without affecting\n"
-#        + "the global system.\n"
-#    )
-#    print("Package installation path:\n" + f"{BOLD}{sys.prefix}{END}")
-# else:
-#    print(
-#        f"\n{RED}WARNING{END}:"
-#        + " You're in the global environment!\n"
-#        + "The machines can see everything you install.\n"
-#    )
-#    print(
-#        "To enter the construct, run:\n"
-#        + f"{BOLD}python -m venv matrix_env{END}\n"
-#        + f"{BOLD}source matrix_env/bin/activate{LIGHT_BLUE} # On Unix{END}\n"
-#        + f"{BOLD}matrix_env\\Scripts\\activate{LIGHT_BLUE}"
-#        + f" # On Windows{END}\n"
-#    )
-#    print("Then run this program again.")
 def not_venv_warning() -> str:
     return (
         f"\n{RED}WARNING{END}:"
@@ -59,7 +34,6 @@ def not_venv_warning() -> str:
         )
         + f"{BOLD}make run{END}\n"
         + "or activate the venv manually:\n"
-        + f"{BOLD}python -m venv .venv{END}\n"
         + f"{BOLD}source .venv/bin/activate{LIGHT_BLUE}"
     )
 

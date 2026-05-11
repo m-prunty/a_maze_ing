@@ -1,7 +1,7 @@
 import os
 
 from common.config import Config
-from common.grid_tools import Cell, Grid, Vec2, Dir
+from common.grid_tools import Cell, Dir, Grid, Vec2
 
 from ..assets import Textures
 from ..engine import Canvas, Window
@@ -22,7 +22,7 @@ class Render_grid:
     def load(cls, grid: Grid, cfg: Config) -> None:
         if cls._initialized:
             raise RuntimeError("MlxContext already initialized")
-        cls._grid= grid
+        cls._grid = grid
         cls._tile_siz = Vec2(
             Window.get_siz().x / (grid.width * 2 + 1),
             Window.get_siz().y / (grid.height * 2 + 1),
@@ -103,14 +103,14 @@ class Render_cell:
     @classmethod
     def render_path(cls, iteration: int, canva: Canvas):
         path: list[Dir] = Render_grid._grid.path
-        curent: Dir= path[iteration]
+        curent: Dir = path[iteration]
         color = Render_grid._cfg.color
         # print(Render_grid.is_a_path)
-        if (iteration != 0
-            and curent != Render_grid._cfg.entry):
+        if iteration != 0 and curent != Render_grid._cfg.entry:
             prev: Vec2 = path[iteration - 1]
             canva.add_image(
-                Render_grid._path_texture if Render_grid.is_a_path
+                Render_grid._path_texture
+                if Render_grid.is_a_path
                 else Render_grid._tiles[color * 28],
                 Vec2(
                     int(
@@ -129,34 +129,32 @@ class Render_cell:
             and curent != Render_grid._cfg.exit
         ):
             canva.add_image(
-                Render_grid._path_texture if Render_grid.is_a_path
+                Render_grid._path_texture
+                if Render_grid.is_a_path
                 else Render_grid._tiles[color * 28],
                 Vec2(
                     int(curent.x * cls._tile_siz.x * 2 + 1 * cls._tile_siz.x),
                     int(curent.y * cls._tile_siz.y * 2 + 1 * cls._tile_siz.y),
                 ),
             )
-    
+
     def set_pic_color(color: int):
-            match color:
-                case 0:
-                    return 1
-                case 1:
-                    return 0
-                case 2:
-                    return 0
+        match color:
+            case 0:
+                return 1
+            case 1:
+                return 0
+            case 2:
+                return 0
 
     @classmethod
     def render(cls, pos: Vec2, canva: Canvas):
         """Pos is dependent on the canva."""
-
-        
-
         if not cls._init:
             cls.create()
         hex = cls._grid[pos].wall
         n = cls._grid.neighbour_walls(pos)
-        
+
         if pos == Render_grid._cfg.entry:
             special = 1
         elif pos == Render_grid._cfg.exit:

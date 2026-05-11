@@ -1,19 +1,19 @@
 # import threading
 import time
-
-from Xlib import XK   # type: ignore 
-
-from ..mlx_context import Mlx_context
-from .window import Window
 from collections.abc import Callable
 from typing import Any
 
+from Xlib import XK  # type: ignore
+
+from ..mlx_context import Mlx_context
+from .window import Window
+
 
 class Event_loop:
-    _events: list[tuple]= []
+    _events: list[tuple] = []
     _repeatables: list[list] = []
     _key_funcs: list[dict] = []
-    _str: dict= {}
+    _str: dict = {}
 
     @staticmethod
     def launch() -> None:
@@ -95,12 +95,14 @@ class Event_loop:
             val = cls._str["FIELD"][cls._str["KEY"]]
             if cls._str["END_PARA"] is not None:
                 cls._str["FIELD"][cls._str["KEY"]] = (
-                    f"{val[: cls._str['CURSOR']]}{val[cls._str['CURSOR'] + 1 :]}"
+                    f"{val[: cls._str['CURSOR']]}"
+                    + f"{val[cls._str['CURSOR'] + 1 :]}"
                 )
                 cls._str["END"](*cls._str["END_PARA"])
             else:
                 cls._str["FIELD"][cls._str["KEY"]] = (
-                    f"{val[: cls._str['CURSOR']]}{val[cls._str['CURSOR'] + 1 :]}"
+                    f"{val[: cls._str['CURSOR']]}"
+                    + f"{val[cls._str['CURSOR'] + 1 :]}"
                 )
                 cls._str["END"]()
             # cls._str = {}

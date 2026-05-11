@@ -3,10 +3,8 @@ import sys
 from typing import Any, Literal, get_args, get_origin
 
 from annotated_types import Ge, Le
-
 from common.config import Config, ConfigIO
 from common.grid_tools import Vec2
-
 from graphics import Event_loop, Renderer, Textures, Window
 
 
@@ -60,7 +58,7 @@ class Options:
                 key = value[0]
                 val = fields[key]["VAL"]
                 setattr(self.cfg, key, val)
-                print("field is ", key, value, val) 
+                print("field is ", key, value, val)
             except KeyError:
                 print(key, "is not handeld yet")
         ConfigIO.to_file(self.cfg, self.cfg.filename)
@@ -73,9 +71,7 @@ class Options:
 
     def save(self) -> None:
         Event_loop.close(None)
-        print(
-            sys.executable, [sys.executable] + sys.argv 
-        )
+        print(sys.executable, [sys.executable] + sys.argv)
         os.execv(
             sys.executable,
             [sys.executable] + sys.argv[:1] + [self.cfg.filename],

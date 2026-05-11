@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                               +#+#+#+#+#+   +#+             #
 #    Created: 2026/02/03 21:19:22 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/07 21:37:34 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/11 04:21:48 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Configuration module for maze generation and rendering."""
@@ -25,6 +25,7 @@ from pydantic import (
     model_validator,
 )
 
+from ..errors import ConfigError
 from ..grid_tools import Vec2
 
 
@@ -68,11 +69,11 @@ class Config(BaseModel):
         if not (0 <= self.exit.x < self.width) or not (
             0 <= self.exit.y < self.height
         ):
-            raise ValueError("exit out of bounds")
+            raise ConfigError("exit out of bounds")
         if not (0 <= self.entry.x < self.width) or not (
             0 <= self.entry.y < self.height
         ):
-            raise ValueError("entry out of bounds")
+            raise ConfigError("entry out of bounds")
         return self
 
     @field_validator("entry", "exit", "window_siz", mode="before")
@@ -86,13 +87,13 @@ class Config(BaseModel):
             try:
                 v = ast.literal_eval(v)
             except Exception as e:
-                raise ValueError(f"Invalid Vec2 string: {v}") from e
+                raise ConfigError(f"Invalid Vec2 string: {v}") from e
 
         if isinstance(v, tuple) and len(v) == 2:
             x, y = v
             return Vec2(int(x), int(y))
 
-        raise ValueError(
+        raise ConfigError(
             f"Expected Vec2-compatible value, got {type(v).__name__}: {v}"
         )
 
@@ -102,7 +103,7 @@ class Config(BaseModel):
         """Parse a string repr of a str into a str."""
         if isinstance(v, str):
             return v.strip("\"' ").lower()
-        raise ValueError(f"Expected a string, got {type(v).__name__}")
+        raise ConfigError(f"Expected a string, got {type(v).__name__}")
 
     @field_validator("perfect", mode="before")
     @classmethod
@@ -112,7 +113,7 @@ class Config(BaseModel):
             return v
         if isinstance(v, str):
             return v.strip().lower() in ("true", "1", "yes")
-        raise ValueError(f"Expected a boolean, got {type(v).__name__}")
+        raise ConfigError(f"Expected a boolean, got {type(v).__name__}")
 
     @field_validator("gen_algo", "path_algo", "color", "pic", mode="before")
     @classmethod
@@ -126,7 +127,7 @@ class Config(BaseModel):
                 return v
             if v in ("0", "1", "2"):
                 return int(v)
-        raise ValueError(
+        raise ConfigError(
             "Expected a valid gen_algo/path_algo/color value,"
             + " got {type(v).__name__}: {v}"
         )
@@ -141,7 +142,7 @@ class Config(BaseModel):
             return int(ast.literal_eval(v))
         if isinstance(v, int):
             return v
-        raise ValueError(f"Expected an int, got {type(v).__name__}")
+        raise ConfigError(f"Expected an int, got {type(v).__name__}")
 
     def __iter__(self) -> Generator[tuple[str, Any], None, None]:
         """Iterate over the model fields and their values."""
@@ -200,11 +201,3 @@ class ConfigIO:
                     f.write(f"{k.upper()}={v.__str__()}\n")
         except Exception as e:
             raise ConfigError(f"Error writing config to file: {e}") from e
-
-
-class ConfigError(Exception):
-    """Custom exception for configuration errors."""
-
-    def __init__(self, message: str):
-        """Initialize the ConfigError with a message."""
-        super().__init__(message)

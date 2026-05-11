@@ -45,7 +45,8 @@ class Textures:
         ret = []
         for img in images:
             id = len(cls._textures)
-            # MLX dependency here is a boundary violation current import is a hotfix
+            # MLX dependency here is a boundary violation current import
+            # is ahotfix
             # we need to consider moving this oput of here and into mlx_context
             # Mlx_context.load_texture() or something like that
             # then call from renderer

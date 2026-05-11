@@ -6,7 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.de  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/01 13:25:26 by maprunty          #+#    #+#              #
-#    Updated: 2026/05/10 06:46:26 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/10 09:55:48 by maprunty        ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 # • install: Install project dependencies using pip, uv, pipx, or any other package
@@ -47,12 +47,13 @@ clean:
 	find . -type d -name ".mypy_cache" -exec rm -rf {} +
 	find . -type d -name "*.egg-info"  -exec rm -rf {} +
 	find . -type d -name ".pytest_cache" -exec rm -rf {} +
+	find . -type d -name "build" -exec rm -rf {} +
 	find . -type d -name "resized" -exec rm -rf {} +
 	find . -type f -name "*.pyc"       -delete
 	rm -rf dist/
 
 fclean: clean
-	rm -rf .venv uv.lock
+	rm -rf .venv uv.lock wheels/
 
 lint:
 	$(PYTHON) -m flake8 .
@@ -63,7 +64,7 @@ lint-strict:
 	$(PYTHON) -m mypy . --strict
 
 build-mazegen:
-	uv build --package mazegen --wheel --out-dir wheel/
+	uv build --package mazegen --wheel --out-dir wheels/
 
 
 #

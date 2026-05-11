@@ -54,7 +54,7 @@ class Animations:
             os.path.dirname(os.path.abspath(__file__)) + "/includes/sprits/",
             "path.png",
             Vec2(Render_grid._tile_siz.x + 1, Render_grid._tile_siz.y + 1),
-            (0, 180)
+            (0, 180),
         )[0]
         Render_grid.load_path(path, texture)
 
