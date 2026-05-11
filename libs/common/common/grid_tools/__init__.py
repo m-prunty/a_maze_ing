@@ -6,12 +6,13 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/01 14:11:25 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/04 07:50:19 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/11 09:10:02 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
 
-from .grid_cell import Cell, Dir, Grid
+from .cell import Cell, Dir
+from .grid import Grid
 from .vector import Vec2
 
 __all__ = ["Cell", "Grid", "Vec2", "Dir"]
