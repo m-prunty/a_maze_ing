@@ -40,7 +40,7 @@ class Animations:
         return 1
 
     @classmethod
-    def path(cls, delay=0.0):
+    def path(cls, incl_path, delay=0.0):
         if not cls._grid:
             cls._grid = Render_grid._grid
         path = cls._grid.path
@@ -51,7 +51,6 @@ class Animations:
         cls._path_step = 0
         Animator.animate(cls.path_step, None, delay)
         texture = Textures.load(
-            os.path.dirname(os.path.abspath(__file__)) + "/includes/sprits/",
             "path.png",
             Vec2(Render_grid._tile_siz.x + 1, Render_grid._tile_siz.y + 1),
             (0, 180),

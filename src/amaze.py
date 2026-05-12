@@ -34,13 +34,17 @@ class Start:
 
     def __init__(self) -> None:
         """Initialize the start screen."""
-        try:
-            self.on_start = True
-            self._load_cfg()
-            Window.create(self.cfg.window_siz, " -- A-maze-ing -- ")
-            self.opt = Options(self.cfg)
-        except Exception as e:
-            raise StartError(f"{e}") from e
+        # try:
+        print(os.path.dirname(os.path.abspath(__file__))
+        + "/../includes/sprits/")
+        Textures.set_path(os.path.dirname(os.path.abspath(__file__))
+        + "/../includes/sprits/")
+        self.on_start = True
+        self._load_cfg()
+        Window.create(self.cfg.window_siz, " -- A-maze-ing -- ")
+        self.opt = Options(self.cfg)
+        # except Exception as e:
+            # raise StartError(f"{e}") from e
 
     def _load_cfg(self) -> None:
         if len(sys.argv) == 2:
@@ -64,13 +68,11 @@ class Start:
     def render_start(self) -> None:
         """Render the start screen."""
         start_btn = Textures.load(
-            os.path.dirname(os.path.abspath(__file__)) + "/../includes/",
             "start_button.png",
             Vec2(300, 90),
             (0,),
         )[0]
         opt_logo = Textures.load(
-            os.path.dirname(os.path.abspath(__file__)) + "/../includes/",
             "options_button.png",
             Vec2(90, 90),
             (0,),

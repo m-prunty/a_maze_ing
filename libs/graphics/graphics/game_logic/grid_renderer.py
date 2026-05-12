@@ -37,20 +37,17 @@ class Render_grid:
         if not cls._initialized:
             if cls._grid is None or cls._cfg is None:
                 cls.load(cls._grid, cls._grid)
-        path = (
-            os.path.dirname(os.path.abspath(__file__))
-            + "/includes/sprits/grid/"
-        )
+        path = Textures._include_path + "/grid/"
         sprits = list(filter(lambda f: f.endswith(".png"), os.listdir(path)))
         sprits.sort()
         ret = []
         cls._tiles = []
         for sprit in sprits:
             imgs = Textures.load(
-                path,
                 sprit,
                 Vec2(cls._tile_siz.x + 1, cls._tile_siz.y + 1),
                 (0, 90, 180, 270),
+                path="/grid/"
             )
             ret.append(
                 (

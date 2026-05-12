@@ -108,34 +108,29 @@ class Options_render:
 
         self.imgs = {}
         self.imgs["Bar"] = Textures.load(
-            path, "bar.png", Vec2(self.bar_width * 1.05, self.bar_height), (0,)
+            "bar.png", Vec2(self.bar_width * 1.05, self.bar_height), (0,)
         )[0]
         self.imgs["Box"] = Textures.load(
-            path,
             "box_input.png",
             Vec2(self.bar_width * 1.05, self.bar_height + self.top_padding),
             (0,),
         )[0]
         self.imgs["Arrows"] = Textures.load(
-            path,
             "arrow.png",
             Vec2(self.bar_height, self.bar_height),
             (180, 270),
         )
         self.imgs["Drop_back"] = Textures.load(
-            path,
             "dropdown_back.png",
             Vec2(self.bar_width * 0.5, self.bar_height * 1.75),
             (0,),
         )[0]
         self.imgs["Cursor"] = Textures.load(
-            path,
             "cursor.png",
             Vec2(self.bar_width / 100, self.bar_height),
             (0,),
         )[0]
         self.imgs["Save"] = Textures.load(
-            path,
             "save_button.png",
             Vec2(self.width * 0.4, self.height * 0.1),
             (0,),
