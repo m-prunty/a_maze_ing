@@ -47,7 +47,7 @@ class Animations:
         return 1
 
     @classmethod
-    def path(cls, incl_path: str, delay: float = 0.0):
+    def path(cls, delay: float = 0.0):
         """Animate the rendering of the pathfinding solution."""
         if not cls._grid:
             cls._grid = Render_grid._grid
