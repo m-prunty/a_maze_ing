@@ -6,10 +6,10 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/01 14:11:25 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/11 09:10:02 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/12 10:05:28 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
-
+"""A-maze-ing grid tools package."""
 
 from .cell import Cell, Dir
 from .grid import Grid

@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/01 08:05:00 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/11 07:32:41 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/12 22:10:19 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Staging classes for maze generation and pathfinding."""
@@ -39,6 +39,7 @@ class MazeEvent:
 
     @property
     def cell(self) -> Cell:
+        """Returns the cell associated with the event."""
         return self.edge if isinstance(self.edge, Cell) else self.edge.a
 
 
@@ -75,6 +76,7 @@ class VisitStage:
                 e.cell.visited = True
                 return True
             elif e.etype == EventType.EDGE:
+                assert isinstance(e.edge, Edge)
                 if e.edge.b and (e.edge.b.visited or e.edge.b.ispic):
                     return False
             return True
@@ -91,6 +93,7 @@ class PathStage:
             if e.etype == EventType.ENTER or e.etype == EventType.EXIT:
                 e.cell.ispath = False
             elif e.etype == EventType.EDGE:
+                assert isinstance(e.edge, Edge)
                 if e.edge.b and e.edge.b.ispath:
                     return False
                 e.edge.a.ispath = True
@@ -107,7 +110,8 @@ class RmStage:
         try:
             if e.etype != EventType.EDGE:
                 return True
-            assert e.edge.b and e.edge.dir
+
+            assert isinstance(e.edge, Edge) and e.edge.b and e.edge.dir
             e.edge.rm_walls()
             return True
         except Exception as e:

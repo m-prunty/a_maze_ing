@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/01 08:04:43 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/11 08:28:26 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/12 20:36:22 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Maze generation and pathfinding algorithms."""
@@ -446,7 +446,10 @@ class Prim(BaseStrat):
 
 
 class Sidewinder(BaseStrat):
+    """Sidewinder maze generation."""
+
     def generate(self) -> Iterable[Vec2]:
+        """Generates using Sidewinder algorithm."""
         yield from self._sidewind()
 
     def _sidewind(self) -> Iterable[Vec2]:
@@ -479,14 +482,15 @@ class Sidewinder(BaseStrat):
 
                 else:
                     carve passage EAST from current
-        """
         start = self.config.entry
         run = [self.grid[start]]
 
         def e_bound(v):
+            Check if cell is at eastern boundary.
             return v.x == self.width - 1
 
-        def n_bound(v):
+         def n_bound(v):
+             Check if cell is at northern boundary.
             return v.y == 0
 
         for cell in self.grid:
@@ -514,14 +518,20 @@ class Sidewinder(BaseStrat):
                         neighbour.rm_wall(Dir.E.opps())
             cell.visited = True
             yield cell
+        """
 
 
 class Wilson(BaseStrat):
     """Wilson's algorithm."""
 
-    def generate(self) -> Iterable[Vec2]:
-        yield from self._wilson()
+    pass
 
+
+"""
+    def generate(self) -> Iterable[Vec2]:
+        Generates using Wilson's algorithm.
+        yield from self._wilson()
+"""
 
 #
 #    def _wilson(self) -> Iterable[Vec2]:

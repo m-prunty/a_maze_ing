@@ -1,4 +1,4 @@
-import os
+"""Managing animation sequences for rendering the grid and pathfinding."""
 
 from common.grid_tools import Vec2
 
@@ -8,8 +8,14 @@ from .grid_renderer import Render_cell, Render_grid
 
 
 class Animations:
+    """Manage animation seq for rendering the grid and pathfinding."""
+
+    _grid_steps: int
+    _grid: Render_grid
+
     @classmethod
-    def grid(cls, delay=0.01):
+    def grid(cls, delay: float = 0.01) -> None:
+        """Animate the rendering of the grid."""
         cls._grid_steps = 0
         cls._grid = Render_grid._grid
         cls._canvas = Render_grid.grid_canva(
@@ -18,7 +24,8 @@ class Animations:
         Animator.animate(cls.grid_step, None, delay)
 
     @classmethod
-    def grid_step(cls):
+    def grid_step(cls) -> int:
+        """Render the next step in the grid animation."""
         x = cls._grid.height - 1
         y = cls._grid.width - 1
         ma = max(x, y)
@@ -40,13 +47,11 @@ class Animations:
         return 1
 
     @classmethod
-    def path(cls, incl_path, delay=0.0):
+    def path(cls, incl_path: str, delay: float = 0.0):
+        """Animate the rendering of the pathfinding solution."""
         if not cls._grid:
             cls._grid = Render_grid._grid
         path = cls._grid.path
-        # cls._path_canvas = Render_grid.grid_canva(
-        #     Vec2(cls._grid.width, cls._grid.height), Vec2(0, 0)
-        # )
         cls._path_steps = len(path)
         cls._path_step = 0
         Animator.animate(cls.path_step, None, delay)
@@ -59,6 +64,7 @@ class Animations:
 
     @classmethod
     def path_step(cls):
+        """Render the next step in the pathfinding animation."""
         if cls._path_step >= cls._path_steps:
             return -1
         Render_cell.render_path(cls._path_step, cls._canvas)

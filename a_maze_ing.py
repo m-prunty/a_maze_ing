@@ -7,7 +7,7 @@
 #    By: sdeppe <sdeppe@student.42heilbronn.de>    +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:26:52 by sdeppe           #+#    #+#              #
-#    Updated: 2026/05/10 19:26:31 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/12 09:59:43 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Main file to run A-maze-ing."""
@@ -23,6 +23,7 @@ END = "\033[0m"
 
 
 def not_venv_warning() -> str:
+    """Return a warning message if the user is not in a virtual environment."""
     return (
         f"\n{RED}WARNING{END}:"
         + "You're not in a virtual environment!\n"
@@ -39,6 +40,7 @@ def not_venv_warning() -> str:
 
 
 def main() -> None:
+    """Run A-maze-ing."""
     print(
         f"\n{PURPLE}A_Maze_ing{END}:",
     )

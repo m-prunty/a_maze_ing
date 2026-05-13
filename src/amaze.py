@@ -6,7 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/24 07:55:50 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/11 09:43:51 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/12 20:54:15 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """First attempts at the A-Maze-ing project."""
@@ -115,6 +115,7 @@ class Start:
                 self.launch_maze()
 
     def launch_maze(self) -> None:
+        """Launch the maze rendering and animation."""
         self.a.launch_renders()
         self.on_start = False
         Window.clear_window()

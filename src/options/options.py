@@ -1,3 +1,9 @@
+"""This module is for the options menu.
+
+It creates the menu and handles the interactions with it,
+it also updates the config file when the user saves the options.
+"""
+
 import os
 import sys
 from typing import Any, Literal, get_args, get_origin
@@ -9,26 +15,27 @@ from graphics import Event_loop, Renderer, Textures, Window
 
 
 class Options:
+    """Class for handling the options menu."""
+
     def __init__(self, config: Config):
+        """Initialize the options menu with the given config."""
         self.cfg = config
         self.opt_rend = Options_render()
-
-        print(self.cfg)
         try:
             for field in self.cfg:
                 name = field[0]
                 annotation = field[1]["type"]
                 field_info = self.cfg.__pydantic_fields__[name]
                 value = field[1]["value"]
-                min = None
-                max = None
+                mn = None
+                mx = None
                 for meta in self.cfg.__pydantic_fields__[name].metadata:
                     if isinstance(meta, Ge):
-                        min = meta.ge
+                        mn = meta.ge
                     if isinstance(meta, Le):
-                        max = meta.le
-                if min is not None and max is not None:
-                    self.opt_rend.add_cursor(name, "", (min, value, max + 1))
+                        mx = meta.le
+                if isinstance(mn, int) and isinstance(mx, int):
+                    self.opt_rend.add_cursor(name, "", (mn, value, mx + 1))
                 elif get_origin(field_info.annotation) is Literal:
                     self.opt_rend.add_dropdown(
                         name, value, get_args(field_info.annotation)
@@ -46,13 +53,10 @@ class Options:
                     self.opt_rend.add_input(name + " Y", value.y, int)
                 self.is_active = False
         except Exception as e:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            print(exc_type, fname, exc_tb.tb_lineno)
-            print(f"Error creating options: {e}")
             raise Exception(e) from e
 
     def put_to_config(self, fields: dict[str, Any]) -> None:
+        """Put the options values to the config and save it to file."""
         for value in self.cfg:
             try:
                 key = value[0]
@@ -64,12 +68,14 @@ class Options:
         ConfigIO.to_file(self.cfg, self.cfg.filename)
 
     def render(self) -> None:
+        """Render the options menu and set up the event hooks."""
         self.opt_rend.render_options()
         Event_loop.add_hook(Event_loop.close, 33, None)
         Event_loop.add_mous_hook(self.mouse_event, None)
         self.is_active = True
 
     def save(self) -> None:
+        """Save the options and restart the program."""
         Event_loop.close(None)
         print(sys.executable, [sys.executable] + sys.argv)
         os.execv(
@@ -81,6 +87,7 @@ class Options:
         self.render()
 
     def mouse_event(self, button: int, x: int, y: int, baa: None) -> None:
+        """Handle mouse events for the options menu."""
         if self.is_active:
             if button == 4:
                 self.opt_rend.scroll -= 10
@@ -93,7 +100,10 @@ class Options:
 
 
 class Options_render:
-    def __init__(self):
+    """Class for rendering the options menu and handling interactions."""
+
+    def __init__(self) -> None:
+        """Initialize the options renderer and load the necessary textures."""
         self.width = Window.get_siz().x
         self.height = Window.get_siz().y
         self.sids_padding = self.width * 0.15
@@ -102,7 +112,7 @@ class Options_render:
         self.bar_height = self.top_padding / 2
         self.text_siz = self.top_padding
 
-        self.fields = {}
+        self.fields: dict[str, dict[str, Any]] = {}
 
         path = os.path.dirname(os.path.abspath(__file__)) + "/includes/"
 
@@ -137,7 +147,8 @@ class Options_render:
         )[0]
         self.scroll = 0
 
-    def render_options(self):
+    def render_options(self) -> None:
+        """Render the options menu with the current field values."""
         Window.clear_window()
         Renderer.render_text(
             "OPTIONS", Vec2(self.sids_padding * 2, self.scroll)
@@ -163,8 +174,13 @@ class Options_render:
             if self.fields[field]["TYPE"] == "dropdown":
                 self.render_dropdown(field)
 
-    def add_cursor(self, name: str, unit: str, vals: tuple):
-        """ "vals 0 min, 1 default, 2 max"""
+    def add_cursor(
+        self, name: str, unit: str, vals: tuple[int, int, int]
+    ) -> None:
+        """Init a cursor field with the given name, unit and values.
+
+        vals 0 min, 1 default, 2 max
+        """
         self.fields[name] = {
             "NAME": name,
             "UNIT": unit,
@@ -176,8 +192,11 @@ class Options_render:
             "TYPE": "cursor",
         }
 
-    def add_input(self, name: str, val, type):
-        """ "vals 0 min, 1 default, 2 max"""
+    def add_input(self, name: str, val: str | int, type: type) -> None:
+        """Init an input field with the given name, value and type.
+
+        "vals 0 min, 1 default, 2 max
+        """
         self.fields[name] = {
             "NAME": name,
             "VAL": val,
@@ -187,8 +206,16 @@ class Options_render:
             "TYPE": "input",
         }
 
-    def add_dropdown(self, name: str, val, posibles: list):
-        """ "vals 0 min, 1 default, 2 max"""
+    def add_dropdown(
+        self,
+        name: str,
+        val: str | int | bool,
+        posibles: tuple[Any],
+    ) -> None:
+        """Init a dropdown field with the given name, val and possible values.
+
+        "vals 0 min, 1 default, 2 max
+        """
         self.fields[name] = {
             "NAME": name,
             "VAL": val,
@@ -198,7 +225,8 @@ class Options_render:
             "OPEN": False,
         }
 
-    def render_dropdown(self, name: str):
+    def render_dropdown(self, name: str) -> None:
+        """Render a dropdown field with the given name."""
         if name not in self.fields:
             print("Field not found !")
         indicator = f"{name}: {self.fields[name]['VAL']}"
@@ -286,7 +314,8 @@ class Options_render:
                 ),
             )
 
-    def render_input(self, name: str):
+    def render_input(self, name: str) -> None:
+        """Render an input field with the given name."""
         if name not in self.fields:
             print("Field not found !")
         Renderer.render_text(
@@ -357,8 +386,10 @@ class Options_render:
                 ),
             )
 
-    def change_cursor(self, name: str, new_val: tuple):
-        """ " new value: 0 value, 1 percent (from 0 to 1)
+    def change_cursor(self, name: str, new_val: tuple[Any, Any]) -> None:
+        """Change the value of a cursor field with the given name.
+
+        new value: 0 value, 1 percent (from 0 to 1)
         (if one is not given the other is gesed)
         """
         if name not in self.fields:
@@ -378,7 +409,8 @@ class Options_render:
             ) / (self.fields[name]["MAX"] - self.fields[name]["MIN"])
         self.render_options()
 
-    def render_cursor(self, name: str):
+    def render_cursor(self, name: str) -> None:
+        """Render a cursor field with the given name."""
         if name not in self.fields:
             print("Field not found !")
         val = int(self.fields[name]["VAL"])
@@ -429,7 +461,8 @@ class Options_render:
             ),
         )
 
-    def set_field(self, field, opt: Options):
+    def set_field(self, field: dict[str, Any], opt: Options) -> None:
+        """Set the val of a field with the given name and update the config."""
         Window.clear_window()
         try:
             if field["NAME"].endswith("X"):
@@ -462,6 +495,7 @@ class Options_render:
         self.render_options()
 
     def check_click(self, pos: Vec2, opt: Options) -> None:
+        """Check if a click at the given pos interacts with any context."""
         for field_name, field_value in self.fields.items():
             # corsor
             if field_value["TYPE"] == "cursor":
@@ -476,11 +510,15 @@ class Options_render:
                     + self.scroll,
                 )
                 siz = Vec2(self.bar_width, self.bar_height)
-                if fpos.y < pos.y and fpos.y + siz.y > pos.y:
-                    if fpos.x < pos.x and fpos.x + siz.x > pos.x:
-                        self.change_cursor(
-                            field_name, (None, (pos.x - fpos.x) / siz.x)
-                        )
+                if (
+                    fpos.y < pos.y
+                    and fpos.y + siz.y > pos.y
+                    and fpos.x < pos.x
+                    and fpos.x + siz.x > pos.x
+                ):
+                    self.change_cursor(
+                        field_name, (None, (pos.x - fpos.x) / siz.x)
+                    )
             # inputs
             if field_value["TYPE"] == "input" and (
                 field_value["INPUT"] is None
@@ -497,18 +535,22 @@ class Options_render:
                     + self.scroll,
                 )
                 siz = Vec2(self.bar_width, self.bar_height + self.top_padding)
-                if fpos.y < pos.y and fpos.y + siz.y > pos.y:
-                    if fpos.x < pos.x and fpos.x + siz.x > pos.x:
-                        field_value["INPUT"] = ""
-                        self.render_options()
-                        Event_loop.input_to_str(
-                            field_value,
-                            "INPUT",
-                            self.render_options,
-                            None,
-                            self.set_field,
-                            (field_value, opt),
-                        )
+                if (
+                    fpos.y < pos.y
+                    and fpos.y + siz.y > pos.y
+                    and fpos.x < pos.x
+                    and fpos.x + siz.x > pos.x
+                ):
+                    field_value["INPUT"] = ""
+                    self.render_options()
+                    Event_loop.input_to_str(
+                        field_value,
+                        "INPUT",
+                        self.render_options,
+                        None,
+                        self.set_field,
+                        (field_value, opt),
+                    )
             # dropdown
             if field_value["TYPE"] == "dropdown":
                 fpos = Vec2(
@@ -536,11 +578,12 @@ class Options_render:
                         if (
                             fpos.y + (box_height * (i - 1)) + siz.y < pos.y
                             and fpos.y + siz.y + (box_height * i) > pos.y
+                            and fpos.x < pos.x
+                            and fpos.x + siz.x > pos.x
                         ):
-                            if fpos.x < pos.x and fpos.x + siz.x > pos.x:
-                                field_value["VAL"] = value
-                                self.render_options()
-                                return
+                            field_value["VAL"] = value
+                            self.render_options()
+                            return
                         i += 1
                     field_value["OPEN"] = False
                     self.render_options()
@@ -556,16 +599,20 @@ class Options_render:
             + self.scroll,
         )
         save_siz = Vec2(self.width * 0.4, self.height * 0.1)
-        if save_pos.y < pos.y and save_pos.y + save_siz.y > pos.y:
-            if save_pos.x < pos.x and save_pos.x + save_siz.x > pos.x:
-                vars = []
-                for field_name, field_value in self.fields.items():
-                    if (
-                        field_value["TYPE"] == "input"
-                        and field_value["INPUT"] is not None
-                    ):
-                        field_value["INPUT"] = field_value["INPUT"][:-1]
-                        self.set_field(field_value, opt)
-                    vars.append(field_value["VAL"])
-                opt.put_to_config(self.fields)
-                opt.save()
+        if (
+            save_pos.y < pos.y
+            and save_pos.y + save_siz.y > pos.y
+            and save_pos.x < pos.x
+            and save_pos.x + save_siz.x > pos.x
+        ):
+            vars = []
+            for _field_name, field_value in self.fields.items():
+                if (
+                    field_value["TYPE"] == "input"
+                    and field_value["INPUT"] is not None
+                ):
+                    field_value["INPUT"] = field_value["INPUT"][:-1]
+                    self.set_field(field_value, opt)
+                vars.append(field_value["VAL"])
+            opt.put_to_config(self.fields)
+            opt.save()

@@ -6,9 +6,10 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/04/30 22:48:47 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/10 07:55:17 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/12 10:00:23 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
+"""A-maze-ing package."""
 
 from .config import Config, ConfigIO
 from .errors import ConfigError, MazeError, RenderError, StartError

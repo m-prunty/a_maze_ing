@@ -15,11 +15,14 @@ class Textures:
     _textures: list = [tuple]
     _sizes: list = []
 
-    def __new__(cls, id: int) -> int:
+    @classmethod
+    def get_element(cls, id: int) -> int:
+        """Return the texture ID for the given ID."""
         return cls._textures[id]
 
     @classmethod
-    def get_siz(cls, id: int):
+    def get_siz(cls, id: int) -> Vec2:
+        """Return the size of the texture for the given ID."""
         return cls._sizes[id]
 
     @classmethod
@@ -27,25 +30,32 @@ class Textures:
         if not os.path.exists(path):
             raise RuntimeError(f"{path} not found")
         cls._include_path = path
+
     @classmethod
-    def load(cls, image: str, siz: Vec2, degs: tuple, path: str=""):
+    def load(cls, image: str, siz: Vec2, degs: tuple, path: str = ""):
         # def generate_texture(path, image, siz, degs) -> tuple:
 
         if not os.path.exists(cls._include_path + path + image):
             print(f"file: {cls._include_path + path + image} not found")
         images = []
-        # ret = []
         for deg in degs:
             try:
                 if not os.path.exists(cls._include_path + path + "resized/"):
                     os.mkdir(cls._include_path + path + "resized/")
-                im = Image.open(cls._include_path + path + image).convert("RGBA")
+                im = Image.open(cls._include_path + path + image).convert(
+                    "RGBA"
+                )
                 im_rot = im.rotate(deg)
                 new_im = im_rot.resize(
                     (int(siz.x) + 1, int(siz.y) + 1), Image.Resampling.NEAREST
                 )
-                new_im.save(cls._include_path + path + "/resized/" + f"{deg}_" + image, "png")
-                images.append(cls._include_path + path + "/resized/" + f"{deg}_" + image)
+                new_im.save(
+                    cls._include_path + path + "/resized/" + f"{deg}_" + image,
+                    "png",
+                )
+                images.append(
+                    cls._include_path + path + "/resized/" + f"{deg}_" + image
+                )
             except OSError:
                 print(f"cannot create {image}")
         ret = []

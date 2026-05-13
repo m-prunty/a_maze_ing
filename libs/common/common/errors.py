@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/10 07:46:29 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/11 06:25:26 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/12 10:01:25 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Custom exceptions for A-Maze-ing."""
@@ -20,6 +20,7 @@ class MazeError(Exception):
     """Custom exception for maze generation and pathfinding errors."""
 
     def __init__(self, message: str) -> None:
+        """Initialize the MazeError with a message incl file and line info."""
         exc_type, exc_obj, exc_tb = sys.exc_info()
 
         if exc_tb:
