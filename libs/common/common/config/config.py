@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                               +#+#+#+#+#+   +#+             #
 #    Created: 2026/02/03 21:19:22 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/12 14:39:52 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/13 23:06:11 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Configuration module for maze generation and rendering."""
@@ -40,7 +40,7 @@ class Config(BaseModel):
     perfect: bool = Field(default=True)
     seed: int = Field(default=0)
     window_siz: Vec2 = Field(default_factory=lambda: Vec2(900, 900))
-    pic: Literal[0, 1, 2] = Field(default=1)
+    pic: Literal[0, 1, 2] = Field(default=0)
     pic_scalar: float = Field(default=1.0)
     filename: str = Field(default="config.txt")
     model_config = ConfigDict(revalidate_instances="always")
@@ -173,7 +173,6 @@ class ConfigIO:
         except Exception as e:
             raise ConfigError(f"Error reading config from file: {e}") from e
 
-    # needs work
     @staticmethod
     def from_filemap(path: str) -> Config:
         """Create a Config instance from a hexlist repr of the maze."""

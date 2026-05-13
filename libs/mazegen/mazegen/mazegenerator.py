@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/07 03:02:45 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/11 05:23:25 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/13 22:54:06 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """MazeGenerator class to generate a maze grid and a path through it."""
@@ -60,7 +60,6 @@ class MazeGenerator:
             *self.to_path([*path.generate()])
             + [self.grid[self.config.exit].loc]
         ]
-        print(f"Path generated with {algo} algorithm: {self.grid.path}")
 
     def gen_grid(self, algo: str = "dfs") -> None:
         """Generate the maze grid using the specified algorithm."""

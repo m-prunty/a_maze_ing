@@ -9,8 +9,7 @@ import sys
 from typing import Any, Literal, get_args, get_origin
 
 from annotated_types import Ge, Le
-from common.config import Config, ConfigIO
-from common.grid_tools import Vec2
+from common import Config, ConfigError, ConfigIO, RenderError, Vec2
 from graphics import Event_loop, Renderer, Textures, Window
 
 
@@ -53,7 +52,7 @@ class Options:
                     self.opt_rend.add_input(name + " Y", value.y, int)
                 self.is_active = False
         except Exception as e:
-            raise Exception(e) from e
+            raise ConfigError(e) from e
 
     def put_to_config(self, fields: dict[str, Any]) -> None:
         """Put the options values to the config and save it to file."""
@@ -62,7 +61,6 @@ class Options:
                 key = value[0]
                 val = fields[key]["VAL"]
                 setattr(self.cfg, key, val)
-                print("field is ", key, value, val)
             except KeyError:
                 print(key, "is not handeld yet")
         ConfigIO.to_file(self.cfg, self.cfg.filename)
@@ -77,7 +75,6 @@ class Options:
     def save(self) -> None:
         """Save the options and restart the program."""
         Event_loop.close(None)
-        print(sys.executable, [sys.executable] + sys.argv)
         os.execv(
             sys.executable,
             [sys.executable] + sys.argv[:1] + [self.cfg.filename],
@@ -104,48 +101,53 @@ class Options_render:
 
     def __init__(self) -> None:
         """Initialize the options renderer and load the necessary textures."""
-        self.width = Window.get_siz().x
-        self.height = Window.get_siz().y
-        self.sids_padding = self.width * 0.15
-        self.top_padding = self.height * 0.03
-        self.bar_width = self.width - self.sids_padding * 2
-        self.bar_height = self.top_padding / 2
-        self.text_siz = self.top_padding
+        try:
+            self.width = Window.get_siz().x
+            self.height = Window.get_siz().y
+            self.sids_padding = self.width * 0.15
+            self.top_padding = self.height * 0.03
+            self.bar_width = self.width - self.sids_padding * 2
+            self.bar_height = self.top_padding / 2
+            self.text_siz: float = self.top_padding
 
-        self.fields: dict[str, dict[str, Any]] = {}
+            self.fields: dict[str, dict[str, Any]] = {}
 
-        path = os.path.dirname(os.path.abspath(__file__)) + "/includes/"
-
-        self.imgs = {}
-        self.imgs["Bar"] = Textures.load(
-            "bar.png", Vec2(self.bar_width * 1.05, self.bar_height), (0,)
-        )[0]
-        self.imgs["Box"] = Textures.load(
-            "box_input.png",
-            Vec2(self.bar_width * 1.05, self.bar_height + self.top_padding),
-            (0,),
-        )[0]
-        self.imgs["Arrows"] = Textures.load(
-            "arrow.png",
-            Vec2(self.bar_height, self.bar_height),
-            (180, 270),
-        )
-        self.imgs["Drop_back"] = Textures.load(
-            "dropdown_back.png",
-            Vec2(self.bar_width * 0.5, self.bar_height * 1.75),
-            (0,),
-        )[0]
-        self.imgs["Cursor"] = Textures.load(
-            "cursor.png",
-            Vec2(self.bar_width / 100, self.bar_height),
-            (0,),
-        )[0]
-        self.imgs["Save"] = Textures.load(
-            "save_button.png",
-            Vec2(self.width * 0.4, self.height * 0.1),
-            (0,),
-        )[0]
-        self.scroll = 0
+            self.imgs: dict[str, int] = {}
+            self.imgs["Bar"] = Textures.load(
+                "bar.png", Vec2(self.bar_width * 1.05, self.bar_height), (0,)
+            )[0]
+            self.imgs["Box"] = Textures.load(
+                "box_input.png",
+                Vec2(
+                    self.bar_width * 1.05, self.bar_height + self.top_padding
+                ),
+                (0,),
+            )[0]
+            Arrows: list[int] = Textures.load(
+                "arrow.png",
+                Vec2(self.bar_height, self.bar_height),
+                (270, 180),
+            )
+            self.imgs["Arrow1"] = Arrows[0]
+            self.imgs["Arrow2"] = Arrows[1]
+            self.imgs["Drop_back"] = Textures.load(
+                "dropdown_back.png",
+                Vec2(self.bar_width * 0.5, self.bar_height * 1.75),
+                (0,),
+            )[0]
+            self.imgs["Cursor"] = Textures.load(
+                "cursor.png",
+                Vec2(self.bar_width / 100, self.bar_height),
+                (0,),
+            )[0]
+            self.imgs["Save"] = Textures.load(
+                "save_button.png",
+                Vec2(self.width * 0.4, self.height * 0.1),
+                (0,),
+            )[0]
+            self.scroll = 0
+        except Exception as e:
+            raise RenderError(f"Error loading textures: {e}") from e
 
     def render_options(self) -> None:
         """Render the options menu with the current field values."""
@@ -245,7 +247,7 @@ class Options_render:
         )
         if self.fields[name]["OPEN"]:
             Renderer.render_image(
-                self.imgs["Arrows"][1],
+                self.imgs["Arrow1"],
                 Vec2(
                     self.sids_padding * 1.6 + len(indicator) * 10,
                     self.height * 0.02
@@ -302,7 +304,7 @@ class Options_render:
 
         else:
             Renderer.render_image(
-                self.imgs["Arrows"][0],
+                self.imgs["Arrow2"],
                 Vec2(
                     int(self.sids_padding * 1.6 + len(indicator) * 10),
                     self.height * 0.025
@@ -547,7 +549,7 @@ class Options_render:
                         field_value,
                         "INPUT",
                         self.render_options,
-                        None,
+                        tuple(),
                         self.set_field,
                         (field_value, opt),
                     )

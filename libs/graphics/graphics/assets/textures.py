@@ -1,6 +1,7 @@
 """Texture management module for loading and handling textures."""
 
 import os
+from typing import Any
 
 from common.grid_tools import Vec2
 from PIL import Image
@@ -12,11 +13,11 @@ class Textures:
     """Class for loading and handling textures."""
 
     _include_path: str
-    _textures: list = [tuple]
-    _sizes: list = []
+    _textures: list[Any] = [tuple]
+    _sizes: list[Vec2] = []
 
     @classmethod
-    def get_element(cls, id: int) -> int:
+    def get_element(cls, id: int) -> Any:
         """Return the texture ID for the given ID."""
         return cls._textures[id]
 
@@ -27,12 +28,16 @@ class Textures:
 
     @classmethod
     def set_path(cls, path: str) -> None:
+        """Set the path to the textures."""
         if not os.path.exists(path):
             raise RuntimeError(f"{path} not found")
         cls._include_path = path
 
     @classmethod
-    def load(cls, image: str, siz: Vec2, degs: tuple, path: str = ""):
+    def load(
+        cls, image: str, siz: Vec2, degs: tuple[int, ...], path: str = ""
+    ) -> list[int]:
+        """Load texture from file, resize, and rotate by deg ."""
         # def generate_texture(path, image, siz, degs) -> tuple:
 
         if not os.path.exists(cls._include_path + path + image):

@@ -1,6 +1,8 @@
 """Managing animation sequences for rendering the grid and pathfinding."""
 
-from common.grid_tools import Vec2
+from common.grid_tools import Grid, Vec2
+
+from graphics import Canvas
 
 from ..assets import Textures
 from ..engine import Animator
@@ -11,7 +13,10 @@ class Animations:
     """Manage animation seq for rendering the grid and pathfinding."""
 
     _grid_steps: int
-    _grid: Render_grid
+    _grid: Grid
+    _canvas: Canvas
+    _path_steps: int
+    _path_step: int
 
     @classmethod
     def grid(cls, delay: float = 0.01) -> None:
@@ -21,7 +26,7 @@ class Animations:
         cls._canvas = Render_grid.grid_canva(
             Vec2(cls._grid.width, cls._grid.height), Vec2(0, 0)
         )
-        Animator.animate(cls.grid_step, None, delay)
+        Animator.animate(cls.grid_step, tuple(), delay)
 
     @classmethod
     def grid_step(cls) -> int:
@@ -47,14 +52,14 @@ class Animations:
         return 1
 
     @classmethod
-    def path(cls, delay: float = 0.0):
+    def path(cls, delay: float = 0.0) -> None:
         """Animate the rendering of the pathfinding solution."""
         if not cls._grid:
             cls._grid = Render_grid._grid
         path = cls._grid.path
         cls._path_steps = len(path)
         cls._path_step = 0
-        Animator.animate(cls.path_step, None, delay)
+        Animator.animate(cls.path_step, tuple(), delay)
         texture = Textures.load(
             "path.png",
             Vec2(Render_grid._tile_siz.x + 1, Render_grid._tile_siz.y + 1),
@@ -63,7 +68,7 @@ class Animations:
         Render_grid.load_path(path, texture)
 
     @classmethod
-    def path_step(cls):
+    def path_step(cls) -> int:
         """Render the next step in the pathfinding animation."""
         if cls._path_step >= cls._path_steps:
             return -1

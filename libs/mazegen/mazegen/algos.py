@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/01 08:04:43 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/12 20:36:22 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/13 22:42:50 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Maze generation and pathfinding algorithms."""
@@ -34,7 +34,7 @@ class BaseStrat(ABC):
 
     def __init__(self, graph: Graph, cfg: Config) -> None:
         """Initializes BaseStrat with a graph and config."""
-        self.config = cfg
+        self.config: Config = cfg
         self.rng = (
             random.Random() if cfg.seed == 0 else random.Random(cfg.seed)
         )
@@ -155,45 +155,7 @@ class Dfs(BaseStrat):
 
 
 class Dijkstra(BaseStrat):
-    """PSuuedocode https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm.
-
-        1  function Dijkstra(Graph, source):
-         2
-         3      for each vertex v in Graph.Vertices:
-         4          dist[v] ← INFINITY
-         5          prev[v] ← UNDEFINED
-         6          add v to Q
-         7      dist[source] ← 0
-         8
-         9      while Q is not empty:
-        10          u ← vertex in Q with minimum dist[u]
-        11          Q.remove(u)
-        12
-        13          for each edge (u, v) in Graph:
-        14              alt ← dist[u] + Graph.Distance(u,v)
-        15              if alt < dist[v]:
-        16                  dist[v] ← alt
-        17                  prev[v] ← u
-        18
-        19      return dist[], prev[]
-
-    procedure uniform_cost_search(start) is
-        node ← start
-        frontier ← priority queue containing node only
-        expanded ← empty set
-        do
-            if frontier is empty then
-                return failure
-            node ← frontier.pop()
-            if node is a goal state then
-                return solution(node)
-            expanded.add(node)
-            for each of node's neighbors n do
-                if n is not in expanded and not in frontier then
-                    frontier.add(n)
-                else if n is in frontier with higher cost
-                    replace existing node with n
-    """
+    """Dijkstra's algorithm for pathfinding."""
 
     def generate(self) -> Iterable[Vec2]:
         """Generates using Dijkstra's algorithm."""
@@ -297,8 +259,6 @@ class Pic(BaseStrat):
             Excepetion
         """
         try:
-            if not self.grid.pic:
-                raise Exception("No picture data found in grid.")
             pic = self.grid.pic
             wpic = int(math.log2(max(pic)) * (pic_scalar)) - 1
             hpic = int(len(pic) * pic_scalar)
@@ -397,9 +357,9 @@ class Prim(BaseStrat):
         """Generates using Prim's algorithm."""
         yield from self._prim()
 
-
-"""
     def _prim(self) -> Iterable[Vec2]:
+        return [Vec2(0, 0)]
+        """
         start = self.entry_cell
         start.visited = True
         if not self._dispatch(MazeEvent(start, etype=EventType.ENTER)):
@@ -453,6 +413,7 @@ class Sidewinder(BaseStrat):
         yield from self._sidewind()
 
     def _sidewind(self) -> Iterable[Vec2]:
+        return [Vec2(0, 0)]
         """Function generate_sidewinder(grid):.
 
         for each row y in grid:
@@ -524,17 +485,14 @@ class Sidewinder(BaseStrat):
 class Wilson(BaseStrat):
     """Wilson's algorithm."""
 
-    pass
-
-
-"""
     def generate(self) -> Iterable[Vec2]:
-        Generates using Wilson's algorithm.
+        """Generates using Wilson's algorithm."""
         yield from self._wilson()
-"""
 
-#
-#    def _wilson(self) -> Iterable[Vec2]:
+    def _wilson(self) -> Iterable[Vec2]:
+        return [Vec2(0, 0)]
+
+
 #        current = self.grid[self.config.entry]
 #        ngrid = {*self.grid}
 # path = {current: None, "walls": Path()}

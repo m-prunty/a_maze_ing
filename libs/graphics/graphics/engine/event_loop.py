@@ -2,7 +2,7 @@
 
 import time
 from collections.abc import Callable
-from typing import Any
+from typing import Any, Never
 
 from Xlib import XK
 
@@ -13,7 +13,7 @@ from .window import Window
 class Event_loop:
     """Manage event handling and rendering using the Mlx library."""
 
-    _events: list[tuple[Callable[[Any, Any], Any], tuple[Any]]] = []
+    _events: list[tuple[Callable[..., Any], tuple[Never | Any, ...]]] = []
     _repeatables: list[list[Any]] = []
     _key_funcs: list[dict[str, Any]] = []
     _str: dict[str, Any] | None = None
@@ -35,7 +35,7 @@ class Event_loop:
         Mlx_context._mlx.mlx_hook(Window.get(), event, 0, func, None)
 
     @staticmethod
-    def add_mous_hook(func: Callable[[Any], Any], param: Any) -> None:
+    def add_mous_hook(func: Callable[..., Any], param: Any) -> None:
         """Add a mouse hook function to handle mouse events."""
         Mlx_context._mlx.mlx_mouse_hook(Window.get(), func, param)
 
@@ -57,7 +57,7 @@ class Event_loop:
 
     @classmethod
     def do_event(
-        cls, event: Callable[[Any, Any], Any], params: tuple[Any]
+        cls, event: Callable[..., Any], params: tuple[Never | Any, ...]
     ) -> None:
         """Schedule a one-time event to be executed on the next render."""
         cls._events.append((event, params))
@@ -66,7 +66,7 @@ class Event_loop:
     def do_repeat(
         cls,
         event: Callable[[Any], Any],
-        params: tuple[Any],
+        params: tuple[Never | Any, ...],
         delay: float = 0.3,
     ) -> None:
         """Schedule a function to be called repeatedly with a specified delay.
@@ -86,7 +86,7 @@ class Event_loop:
         for animation in cls._repeatables:
             if now >= animation[2]:
                 if hasattr(animation[3], "__iter__"):
-                    if animation[0](*animation[2]) == -1:
+                    if animation[0](*animation[3]) == -1:
                         cls._repeatables.remove(animation)
                 else:
                     if animation[0]() == -1:
@@ -99,10 +99,10 @@ class Event_loop:
         cls,
         field: dict[str, str],
         key: str,
-        func: Callable[[Any], Any],
-        params: tuple[Any],
-        end_func: Callable[[Any], Any],
-        end_params: tuple[Any],
+        func: Callable[..., Any],
+        params: tuple[Never | Any, ...],
+        end_func: Callable[..., Any],
+        end_params: tuple[Never | Any, ...],
     ) -> None:
         """Set up a str input field with a callback funct to handle input."""
         if cls._str:

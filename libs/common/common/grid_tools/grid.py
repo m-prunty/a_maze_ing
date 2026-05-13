@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:38:19 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/12 09:40:17 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/14 00:36:33 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Grid class to represent a 2D grid of Cell instances."""
@@ -33,6 +33,7 @@ class Grid:
         """Init a grid with the given width and height of Cell instances."""
         self.width, self.height = width, height
         self.path: list[Vec2] = []
+        self.pic: list[int]
 
     def fill_empty_grid(self) -> None:
         """Fill a grid with empty Cell instances."""
@@ -62,27 +63,6 @@ class Grid:
             delta = Dir.from_str(c).v()
             pos = Vec2(pos.x + delta.x, pos.y + delta.y)
             self.path.append(pos)
-        print(f"Path from string: {self.path}")
-
-    def __getitem__(self, key: tuple[int, int] | Vec2 | Cell) -> Cell:
-        """Get a cell from the grid using a tuple of (x, y) or a Vec2 instance.
-
-        Where th key is out of bounds, return a Cell with location (-1, -1)
-        and all walls.
-        """
-        try:
-            if self.isvalid(key):
-                x, y = key
-                return self.grid[int(y)][int(x)]
-            else:
-                raise IndexError(f"Key {key} is out of bounds")
-        except Exception:
-            return Cell(Vec2(-1, -1))
-
-    def __iter__(self) -> Generator[Cell, None, None]:
-        """Iterate over all cells in the grid."""
-        for y in self.grid:
-            yield from y
 
     def isvalid(self, v: Vec2 | tuple[int, int] | Cell) -> bool:
         """Check if a Vec2 instance is within the bounds of the grid."""
@@ -138,6 +118,26 @@ class Grid:
                 v = tmp
             r_str += f"{k}, {v}\n"
         return r_str
+
+    def __getitem__(self, key: tuple[int, int] | Vec2 | Cell) -> Cell:
+        """Get a cell from the grid using a tuple of (x, y) or a Vec2 instance.
+
+        Where th key is out of bounds, return a Cell with location (-1, -1)
+        and all walls.
+        """
+        try:
+            if self.isvalid(key):
+                x, y = key
+                return self.grid[int(y)][int(x)]
+            else:
+                raise IndexError(f"Key {key} is out of bounds")
+        except Exception:
+            return Cell(Vec2(-1, -1))
+
+    def __iter__(self) -> Generator[Cell, None, None]:
+        """Iterate over all cells in the grid."""
+        for y in self.grid:
+            yield from y
 
     def __repr__(self) -> str:
         """An evalutable string representation of a Grid instance."""

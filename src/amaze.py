@@ -6,7 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/24 07:55:50 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/12 20:54:15 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/14 00:27:08 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """First attempts at the A-Maze-ing project."""
@@ -34,17 +34,17 @@ class Start:
 
     def __init__(self) -> None:
         """Initialize the start screen."""
-        # try:
-        print(os.path.dirname(os.path.abspath(__file__))
-        + "/../includes/sprits/")
-        Textures.set_path(os.path.dirname(os.path.abspath(__file__))
-        + "/../includes/sprits/")
-        self.on_start = True
-        self._load_cfg()
-        Window.create(self.cfg.window_siz, " -- A-maze-ing -- ")
-        self.opt = Options(self.cfg)
-        # except Exception as e:
-            # raise StartError(f"{e}") from e
+        try:
+            Textures.set_path(
+                os.path.dirname(os.path.abspath(__file__))
+                + "/../includes/sprits/"
+            )
+            self.on_start = True
+            self._load_cfg()
+            Window.create(self.cfg.window_siz, " -- A-maze-ing -- ")
+            self.opt = Options(self.cfg)
+        except Exception as e:
+            raise StartError(f"{e}") from e
 
     def _load_cfg(self) -> None:
         if len(sys.argv) == 2:
@@ -72,6 +72,11 @@ class Start:
             Vec2(300, 90),
             (0,),
         )[0]
+        filemap_btn = Textures.load(
+            "filemap.png",
+            Vec2(300, 90),
+            (0,),
+        )[0]
         opt_logo = Textures.load(
             "options_button.png",
             Vec2(90, 90),
@@ -80,19 +85,18 @@ class Start:
         Renderer.render_text("A-MAZE-ING", Vec2(400, 50))
         Renderer.render_image(opt_logo, Vec2(650, 650))
         Renderer.render_image(start_btn, Vec2(300, 150))
+        Renderer.render_image(filemap_btn, Vec2(300, 300))
         self.add_hooks()
         Event_loop.launch()
 
     def add_hooks(self) -> None:
         """Add hooks for the start screen."""
-        print("== HOOKS PROPERLY ADDED ==")
         Event_loop.add_mous_hook(self.mouse_func, None)
         Event_loop.add_hook(Event_loop.close, 33, None)
         Event_loop.add_key_hook(self.restart, None)
 
     def restart(self, input: int) -> None:
         """Restart the start screen or save options."""
-        print(input)
         if input == 65307:
             if self.on_start:
                 Event_loop.close(None)
@@ -101,7 +105,6 @@ class Start:
 
     def mouse_func(self, button: int, x: int, y: int, _: None) -> None:
         """Handle mouse clicks on the start screen."""
-        print(f"Mouse click at ({x}, {y}) with button {button}")
         if self.on_start:
             if button == 1 and x > 650 and x < 760 and y > 650 and y < 760:
                 self.on_start = False
@@ -110,7 +113,7 @@ class Start:
                 self.a = AMaze.maze_fromconfig(self.cfg)
                 self.launch_maze()
 
-            if button == 1 and x > 300 and x < 600 and y > 300 and y < 640:
+            if button == 1 and x > 300 and x < 600 and y > 300 and y < 390:
                 self.a = AMaze.maze_fromfile("maze.txt")
                 self.launch_maze()
 
@@ -130,7 +133,6 @@ class AMaze:
         """Initialize the AMaze class."""
         self.config = cfg
         self.grid = Grid(cfg.width, cfg.height)
-        print("== GRID CREATED ==")
 
     def __repr__(self) -> str:
         """Return a epresentation of the AMaze class for instantiation."""
@@ -176,6 +178,7 @@ class AMaze:
                 hexlist = f.read().split("\n")
             c.grid.path = [c.grid[c.config.entry].loc]
             c.grid.fill_grid_from_map(hexlist)
+            print(f"Maze created from {filename}.")
             return c
         except Exception as e:
             raise StartError(f"Error during setup: {e}") from e

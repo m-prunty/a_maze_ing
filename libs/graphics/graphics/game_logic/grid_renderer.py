@@ -3,7 +3,7 @@
 import os
 
 from common.config import Config
-from common.grid_tools import Cell, Dir, Grid, Vec2
+from common.grid_tools import Cell, Grid, Vec2
 
 from ..assets import Textures
 from ..engine import Canvas, Window
@@ -39,9 +39,8 @@ class Render_grid:
     @classmethod
     def load_tiles(cls) -> list[tuple[list[int], str]]:
         """Load tile img from directory and store them in class variable."""
-        if not cls._initialized:
-            if cls._grid is None or cls._cfg is None:
-                cls.load(cls._grid, cls._grid)
+        if not cls._initialized and cls._grid is None or cls._cfg is None:
+            cls.load(cls._grid, cls._grid)
         path = Textures._include_path + "/grid/"
         sprits = list(filter(lambda f: f.endswith(".png"), os.listdir(path)))
         sprits.sort()
@@ -95,8 +94,8 @@ class Render_grid:
 class Render_cell:
     """Class responsible for rendering a single cell of the grid."""
 
-    _init = False
-    _tile_siz = Vec2
+    _init: bool = False
+    _tile_siz: Vec2
     _grid: Grid
 
     @classmethod
@@ -111,8 +110,8 @@ class Render_cell:
     @classmethod
     def render_path(cls, iteration: int, canva: Canvas) -> None:
         """Render the path onto the canvas at the current iteration."""
-        path: list[Dir] = Render_grid._grid.path
-        curent: Dir = path[iteration]
+        path: list[Vec2] = Render_grid._grid.path
+        curent: Vec2 = path[iteration]
         color = Render_grid._cfg.color
         if iteration != 0 and curent != Render_grid._cfg.entry:
             prev: Vec2 = path[iteration - 1]
