@@ -11,24 +11,27 @@ from ..mlx_context import Mlx_context
 class Textures:
     """Class for loading and handling textures."""
 
-    _textures: list = [tuple]
-    _sizes: list = []
+    _textures: list[int] = []
+    _sizes: list[Vec2] = []
 
-    def __new__(cls, id: int) -> int:
+    @classmethod
+    def get_element(cls, id: int) -> int:
+        """Return the texture ID for the given ID."""
         return cls._textures[id]
 
     @classmethod
-    def get_siz(cls, id: int):
+    def get_siz(cls, id: int) -> Vec2:
+        """Return the size of the texture for the given ID."""
         return cls._sizes[id]
 
     @classmethod
-    def load(cls, path: str, image: str, siz: Vec2, degs: tuple):
-        # def generate_texture(path, image, siz, degs) -> tuple:
-
+    def load(
+        cls, path: str, image: str, siz: Vec2, degs: tuple[int, int, int, int]
+    ) -> list[int]:
+        """Load a texture from a file and return its ID."""
         if not os.path.exists(path + image):
             print(f"file: {path + image} not found")
         images = []
-        # ret = []
         for deg in degs:
             try:
                 if not os.path.exists(path + "resized/"):

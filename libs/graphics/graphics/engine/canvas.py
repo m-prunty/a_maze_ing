@@ -1,3 +1,5 @@
+"""Canvas class for rendering images onto the screen using the Mlx library."""
+
 from common.grid_tools import Vec2
 
 from ..assets import Textures
@@ -6,7 +8,10 @@ from .renderer import Renderer
 
 
 class Canvas:
+    """Canvas class to manage an off-screen image buffer for rendering."""
+
     def __init__(self, siz: Vec2, pos: Vec2):
+        """Initialize the Canvas with a specified size and position."""
         self.siz = siz
         self.pos = pos
         self.img = Mlx_context._mlx.mlx_new_image(
@@ -15,11 +20,13 @@ class Canvas:
         img_data = Mlx_context._mlx.mlx_get_data_addr(self.img)
         self.img_mem, self.bpp, self.siz_line, _ = img_data
 
-    def add_image(self, img_ptr, place: Vec2):
-        img_data = Mlx_context._mlx.mlx_get_data_addr(Textures(img_ptr))
+    def add_image(self, img_ptr: int, place: Vec2) -> None:
+        """Add an image to the canvas at a specified position."""
+        img_data = Mlx_context._mlx.mlx_get_data_addr(
+            Textures.get_element(img_ptr)
+        )
         src_data, src_bpp, src_size_line, _ = img_data
         src_data = src_data.cast("B")
-        # print("added one image")
         bytes_pp = src_bpp // 8
         siz = Vec2()
         siz.x = int(Textures.get_siz(img_ptr).x)
@@ -34,5 +41,6 @@ class Canvas:
                 src_start:src_end
             ].tobytes()
 
-    def put_canva(self):
+    def put_canva(self) -> None:
+        """Render the canvas image onto the screen at its specified pos."""
         Renderer.render_image_ptr(self.img, self.pos)

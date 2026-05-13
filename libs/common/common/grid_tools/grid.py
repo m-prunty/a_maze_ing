@@ -7,9 +7,10 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:38:19 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/11 09:17:17 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/12 09:40:17 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
+"""Grid class to represent a 2D grid of Cell instances."""
 
 from collections.abc import Generator
 from typing import Protocol
@@ -34,6 +35,7 @@ class Grid:
         self.path: list[Vec2] = []
 
     def fill_empty_grid(self) -> None:
+        """Fill a grid with empty Cell instances."""
         print(f"Creating grid of size {self.width}x{self.height}")
         self.grid = [
             [Cell(Vec2(x, y)) for x in range(self.width)]
@@ -53,6 +55,7 @@ class Grid:
         self.path_from_str(hexlist[-1])
 
     def path_from_str(self, s: str) -> None:
+        """Create a path from a string of directions."""
         print(f"Creating path from string: {s}")
         pos = self.path[0]
         for c in s:

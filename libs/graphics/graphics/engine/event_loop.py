@@ -1,22 +1,26 @@
-# import threading
+"""Manage event handling and rendering using the Mlx library."""
+
 import time
 from collections.abc import Callable
 from typing import Any
 
-from Xlib import XK  # type: ignore
+from Xlib import XK
 
 from ..mlx_context import Mlx_context
 from .window import Window
 
 
 class Event_loop:
-    _events: list[tuple] = []
-    _repeatables: list[list] = []
-    _key_funcs: list[dict] = []
-    _str: dict = {}
+    """Manage event handling and rendering using the Mlx library."""
+
+    _events: list[tuple[Callable[[Any, Any], Any], tuple[Any]]] = []
+    _repeatables: list[list[Any]] = []
+    _key_funcs: list[dict[str, Any]] = []
+    _str: dict[str, Any] | None = None
 
     @staticmethod
     def launch() -> None:
+        """Start the event loop and set up hooks for rendering and input."""
         Mlx_context._mlx.mlx_loop_hook(
             Mlx_context.get(), Event_loop.render_event, None
         )
@@ -26,50 +30,60 @@ class Event_loop:
         Mlx_context._mlx.mlx_loop(Mlx_context.get())
 
     @staticmethod
-    def add_hook(func: Callable, event: int, param) -> None:
+    def add_hook(func: Callable[[Any], Any], event: int, param: Any) -> None:
+        """Add a hook function for a specific event type."""
         Mlx_context._mlx.mlx_hook(Window.get(), event, 0, func, None)
 
     @staticmethod
-    def add_mous_hook(func: Callable, param) -> None:
+    def add_mous_hook(func: Callable[[Any], Any], param: Any) -> None:
+        """Add a mouse hook function to handle mouse events."""
         Mlx_context._mlx.mlx_mouse_hook(Window.get(), func, param)
 
     @classmethod
-    def add_key_hook(cls, func: Callable, param) -> None:
+    def add_key_hook(cls, func: Callable[[Any], Any], param: Any) -> None:
+        """Add a key hook function to handle keyboard events."""
         cls._key_funcs.append({"FUNCTION": func, "PARAMS": param})
-        # Mlx_context._mlx.mlx_key_hook(Window.get(), func, param)
 
     @staticmethod
-    def add_loop_hook(func: Callable, param) -> None:
+    def add_loop_hook(func: Callable[[Any], Any], param: Any) -> None:
+        """Add a loop hook to be called on each iteration of the event loop."""
         Mlx_context._mlx.mlx_loop_hook(Window.get(), func, param)
 
     @staticmethod
-    def close(dummy: Any):
+    def close(dummy: Any) -> None:
+        """Close the window and exit the event loop."""
         Mlx_context._mlx.mlx_destroy_window(Mlx_context.get(), Window.get())
         Mlx_context._mlx.mlx_loop_exit(Mlx_context.get())
 
     @classmethod
-    def do_event(cls, event: Callable, params: tuple = tuple()) -> None:
+    def do_event(
+        cls, event: Callable[[Any, Any], Any], params: tuple[Any]
+    ) -> None:
+        """Schedule a one-time event to be executed on the next render."""
         cls._events.append((event, params))
 
     @classmethod
     def do_repeat(
-        cls, event: Callable, params: tuple = tuple(), delay=0.3
+        cls,
+        event: Callable[[Any], Any],
+        params: tuple[Any],
+        delay: float = 0.3,
     ) -> None:
-        """Will stop when function returns -1"""
+        """Schedule a function to be called repeatedly with a specified delay.
+
+        Will stop when function returns -1
+        """
         cls._repeatables.append([event, delay, time.time() + delay, params])
 
     @classmethod
-    def render_event(cls, params) -> None:
-        # Mlx_context._mlx.mlx_do_sync(Mlx_context.get())
-        # print(cls._events)
+    def render_event(cls, params: Any) -> None:
+        """Render event on each iter of the event loop to process events."""
         for event in cls._events:
             event[0](*event[1])
-        # Mlx_context._mlx.mlx_do_sync(Mlx_context.get())
 
         cls._events.clear()
         now = time.time()
         for animation in cls._repeatables:
-            # print("yo")
             if now >= animation[2]:
                 if hasattr(animation[3], "__iter__"):
                     if animation[0](*animation[2]) == -1:
@@ -79,18 +93,18 @@ class Event_loop:
                         print("removed animation")
                         cls._repeatables.remove(animation)
                 animation[2] = now + animation[1]
-        # cls._repeatables.clear()
 
     @classmethod
     def input_to_str(
         cls,
-        field,
-        key,
-        func: Callable,
-        params: tuple,
-        end_func: Callable,
-        end_params: tuple,
+        field: dict[str, str],
+        key: str,
+        func: Callable[[Any], Any],
+        params: tuple[Any],
+        end_func: Callable[[Any], Any],
+        end_params: tuple[Any],
     ) -> None:
+        """Set up a str input field with a callback funct to handle input."""
         if cls._str:
             val = cls._str["FIELD"][cls._str["KEY"]]
             if cls._str["END_PARA"] is not None:
@@ -116,11 +130,10 @@ class Event_loop:
             "END": end_func,
             "END_PARA": end_params,
         }
-        # cls.input_event(0, None)
 
     @classmethod
-    def input_event(cls, input, _) -> None:
-        # print(input)
+    def input_event(cls, input: int, params: Any) -> None:
+        """Handle kb input events and update the input field accordingly."""
         for func in cls._key_funcs:
             if func["PARAMS"] is not None:
                 func["FUNCTION"](input, *func["PARAMS"])
@@ -128,11 +141,9 @@ class Event_loop:
                 func["FUNCTION"](input)
 
         key = XK.keysym_to_string(input)
-        # print(key, input)
         if cls._str:
             val = cls._str["FIELD"][cls._str["KEY"]]
             if input == 65293:
-                # print(string["END_PARA"])
                 befor = val[: cls._str["CURSOR"]]
                 if cls._str["END_PARA"] is not None:
                     cls._str["FIELD"][cls._str["KEY"]] = (

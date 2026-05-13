@@ -1,3 +1,5 @@
+"""This module is responsible for rendering the grid and the path."""
+
 import os
 
 from common.config import Config
@@ -8,6 +10,8 @@ from ..engine import Canvas, Window
 
 
 class Render_grid:
+    """Class responsible for rendering the grid and the path."""
+
     _tiles: list[int] = []
     _initialized = False
     _grid: Grid
@@ -16,10 +20,10 @@ class Render_grid:
     _path: list[Vec2]
     _path_texture: int
     is_a_path: bool
-    # _canva = None
 
     @classmethod
     def load(cls, grid: Grid, cfg: Config) -> None:
+        """Load the grid and configuration for rendering."""
         if cls._initialized:
             raise RuntimeError("MlxContext already initialized")
         cls._grid = grid
@@ -33,10 +37,10 @@ class Render_grid:
             cls.load_tiles()
 
     @classmethod
-    def load_tiles(cls):
-        if not cls._initialized:
-            if cls._grid is None or cls._cfg is None:
-                cls.load(cls._grid, cls._grid)
+    def load_tiles(cls) -> list[tuple[list[int], str]]:
+        """Load tile img from directory and store them in class variable."""
+        if not cls._initialized and cls._grid is None or cls._cfg is None:
+            cls.load(cls._grid, cls._grid)
         path = (
             os.path.dirname(os.path.abspath(__file__))
             + "/includes/sprits/grid/"
@@ -64,20 +68,22 @@ class Render_grid:
         return ret
 
     @classmethod
-    def load_path(cls, path: list[Vec2], texture: int):
+    def load_path(cls, path: list[Vec2], texture: int) -> None:
+        """Load the path to be rendered and the texture to use for it."""
         cls._path = path
         cls._path_texture = texture
 
     @classmethod
-    def render_grid(cls, canva: Canvas):
+    def render_grid(cls, canva: Canvas) -> None:
+        """Render the grid onto the canvas."""
         for x in range(cls._grid.width):
             for y in range(cls._grid.height):
                 Render_cell.render(Vec2(x, y), canva)
         canva.put_canva()
 
     @classmethod
-    def grid_canva(cls, cells: Vec2, grid_pos: Vec2):
-        """ "  The cells pos"""
+    def grid_canva(cls, cells: Vec2, grid_pos: Vec2) -> Canvas:
+        """The cells pos."""
         canva = Canvas(
             Vec2(cls._tile_siz.x * 3 * cells.x, cls._tile_siz.y * 3 * cells.y),
             Vec2(
@@ -89,11 +95,15 @@ class Render_grid:
 
 
 class Render_cell:
+    """Class responsible for rendering a single cell of the grid."""
+
     _init = False
     _tile_siz = Vec2
+    _grid: Grid
 
     @classmethod
-    def create(cls):
+    def create(cls) -> None:
+        """Initialize the class variables for rendering a cell."""
         if cls._init:
             raise RuntimeError("Class already initilazed")
         cls._init = True
@@ -101,11 +111,11 @@ class Render_cell:
         cls._tile_siz = Render_grid._tile_siz
 
     @classmethod
-    def render_path(cls, iteration: int, canva: Canvas):
+    def render_path(cls, iteration: int, canva: Canvas) -> None:
+        """Render the path onto the canvas at the current iteration."""
         path: list[Dir] = Render_grid._grid.path
         curent: Dir = path[iteration]
         color = Render_grid._cfg.color
-        # print(Render_grid.is_a_path)
         if iteration != 0 and curent != Render_grid._cfg.entry:
             prev: Vec2 = path[iteration - 1]
             canva.add_image(
@@ -138,7 +148,9 @@ class Render_cell:
                 ),
             )
 
-    def set_pic_color(color: int):
+    @staticmethod
+    def set_pic_color(color: int) -> int:
+        """Set the color of the pic based on the configuration."""
         match color:
             case 0:
                 return 1
@@ -146,15 +158,16 @@ class Render_cell:
                 return 0
             case 2:
                 return 0
+            case _:
+                raise ValueError(f"Invalid color: {color}")
 
     @classmethod
-    def render(cls, pos: Vec2, canva: Canvas):
+    def render(cls, pos: Vec2, canva: Canvas) -> None:
         """Pos is dependent on the canva."""
         if not cls._init:
             cls.create()
         hex = cls._grid[pos].wall
         n = cls._grid.neighbour_walls(pos)
-
         if pos == Render_grid._cfg.entry:
             special = 1
         elif pos == Render_grid._cfg.exit:
@@ -276,9 +289,8 @@ class Render_cell:
                         else 0
                     )
                     tile = top + bot + left + right
-                    if tile == 2:
-                        if top + bot == 2 or right + left == 2:
-                            tile -= 1
+                    if tile == 2 and top + bot == 2 or right + left == 2:
+                        tile -= 1
                     ori = 0
                     if tile == 1:
                         ori = bot or top

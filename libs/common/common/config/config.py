@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                               +#+#+#+#+#+   +#+             #
 #    Created: 2026/02/03 21:19:22 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/11 04:21:48 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/12 14:39:52 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Configuration module for maze generation and rendering."""
@@ -40,7 +40,7 @@ class Config(BaseModel):
     perfect: bool = Field(default=True)
     seed: int = Field(default=0)
     window_siz: Vec2 = Field(default_factory=lambda: Vec2(900, 900))
-    pic: Literal[1, 2, 3] = Field(default=1)
+    pic: Literal[0, 1, 2] = Field(default=1)
     pic_scalar: float = Field(default=1.0)
     filename: str = Field(default="config.txt")
     model_config = ConfigDict(revalidate_instances="always")
