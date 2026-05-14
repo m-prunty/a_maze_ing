@@ -145,7 +145,7 @@ class AMaze:
         print(self.grid.seq)
         Render_grid.load(self.grid, self.config)
         Render_cell.create()
-        Animations.grid(0.02)
+        Animations.grid(0.1)
 
     def launch_animation(self, key: int) -> None:
         """Launch the path animation when the spacebar is pressed."""

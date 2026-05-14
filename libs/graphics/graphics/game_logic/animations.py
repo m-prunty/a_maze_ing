@@ -19,7 +19,7 @@ class Animations:
     _path_step: int
 
     @classmethod
-    def grid(cls, delay: float = 0.01) -> None:
+    def grid(cls, delay: float = 0.1) -> None:
         """Animate the rendering of the grid."""
         cls._grid_steps = 0
         cls._grid = Render_grid._grid
@@ -38,26 +38,17 @@ class Animations:
     @classmethod
     def grid_step(cls) -> int:
         """Render the next step in the grid animation."""
-        cls._grid
-        # x = cls._grid.height - 1
-        # y = cls._grid.width - 1
-        # ma = max(x, y)
-        # mi = min(x, y)
-        # if cls._grid_steps == mi + ma + 1:
-        #     return -1
-        # for i in range(
-        #     min(mi, cls._grid_steps) + min(0, ma - cls._grid_steps) + 1
-        # ):
-        #     Render_cell.render(
-        #         Vec2(
-        #             max(cls._grid_steps - x, 0) + i,
-        #             min(cls._grid_steps, x) - i,
-        #         ),
-        #         cls._canvas,
-        #     )
-        # cls._canvas.put_canva()
-        # cls._grid_steps += 1
-        # return 1
+        if cls._grid_steps >= len(cls._grid.seq):
+            return -1
+        current: Vec2 = cls._grid.seq[cls._grid_steps]
+        Render_cell.render(
+                current,
+                cls._canvas,
+        )
+        cls._grid_steps += 1
+        cls._canvas.put_canva()
+        return 1
+        
 
     @classmethod
     def path(cls, delay: float = 0.0) -> None:
