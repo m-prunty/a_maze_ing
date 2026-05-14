@@ -365,7 +365,6 @@ The direction sequence encodes the path from entry to exit as: N/S/E/W character
 
 ### Graphics & Visualization
 - [MLX Graphics Library](https://github.com/codam-coding-school/MLX42) - Modern C graphics library
-- [Python MLX Bindings](https://github.com/codam-coding-school/MLX42) - Python integration
 
 ### Related Concepts
 - [Graph Theory Fundamentals](https://en.wikipedia.org/wiki/Graph_theory)
