@@ -1,6 +1,6 @@
 """Responsible for rendering imgs and txt onto window using the Mlx library."""
 
-from common.grid_tools import Vec2
+from mazegen.grid_tools import Vec2
 
 from ..assets.textures import Textures
 from ..mlx_context.mlx_context import Mlx_context

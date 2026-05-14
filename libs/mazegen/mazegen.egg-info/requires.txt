@@ -1,1 +1,2 @@
-common
+pydantic
+pydantic-core

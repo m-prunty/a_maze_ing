@@ -12,8 +12,8 @@
 # *************************************************************************** #
 """MazeGenerator class to generate a maze grid and a path through it."""
 
-from common.config import Config
-from common.grid_tools import Grid, Vec2
+from mazegen.config import Config
+from mazegen.grid_tools import Grid, Vec2
 
 from .algos import BaseStrat, Dfs, Dijkstra, Pic, Prim, Sidewinder, Wilson
 from .graph import GridGraph, MazeGraph

@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from common.grid_tools import Vec2
+from mazegen.grid_tools import Vec2
 
 from ..mlx_context import Mlx_context
 

@@ -1,6 +1,6 @@
 """Canvas class for rendering images onto the screen using the Mlx library."""
 
-from common.grid_tools import Vec2
+from mazegen.grid_tools import Vec2
 
 from ..assets import Textures
 from ..mlx_context import Mlx_context

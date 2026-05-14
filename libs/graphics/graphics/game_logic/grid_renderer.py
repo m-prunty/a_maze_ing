@@ -2,8 +2,8 @@
 
 import os
 
-from common.config import Config
-from common.grid_tools import Cell, Grid, Vec2
+from mazegen.config import Config
+from mazegen.grid_tools import Cell, Grid, Vec2
 
 from ..assets import Textures
 from ..engine import Canvas, Window

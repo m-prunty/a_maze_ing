@@ -5,35 +5,12 @@
 #                                                    +:+ +:+         +:+      #
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
-#    Created: 2026/02/01 14:12:03 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/12 22:02:58 by maprunty        ###   ########.fr        #
+#    Created: 2026/02/03 23:51:48 by maprunty         #+#    #+#              #
+#    Updated: 2026/05/14 00:32:46 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
-"""A-Maze-ing is a maze generation and pathfinding visualization project."""
+"""Init file for the Config module."""
 
-from .graph import Edge, Graph, GridGraph
-from .mazegenerator import MazeGenerator
 from .config import Config, ConfigIO
-from .errors import ConfigError, MazeError, RenderError, StartError
-from .grid_tools import Cell, Dir, Grid, Vec2
 
-__all__ = ["MazeGenerator", "Graph", "GridGraph", "Edge", "Config", "ConfigIO"]
-
-__all__ += [
-    "Cell",
-    "Grid",
-    "Vec2",
-    "Dir",
-]
-
-__all__ += [
-    "ConfigError",
-    "MazeError",
-    "RenderError",
-    "StartError",
-]
-
-__all__ += [
-    "Config",
-    "ConfigIO",
-]
+__all__ = ["Config", "ConfigIO"]

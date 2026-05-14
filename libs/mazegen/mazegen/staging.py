@@ -16,8 +16,8 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Protocol
 
-from common.errors import StageError
-from common.grid_tools import Cell
+from mazegen.errors import StageError
+from mazegen.grid_tools import Cell
 
 from .graph import Edge
 

@@ -14,7 +14,7 @@
 import os
 import sys
 
-from common import Config, ConfigError, ConfigIO, Dir, Grid, StartError, Vec2
+from mazegen import Config, ConfigError, ConfigIO, Dir, Grid, StartError, Vec2
 from graphics import (
     Animations,
     Event_loop,

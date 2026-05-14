@@ -1,6 +1,6 @@
 """Managing animation sequences for rendering the grid and pathfinding."""
 
-from common.grid_tools import Grid, Vec2
+from mazegen.grid_tools import Grid, Vec2
 
 from graphics import Canvas
 

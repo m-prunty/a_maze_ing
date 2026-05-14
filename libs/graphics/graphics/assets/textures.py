@@ -3,7 +3,7 @@
 import os
 from typing import Any
 
-from common.grid_tools import Vec2
+from mazegen.grid_tools import Vec2
 from PIL import Image
 
 from ..mlx_context import Mlx_context

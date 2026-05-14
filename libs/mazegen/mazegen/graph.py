@@ -16,7 +16,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass, field
 from typing import Protocol
 
-from common.grid_tools import Cell, Dir, Grid
+from mazegen.grid_tools import Cell, Dir, Grid
 
 
 @dataclass(frozen=True)

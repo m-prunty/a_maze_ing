@@ -9,7 +9,7 @@ import sys
 from typing import Any, Literal, get_args, get_origin
 
 from annotated_types import Ge, Le
-from common import Config, ConfigError, ConfigIO, RenderError, Vec2
+from mazegen import Config, ConfigError, ConfigIO, RenderError, Vec2
 from graphics import Event_loop, Renderer, Textures, Window
 
 

@@ -20,16 +20,11 @@ graphics/engine/renderer.py
 graphics/engine/window.py
 graphics/engine/__pycache__/__init__.cpython-311.pyc
 graphics/engine/__pycache__/animator.cpython-311.pyc
-graphics/engine/__pycache__/canvas.cpython-311.pyc
 graphics/engine/__pycache__/event_loop.cpython-311.pyc
-graphics/engine/__pycache__/renderer.cpython-311.pyc
 graphics/engine/__pycache__/window.cpython-311.pyc
 graphics/game_logic/__init__.py
 graphics/game_logic/animations.py
 graphics/game_logic/grid_renderer.py
-graphics/game_logic/__pycache__/__init__.cpython-311.pyc
-graphics/game_logic/__pycache__/animations.cpython-311.pyc
-graphics/game_logic/__pycache__/grid_renderer.cpython-311.pyc
 graphics/mlx_context/__init__.py
 graphics/mlx_context/mlx_context.py
 graphics/mlx_context/__pycache__/__init__.cpython-311.pyc

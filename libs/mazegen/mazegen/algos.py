@@ -17,9 +17,9 @@ import random
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
 
-from common.config import Config
-from common.errors import AlgoError
-from common.grid_tools import Cell, Dir, Vec2
+from mazegen.config import Config
+from mazegen.errors import AlgoError
+from mazegen.grid_tools import Cell, Dir, Vec2
 
 from .graph import Graph
 from .staging import (
