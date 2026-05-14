@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/07 03:02:45 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/13 22:54:06 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/14 12:17:13 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """MazeGenerator class to generate a maze grid and a path through it."""
@@ -69,7 +69,7 @@ class MazeGenerator:
         generator = gen_algo(GridGraph(self.grid), self.config)
         generator.add_stage(VisitStage())
         generator.add_stage(RmStage())
-        [*generator.generate()]
+        self.grid.seq += [*generator.generate()]
 
     @staticmethod
     def retryIO(loc: Vec2, config: Config, neg: int) -> Vec2:
@@ -87,7 +87,6 @@ class MazeGenerator:
             raise ValueError(f"Picture selection '{select}' not recognized.")
         pic = Pic(GridGraph(self.grid), self.config)
         pic.add_stage(PicStage())
-        [*pic.generate()]
         while (
             self.grid[self.config.entry] and self.grid[self.config.entry].ispic
         ):
@@ -98,6 +97,7 @@ class MazeGenerator:
             self.grid[self.config.exit] and self.grid[self.config.exit].ispic
         ):
             self.config.exit = self.retryIO(self.config.exit, self.config, 1)
+        self.grid.seq += [*pic.generate()]
 
     def driver(self) -> None:
         """Driver function to generate the maze and path."""

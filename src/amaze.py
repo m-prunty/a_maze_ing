@@ -6,7 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/24 07:55:50 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/14 00:27:08 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/14 11:59:27 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """First attempts at the A-Maze-ing project."""
@@ -112,6 +112,7 @@ class Start:
             if button == 1 and x > 300 and x < 600 and y > 150 and y < 240:
                 self.a = AMaze.maze_fromconfig(self.cfg)
                 self.launch_maze()
+                self.a.maze_tofile(self.cfg.output_file)
 
             if button == 1 and x > 300 and x < 600 and y > 300 and y < 390:
                 self.a = AMaze.maze_fromfile("maze.txt")
@@ -141,6 +142,7 @@ class AMaze:
 
     def launch_renders(self) -> None:
         """Launch the renders for the maze."""
+        print(self.grid.seq)
         Render_grid.load(self.grid, self.config)
         Render_cell.create()
         Animations.grid(0.02)
@@ -162,7 +164,6 @@ class AMaze:
             c.grid.fill_empty_grid()
             g = MazeGenerator(c.grid, c.config)
             g.driver()
-            c.maze_tofile(c.config.output_file)
             return c
         except Exception as e:
             raise StartError(f"Error during setup: {e}") from e
@@ -209,4 +210,4 @@ class AMaze:
             print(f"{filename} created with maze data.")
         except Exception as e:
             print(f"Error writing maze to file: {e}")
-            raise Exception(e) from e
+            raise StartError(f"Error during setup: {e}") from e
