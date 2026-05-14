@@ -52,7 +52,7 @@ class Options:
                     self.opt_rend.add_input(name + " Y", value.y, int)
                 self.is_active = False
         except Exception as e:
-            raise ConfigError(e) from e
+            raise ConfigError(f"{e}") from e
 
     def put_to_config(self, fields: dict[str, Any]) -> None:
         """Put the options values to the config and save it to file."""

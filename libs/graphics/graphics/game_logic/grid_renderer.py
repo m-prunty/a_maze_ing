@@ -39,7 +39,7 @@ class Render_grid:
     @classmethod
     def load_tiles(cls) -> list[tuple[list[int], str]]:
         """Load tile img from directory and store them in class variable."""
-        if not cls._initialized and cls._grid is None or cls._cfg is None:
+        if not cls._initialized and (cls._grid is None or cls._cfg is None):
             cls.load(cls._grid, cls._grid)
         path = Textures._include_path + "/grid/"
         sprits = list(filter(lambda f: f.endswith(".png"), os.listdir(path)))
@@ -106,6 +106,10 @@ class Render_cell:
         cls._init = True
         cls._grid = Render_grid._grid
         cls._tile_siz = Render_grid._tile_siz
+
+    @classmethod
+    def set_grid(cls, grid: Grid):
+        cls._grid = grid
 
     @classmethod
     def render_path(cls, iteration: int, canva: Canvas) -> None:
@@ -286,7 +290,7 @@ class Render_cell:
                         else 0
                     )
                     tile = top + bot + left + right
-                    if tile == 2 and top + bot == 2 or right + left == 2:
+                    if tile == 2 and (top + bot == 2 or right + left == 2):
                         tile -= 1
                     ori = 0
                     if tile == 1:

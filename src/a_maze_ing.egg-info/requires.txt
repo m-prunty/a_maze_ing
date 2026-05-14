@@ -1,0 +1,4 @@
+common
+graphics
+mazegen
+mlx
