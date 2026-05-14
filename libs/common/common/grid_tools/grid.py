@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:38:19 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/14 00:36:33 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/14 11:57:35 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Grid class to represent a 2D grid of Cell instances."""
@@ -33,6 +33,7 @@ class Grid:
         """Init a grid with the given width and height of Cell instances."""
         self.width, self.height = width, height
         self.path: list[Vec2] = []
+        self.seq: list[Vec2] = []
         self.pic: list[int]
 
     def fill_empty_grid(self) -> None:
