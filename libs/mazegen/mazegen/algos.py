@@ -203,8 +203,8 @@ class Dijkstra(BaseStrat):
 
                 back = MazeEvent(cell, etype=EventType.EXIT)
                 self._dispatch(back)
-            cell = parent[self.exit_cell]
-            while cell != self.entry_cell:
+            cell = parent.get(self.exit_cell, None)
+            while cell and cell != self.entry_cell:
                 assert cell is not None, "No path found from entry to exit."
                 yield cell.loc
                 cell = parent[cell]

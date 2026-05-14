@@ -1,15 +1,22 @@
 
-9513915113
-83c06856ea
-eafafafffa
-92fef857fa
-86fffafffa
-a953fafd52
-c696fafffa
-95697c553a
-a9501517aa
-6c5447c544
+7ffffffffffffffff
+fffffffffffffffff
+fffffffffffffffff
+fffffffffffffffff
+fffffffffffffffff
+fffffffffffffffff
+fffffffffffffffff
+fffffffffffffffff
+fffffffffffffffff
+fffffffffffffffff
+fffffffffffffffff
+fffffffffffffffff
+fffffffffffffffff
+fffffffffffffffff
+fffffffffffffffff
+fffffffffffffffff
+fffffffffffffffff
+ffffffffffffffffd
 
-0,9
-9,9
-NNEENENWWSWNNNENNWNEESEENESSSSSSSEEESSE
+0,0
+16,17

@@ -97,6 +97,7 @@ class Render_cell:
     _init: bool = False
     _tile_siz: Vec2
     _grid: Grid
+    _is_genreated: bool
 
     @classmethod
     def create(cls) -> None:
@@ -104,6 +105,7 @@ class Render_cell:
         if cls._init:
             raise RuntimeError("Class already initilazed")
         cls._init = True
+        cls._is_genreated = False
         cls._grid = Render_grid._grid
         cls._tile_siz = Render_grid._tile_siz
 
@@ -114,6 +116,8 @@ class Render_cell:
     @classmethod
     def render_path(cls, iteration: int, canva: Canvas) -> None:
         """Render the path onto the canvas at the current iteration."""
+        if (not cls._is_genreated):
+            return
         path: list[Vec2] = Render_grid._grid.path
         curent: Vec2 = path[iteration]
         color = Render_grid._cfg.color

@@ -105,19 +105,22 @@ class Start:
 
     def mouse_func(self, button: int, x: int, y: int, _: None) -> None:
         """Handle mouse clicks on the start screen."""
-        if self.on_start:
-            if button == 1 and x > 650 and x < 760 and y > 650 and y < 760:
-                self.on_start = False
-                self.opt.render()
-            if button == 1 and x > 300 and x < 600 and y > 150 and y < 240:
-                self.a = AMaze.maze_fromconfig(self.cfg)
-                self.launch_maze()
-                self.a.maze_tofile(self.cfg.output_file)
+        try:
+            if self.on_start:
+                if button == 1 and x > 650 and x < 760 and y > 650 and y < 760:
+                    self.on_start = False
+                    self.opt.render()
+                if button == 1 and x > 300 and x < 600 and y > 150 and y < 240:
+                    self.a = AMaze.maze_fromconfig(self.cfg)
+                    self.launch_maze()
+                    self.a.maze_tofile(self.cfg.output_file)
 
-            if button == 1 and x > 300 and x < 600 and y > 300 and y < 390:
-                self.a = AMaze.maze_fromfile("maze.txt")
-                self.launch_maze()
-
+                if button == 1 and x > 300 and x < 600 and y > 300 and y < 390:
+                    self.a = AMaze.maze_fromfile("maze.txt")
+                    self.launch_maze()
+        except Exception as e:
+            print(e)
+        
     def launch_maze(self) -> None:
         """Launch the maze rendering and animation."""
         self.a.launch_renders()
@@ -145,14 +148,17 @@ class AMaze:
         print(self.grid.seq)
         Render_grid.load(self.grid, self.config)
         Render_cell.create()
-        Animations.grid(0.1)
+        Animations.grid(0.0)
 
     def launch_animation(self, key: int) -> None:
         """Launch the path animation when the spacebar is pressed."""
-        if key == 32 and not Render_grid.is_a_path:
+        if (key == 32 and
+            not Render_grid.is_a_path and
+            Render_cell._is_genreated):
             Animations.path()
             Render_grid.is_a_path = True
-        elif key == 32 and Render_grid.is_a_path:
+        elif (key == 32 and Render_grid.is_a_path
+            and Render_cell._is_genreated):
             Animations.path()
             Render_grid.is_a_path = False
 

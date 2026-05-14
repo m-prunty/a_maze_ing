@@ -27,18 +27,17 @@ class Animations:
             Vec2(cls._grid.width, cls._grid.height), Vec2(0, 0)
         )
         # show an empty grid at start
-        tmpGrid: Grid = Grid(cls._grid.height, cls._grid.width)
-        tmpGrid.fill_empty_grid()
-        Render_cell.set_grid(tmpGrid)
-        Render_grid.render_grid(cls._canvas)
-        
-        Render_cell.set_grid(cls._grid)
+        Render_cell.render(
+                Render_grid._cfg.entry,
+                cls._canvas,
+        )
         Animator.animate(cls.grid_step, tuple(), delay)
 
     @classmethod
     def grid_step(cls) -> int:
         """Render the next step in the grid animation."""
         if cls._grid_steps >= len(cls._grid.seq):
+            Render_cell._is_genreated = True
             return -1
         current: Vec2 = cls._grid.seq[cls._grid_steps]
         Render_cell.render(

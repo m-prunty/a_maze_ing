@@ -70,6 +70,7 @@ class MazeGenerator:
         generator.add_stage(VisitStage())
         generator.add_stage(RmStage())
         self.grid.seq += [*generator.generate()]
+        print("seq is done", self.grid.seq)
 
     @staticmethod
     def retryIO(loc: Vec2, config: Config, neg: int) -> Vec2:
@@ -103,6 +104,7 @@ class MazeGenerator:
         """Driver function to generate the maze and path."""
         try:
             self.gen_pic(self.config.pic)
+            print(self.config.gen_algo)
             self.gen_grid(self.config.gen_algo)
             self.grid.reset()
             self.gen_path(self.config.path_algo)
