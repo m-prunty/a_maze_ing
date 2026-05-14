@@ -28,7 +28,7 @@ class Window:
     @classmethod
     def get_siz(cls) -> Vec2:
         """Get the size of the window."""
-        if cls._siz is not None:
+        if cls._siz is None:
             print("siz not initilized run Window.create")
         return cls._siz
 
