@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/01 08:04:43 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/13 22:42:50 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/14 16:41:40 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Maze generation and pathfinding algorithms."""
@@ -17,11 +17,9 @@ import random
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
 
-from mazegen.config import Config
-from mazegen.errors import AlgoError
-from mazegen.grid_tools import Cell, Dir, Vec2
+from common import AlgoError, Cell, Config, Dir, Vec2
 
-from .graph import Graph
+from .graph import Edge, Graph
 from .staging import (
     BaseStage,
     EventType,
@@ -154,6 +152,182 @@ class Dfs(BaseStrat):
             raise AlgoError(f"Error in {self.__class__.__name__}: {e}") from e
 
 
+class Prim(BaseStrat):
+    """Prims Algo."""
+
+    def generate(self) -> Iterable[Vec2]:
+        """Generates using Prim's algorithm."""
+        self._imperfect()
+        yield from self._prim()
+
+    def _prim(self) -> Iterable[Vec2]:
+        """Prim's algorithm from entry cell."""
+        try:
+            start = self.entry_cell
+            enter = MazeEvent(start, etype=EventType.ENTER)
+            if not self._dispatch(enter):
+                return
+            frontier: list[Edge] = [*self.graph.edges(start)]
+            self.rng.shuffle(frontier)
+            while frontier:
+                idx = self.rng.randint(0, len(frontier) - 1)
+                edge = frontier.pop(idx)
+                if not edge or not edge.b:
+                    continue
+                e = MazeEvent(edge, EventType.EDGE)
+                if not self._dispatch(e):
+                    continue
+                cell = edge.b
+                enter = MazeEvent(cell, etype=EventType.ENTER)
+                if not self._dispatch(enter):
+                    continue
+                yield cell.loc
+                new_edges = [e for e in self.graph.edges(cell) if e.b]
+                self.rng.shuffle(new_edges)
+                frontier.extend(new_edges)
+                back = MazeEvent(cell, etype=EventType.EXIT)
+                self._dispatch(back)
+            back = MazeEvent(start, etype=EventType.EXIT)
+            self._dispatch(back)
+        except Exception as e:
+            raise AlgoError(f"Error in {self.__class__.__name__}: {e}") from e
+
+
+class Sidewinder(BaseStrat):
+    """Sidewinder maze generation."""
+
+    def generate(self) -> Iterable[Vec2]:
+        """Generates using Sidewinder algorithm."""
+        self._imperfect()
+        yield from self._sidewind()
+
+    def _sidewind(self) -> Iterable[Vec2]:
+        """Sidewinder row-by-row passage carving."""
+
+        def e_bound(cell: Cell) -> bool:
+            return cell.loc.x == self.width - 1
+
+        def n_bound(cell: Cell) -> bool:
+            return cell.loc.y == 0
+
+        try:
+            for cell in self.grid:
+                run: list[Cell] = []
+                enter = MazeEvent(cell, etype=EventType.ENTER)
+                if not self._dispatch(enter):
+                    continue
+                run.append(cell)
+                at_e_bound = e_bound(cell)
+                at_n_bound = n_bound(cell)
+                close_run = at_e_bound or (
+                    not at_n_bound and bool(self.rng.getrandbits(1))
+                )
+                if close_run:
+                    candidates = [c for c in run if not c.ispic]
+                    if candidates:
+                        member = self.rng.choice(candidates)
+                        north_edge = next(
+                            (
+                                e
+                                for e in self.graph.edges(member)
+                                if e.dir == Dir.N and e.b and not e.b.ispic
+                            ),
+                            None,
+                        )
+                        if north_edge and not at_n_bound:
+                            e = MazeEvent(
+                                north_edge, EventType.EDGE, carve_only=True
+                            )
+                            if self._dispatch(e):
+                                north_edge.rm_walls()
+                    run = []
+                else:
+                    east_edge = next(
+                        (
+                            e
+                            for e in self.graph.edges(cell)
+                            if e.dir == Dir.E and e.b and not e.b.ispic
+                        ),
+                        None,
+                    )
+                    if east_edge:
+                        e = MazeEvent(east_edge, EventType.EDGE)
+                        if self._dispatch(e):
+                            east_edge.rm_walls()
+                back = MazeEvent(cell, etype=EventType.EXIT)
+                self._dispatch(back)
+                if not cell.ispic and cell.wall == Dir.A:
+                    walls = [
+                        e
+                        for e in self.graph.edges(cell)
+                        if e.b and not e.b.ispic
+                    ]
+                    if len(walls) > 0:
+                        self.rng.shuffle(walls)
+                        next(iter(walls)).rm_walls()
+                yield cell.loc
+        except Exception as e:
+            raise AlgoError(f"Error in {self.__class__.__name__}: {e}") from e
+
+
+class Wilson(BaseStrat):
+    """Wilson's algorithm."""
+
+    def generate(self) -> Iterable[Vec2]:
+        """Generates using Wilson's algorithm."""
+        self._imperfect()
+        yield from self._wilson()
+
+    def _wilson(self) -> Iterable[Vec2]:
+        try:
+            start = self.entry_cell
+            enter = MazeEvent(start, etype=EventType.ENTER)
+            if not self._dispatch(enter):
+                return
+            yield start.loc
+            unvisited = [*self.grid]
+            self.rng.shuffle(unvisited)
+            while unvisited:
+                walk_start: Cell = self.rng.choice(unvisited)
+                path: dict[Cell, Edge] = {}
+                current = walk_start
+                while not current.visited:
+                    edges = [
+                        e
+                        for e in self.graph.edges(current)
+                        if e.b and not e.b.ispic
+                    ]
+                    if not edges:
+                        break
+                    edge = self.rng.choice(edges)
+                    path[current] = edge
+                    current = edge.b
+                current = walk_start
+                while not current.visited:
+                    edge = path.get(current)
+                    if not edge:
+                        break
+                    e = MazeEvent(edge, EventType.EDGE)
+                    if not self._dispatch(e):
+                        break
+                    next_cell = edge.b
+                    enter = MazeEvent(next_cell, etype=EventType.ENTER)
+                    if not self._dispatch(enter):
+                        break
+                    yield next_cell.loc
+                    back = MazeEvent(current, etype=EventType.EXIT)
+                    self._dispatch(back)
+                    current = next_cell
+                unvisited = [
+                    cell
+                    for cell in self.grid
+                    if not cell.visited and not cell.ispic
+                ]
+
+        except Exception as e:
+            raise AlgoError(f"Error in {self.__class__.__name__}: {e}") from e
+
+
 class Dijkstra(BaseStrat):
     """Dijkstra's algorithm for pathfinding."""
 
@@ -217,6 +391,7 @@ class Pic(BaseStrat):
 
     def generate(self) -> Iterable[Vec2]:
         """Generates a picture to place in the maze."""
+        print("Generating picture...")
         yield from self._gen_pic(self.config.pic_scalar)
 
     @staticmethod
@@ -319,205 +494,3 @@ class Pic(BaseStrat):
             yield from r_lst
         except Exception as e:
             raise AlgoError(f"Error in {self.__class__.__name__}: {e}") from e
-
-
-class Prim(BaseStrat):
-    """Prims Algo.
-
-    https://en.wikipedia.org/wiki/Prim%27s_algorithm
-
-    #Setup
-    frontier ← empty list
-    start ← grid.entry
-    emit ENTER(start)
-    for each neighbour of start:
-        frontier.add((start, neighbour, direction))
-
-    #Main Loop
-    while frontier not empty:
-        (parent, cell, dir) ← random choice from frontier
-        remove from frontier
-        emit EDGE(parent → cell, dir)
-        if stages reject event:
-            continue
-        emit ENTER(cell)
-        if stages reject event:
-            continue
-        yield cell.loc
-
-    #Expand Frontier
-    for each (dir, neighbour) of cell:
-    if neighbour exists:
-        emit EDGE(cell → neighbour, dir)
-        if stages accept:
-            frontier.add((cell, neighbour, dir))
-    """
-
-    def generate(self) -> Iterable[Vec2]:
-        """Generates using Prim's algorithm."""
-        yield from self._prim()
-
-    def _prim(self) -> Iterable[Vec2]:
-        return [Vec2(0, 0)]
-        """
-        start = self.entry_cell
-        start.visited = True
-        if not self._dispatch(MazeEvent(start, etype=EventType.ENTER)):
-            return
-        frontier
-
-
-
-
-        head = self.entry_cell
-        head.visited = True
-        visited = {head}
-        enter = MazeEvent(head, etype=EventType.ENTER)
-        print("enter>>>>", enter)
-        if not self._dispatch(enter):
-            return
-        frontier = {v for k, v in [*self.graph.neighbours(head)]}
-        print("frontier>>>>", frontier)
-        while frontier:
-            cell = frontier.pop()
-            print(self.grid.neighbour(cell))
-            v = [
-                k
-                for k, c in self.graph.neighbours(cell)
-                if c and not c.visited and not c.ispic
-            ]
-            print("neighbours>>>>", v)
-            self.rng.shuffle(v)
-            direction = v[0] if len(v) else None
-            neighbour = (
-                self.graph.neighbours(cell)[direction] if direction else None
-            )
-
-            self._dispatch(MazeEvent(cell, neighbour, direction))
-            cell.visited = True
-
-            visited |= {cell}
-            frontier |= {
-                *[n for n in cell.neighbours.values() if n and not n.visited]
-            }
-            # print(frontier)
-            yield frontier
-"""
-
-
-class Sidewinder(BaseStrat):
-    """Sidewinder maze generation."""
-
-    def generate(self) -> Iterable[Vec2]:
-        """Generates using Sidewinder algorithm."""
-        yield from self._sidewind()
-
-    def _sidewind(self) -> Iterable[Vec2]:
-        return [Vec2(0, 0)]
-        """Function generate_sidewinder(grid):.
-
-        for each row y in grid:
-
-            run = empty list
-
-            for each cell x in row:
-
-                current = grid[x, y]
-                add current to run
-
-                at_eastern_boundary = (x == grid.width - 1)
-                at_northern_boundary = (y == 0)
-
-                should_close_run =
-                    at_eastern_boundary OR
-                    (NOT at_northern_boundary AND random_boolean())
-
-                if should_close_run:
-
-                    choose random cell from run → member
-
-                    if NOT at_northern_boundary:
-                        carve passage from member to NORTH
-
-                    clear run
-
-                else:
-                    carve passage EAST from current
-        start = self.config.entry
-        run = [self.grid[start]]
-
-        def e_bound(v):
-            Check if cell is at eastern boundary.
-            return v.x == self.width - 1
-
-         def n_bound(v):
-             Check if cell is at northern boundary.
-            return v.y == 0
-
-        for cell in self.grid:
-            run.append(cell)
-            close = (e_bound(cell.loc)) or (
-                not n_bound(cell.loc) and bool(self.rng.getrandbits(1))
-            )
-            self.rng.shuffle(run)
-            r = run.pop()
-            if not r.ispic:
-                if close:
-                    if (
-                        Dir.N in r.neighbours.keys()
-                        and r.neighbours[Dir.N]
-                        and not r.neighbours[Dir.N].ispic
-                    ):
-                        neighbour = r.neighbours[Dir.N]
-                        r.rm_wall(Dir.N)
-                        neighbour.rm_wall(Dir.N.opps())
-                    run = []
-                else:
-                    neighbour = r.neighbours[Dir.E]
-                    if neighbour and not neighbour.ispic:
-                        r.rm_wall(Dir.E)
-                        neighbour.rm_wall(Dir.E.opps())
-            cell.visited = True
-            yield cell
-        """
-
-
-class Wilson(BaseStrat):
-    """Wilson's algorithm."""
-
-    def generate(self) -> Iterable[Vec2]:
-        """Generates using Wilson's algorithm."""
-        yield from self._wilson()
-
-    def _wilson(self) -> Iterable[Vec2]:
-        return [Vec2(0, 0)]
-
-
-#        current = self.grid[self.config.entry]
-#        ngrid = {*self.grid}
-# path = {current: None, "walls": Path()}
-# print("\n\n>>>>", type(ngrid))
-#        while len(ngrid) and current:
-#            n = [*current.neighbours]
-#            self.rng.shuffle(n)
-#            next_cell = current.neighbours[n[0]]
-#            if next_cell and next_cell not in path:
-#                path[current] = next_cell
-#                path["walls"] += next_cell.wall
-#                current.visited = True
-#                ngrid.discard(current)
-#            else:
-#                path, r_set = self._rewind(path, next_cell)
-#                ngrid |= r_set
-#            current = next_cell
-#            yield current
-#
-#    def _rewind(self, path, current) -> tuple[dict, set]:
-#        curr = current
-#        r_set: set = set()
-#        while curr in path:
-#            curr = path[curr]
-# print("pop", path.pop(tmp))
-#            curr.visited = False
-#        return (path, r_set)
-#
