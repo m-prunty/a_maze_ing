@@ -9,8 +9,8 @@ import sys
 from typing import Any, Literal, get_args, get_origin
 
 from annotated_types import Ge, Le
-from mazegen import Config, ConfigError, ConfigIO, RenderError, Vec2
 from graphics import Event_loop, Renderer, Textures, Window
+from mazegen import Config, ConfigError, ConfigIO, RenderError, Vec2
 
 
 class Options:

@@ -7,19 +7,22 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/01 08:04:43 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/14 16:41:40 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/20 17:28:10 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Maze generation and pathfinding algorithms."""
 
 import math
 import random
+import sys
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
+from functools import lru_cache
 
-from common import AlgoError, Cell, Config, Dir, Vec2
-
+from .config import Config
+from .errors import AlgoError
 from .graph import Edge, Graph
+from .grid_tools import Cell, Dir, Vec2
 from .staging import (
     BaseStage,
     EventType,
@@ -33,6 +36,7 @@ class BaseStrat(ABC):
     def __init__(self, graph: Graph, cfg: Config) -> None:
         """Initializes BaseStrat with a graph and config."""
         self.config: Config = cfg
+        print(f"Using seed: {cfg.seed}")
         self.rng = (
             random.Random() if cfg.seed == 0 else random.Random(cfg.seed)
         )
@@ -123,8 +127,10 @@ class Dfs(BaseStrat):
         """Generates a maze using depth-first search."""
         self._imperfect()
         start = self.config.entry
+        sys.setrecursionlimit(max(1000, self.width * self.height * 2))
         yield from self._dfs(start)
 
+    @lru_cache
     def _dfs(self, pos: Vec2) -> Iterable[Vec2]:
         """Recursive depth-first search from a position."""
         try:
@@ -205,14 +211,24 @@ class Sidewinder(BaseStrat):
         """Sidewinder row-by-row passage carving."""
 
         def e_bound(cell: Cell) -> bool:
-            return cell.loc.x == self.width - 1
+            east = next(
+                (edg for edg in self.graph.edges(cell) if edg.dir == Dir.E),
+                None,
+            )
+            return cell.loc.x == self.width - 1 or (
+                east and east.b and east.b.ispic
+            )
 
         def n_bound(cell: Cell) -> bool:
-            return cell.loc.y == 0
+            north = next(
+                (edg for edg in self.graph.edges(cell) if edg.dir == Dir.N),
+                None,
+            )
+            return cell.loc.y == 0 or (north and north.b and north.b.ispic)
 
         try:
+            run: list[Cell] = []
             for cell in self.grid:
-                run: list[Cell] = []
                 enter = MazeEvent(cell, etype=EventType.ENTER)
                 if not self._dispatch(enter):
                     continue
@@ -223,18 +239,28 @@ class Sidewinder(BaseStrat):
                     not at_n_bound and bool(self.rng.getrandbits(1))
                 )
                 if close_run:
-                    candidates = [c for c in run if not c.ispic]
+                    candidates = [
+                        c
+                        for c in run
+                        if not c.ispic
+                        and any(
+                            edg.dir == Dir.N and edg.b and not edg.b.ispic
+                            for edg in self.graph.edges(c)
+                        )
+                    ]
                     if candidates:
                         member = self.rng.choice(candidates)
                         north_edge = next(
                             (
-                                e
-                                for e in self.graph.edges(member)
-                                if e.dir == Dir.N and e.b and not e.b.ispic
+                                edg
+                                for edg in self.graph.edges(member)
+                                if edg.dir == Dir.N
+                                and edg.b
+                                and not edg.b.ispic
                             ),
                             None,
                         )
-                        if north_edge and not at_n_bound:
+                        if north_edge:
                             e = MazeEvent(
                                 north_edge, EventType.EDGE, carve_only=True
                             )
@@ -244,9 +270,9 @@ class Sidewinder(BaseStrat):
                 else:
                     east_edge = next(
                         (
-                            e
-                            for e in self.graph.edges(cell)
-                            if e.dir == Dir.E and e.b and not e.b.ispic
+                            edg
+                            for edg in self.graph.edges(cell)
+                            if (edg.dir == Dir.E and edg.b and not edg.b.ispic)
                         ),
                         None,
                     )
@@ -256,15 +282,6 @@ class Sidewinder(BaseStrat):
                             east_edge.rm_walls()
                 back = MazeEvent(cell, etype=EventType.EXIT)
                 self._dispatch(back)
-                if not cell.ispic and cell.wall == Dir.A:
-                    walls = [
-                        e
-                        for e in self.graph.edges(cell)
-                        if e.b and not e.b.ispic
-                    ]
-                    if len(walls) > 0:
-                        self.rng.shuffle(walls)
-                        next(iter(walls)).rm_walls()
                 yield cell.loc
         except Exception as e:
             raise AlgoError(f"Error in {self.__class__.__name__}: {e}") from e
@@ -281,14 +298,16 @@ class Wilson(BaseStrat):
     def _wilson(self) -> Iterable[Vec2]:
         try:
             start = self.entry_cell
-            enter = MazeEvent(start, etype=EventType.ENTER)
-            if not self._dispatch(enter):
+            if not self._dispatch(MazeEvent(start, etype=EventType.ENTER)):
                 return
             yield start.loc
-            unvisited = [*self.grid]
-            self.rng.shuffle(unvisited)
+
+            unvisited: list[Cell] = [c for c in self.grid if not c.ispic]
             while unvisited:
-                walk_start: Cell = self.rng.choice(unvisited)
+                walk_start = self.rng.choice(unvisited)
+                if walk_start.visited:
+                    unvisited.remove(walk_start)
+                    continue
                 path: dict[Cell, Edge] = {}
                 current = walk_start
                 while not current.visited:
@@ -300,30 +319,37 @@ class Wilson(BaseStrat):
                     if not edges:
                         break
                     edge = self.rng.choice(edges)
+                    if current in path:
+                        keys = list(path)
+                        idx = keys.index(current)
+                        for k in keys[idx:]:
+                            del path[k]
+
                     path[current] = edge
                     current = edge.b
                 current = walk_start
-                while not current.visited:
-                    edge = path.get(current)
-                    if not edge:
-                        break
-                    e = MazeEvent(edge, EventType.EDGE)
-                    if not self._dispatch(e):
+                while current in path:
+                    edge = path[current]
+
+                    if not self._dispatch(
+                        MazeEvent(
+                            edge, EventType.EDGE, carve_only=edge.b.visited
+                        )
+                    ):
                         break
                     next_cell = edge.b
-                    enter = MazeEvent(next_cell, etype=EventType.ENTER)
-                    if not self._dispatch(enter):
+                    if not next_cell.visited and not self._dispatch(
+                        MazeEvent(next_cell, EventType.ENTER)
+                    ):
                         break
-                    yield next_cell.loc
-                    back = MazeEvent(current, etype=EventType.EXIT)
-                    self._dispatch(back)
-                    current = next_cell
-                unvisited = [
-                    cell
-                    for cell in self.grid
-                    if not cell.visited and not cell.ispic
-                ]
+                    yield current.loc
+                    self._dispatch(MazeEvent(current, EventType.EXIT))
 
+                    if current in unvisited:
+                        unvisited.remove(current)
+
+                    current = next_cell
+                self._dispatch(MazeEvent(current, EventType.EXIT))
         except Exception as e:
             raise AlgoError(f"Error in {self.__class__.__name__}: {e}") from e
 

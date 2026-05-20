@@ -6,7 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/24 07:55:50 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/14 11:59:27 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/20 16:50:14 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """First attempts at the A-Maze-ing project."""
@@ -14,7 +14,6 @@
 import os
 import sys
 
-from mazegen import Config, ConfigError, ConfigIO, Dir, Grid, StartError, Vec2
 from graphics import (
     Animations,
     Event_loop,
@@ -24,7 +23,16 @@ from graphics import (
     Textures,
     Window,
 )
-from mazegen import MazeGenerator
+from mazegen import (
+    Config,
+    ConfigError,
+    ConfigIO,
+    Dir,
+    Grid,
+    MazeGenerator,
+    StartError,
+    Vec2,
+)
 
 from .options import Options
 
@@ -114,13 +122,12 @@ class Start:
                     self.a = AMaze.maze_fromconfig(self.cfg)
                     self.launch_maze()
                     self.a.maze_tofile(self.cfg.output_file)
-
                 if button == 1 and x > 300 and x < 600 and y > 300 and y < 390:
                     self.a = AMaze.maze_fromfile("maze.txt")
                     self.launch_maze()
         except Exception as e:
             print(e)
-        
+
     def launch_maze(self) -> None:
         """Launch the maze rendering and animation."""
         self.a.launch_renders()
@@ -145,20 +152,20 @@ class AMaze:
 
     def launch_renders(self) -> None:
         """Launch the renders for the maze."""
-        print(self.grid.seq)
         Render_grid.load(self.grid, self.config)
         Render_cell.create()
         Animations.grid(0.0)
 
     def launch_animation(self, key: int) -> None:
         """Launch the path animation when the spacebar is pressed."""
-        if (key == 32 and
-            not Render_grid.is_a_path and
-            Render_cell._is_genreated):
+        if (
+            key == 32
+            and not Render_grid.is_a_path
+            and Render_cell._is_genreated
+        ):
             Animations.path()
             Render_grid.is_a_path = True
-        elif (key == 32 and Render_grid.is_a_path
-            and Render_cell._is_genreated):
+        elif key == 32 and Render_grid.is_a_path and Render_cell._is_genreated:
             Animations.path()
             Render_grid.is_a_path = False
 

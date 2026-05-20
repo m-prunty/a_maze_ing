@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/11 09:07:39 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/11 09:09:22 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/16 12:37:24 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Cell and Dir classes for maze generation and pathfinding."""
@@ -133,7 +133,7 @@ class Cell:
     def __str__(self) -> str:
         """String representation of a Cell instance."""
         r_str = f"{self.loc} "
-        r_str += f"{self.wall}"
+        r_str += f"{vars(self)}"
         return r_str
 
     def __sub__(self, other: "Cell") -> Dir:

@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/07 03:02:45 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/14 12:17:13 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/16 12:43:11 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """MazeGenerator class to generate a maze grid and a path through it."""
@@ -63,14 +63,14 @@ class MazeGenerator:
 
     def gen_grid(self, algo: str = "dfs") -> None:
         """Generate the maze grid using the specified algorithm."""
+        print("Generating with ... ", self.config.gen_algo)
         gen_algo = self.ALGOS.get(algo.lower())
         if not gen_algo:
             raise ValueError(f"Algorithm '{algo}' not recognized.")
         generator = gen_algo(GridGraph(self.grid), self.config)
         generator.add_stage(VisitStage())
         generator.add_stage(RmStage())
-        self.grid.seq += [*generator.generate()]
-        print("seq is done", self.grid.seq)
+        self.grid.seq = [*generator.generate()]
 
     @staticmethod
     def retryIO(loc: Vec2, config: Config, neg: int) -> Vec2:
@@ -88,6 +88,7 @@ class MazeGenerator:
             raise ValueError(f"Picture selection '{select}' not recognized.")
         pic = Pic(GridGraph(self.grid), self.config)
         pic.add_stage(PicStage())
+        self.grid.pseq = [*pic.generate()]
         while (
             self.grid[self.config.entry] and self.grid[self.config.entry].ispic
         ):
@@ -98,13 +99,11 @@ class MazeGenerator:
             self.grid[self.config.exit] and self.grid[self.config.exit].ispic
         ):
             self.config.exit = self.retryIO(self.config.exit, self.config, 1)
-        self.grid.seq += [*pic.generate()]
 
     def driver(self) -> None:
         """Driver function to generate the maze and path."""
         try:
             self.gen_pic(self.config.pic)
-            print(self.config.gen_algo)
             self.gen_grid(self.config.gen_algo)
             self.grid.reset()
             self.gen_path(self.config.path_algo)
