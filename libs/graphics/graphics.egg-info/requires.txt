@@ -1,5 +1,0 @@
-Pillow>=10.3.0
-mazegen
-types-Pillow
-Xlib
-mlx
