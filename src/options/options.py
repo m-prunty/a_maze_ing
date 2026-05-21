@@ -9,9 +9,12 @@ import sys
 from typing import Any, Literal, get_args, get_origin
 
 from annotated_types import Ge, Le
-from mazegen import Config, ConfigError, ConfigIO, RenderError, Vec2
 from graphics import Event_loop, Renderer, Textures, Window
+<<<<<<< HEAD
 import datetime
+=======
+from mazegen import Config, ConfigError, ConfigIO, RenderError, Vec2
+>>>>>>> 182b173ef06a956d4f41e49e3271bd044d14aa50
 
 
 class Options:
@@ -42,7 +45,7 @@ class Options:
                     self.opt_rend.add_dropdown(
                         name, value, get_args(field_info.annotation)
                     )
-                elif annotation is int and min is None:
+                elif annotation is int:
                     self.opt_rend.add_input(name, value, int)
                 elif annotation is str:
                     self.opt_rend.add_input(name, value, str)
@@ -59,14 +62,17 @@ class Options:
 
     def put_to_config(self, fields: dict[str, Any]) -> None:
         """Put the options values to the config and save it to file."""
-        for value in self.cfg:
-            try:
-                key = value[0]
-                val = fields[key]["VAL"]
-                setattr(self.cfg, key, val)
-            except KeyError:
-                print(key, "is not handeld yet")
-        ConfigIO.to_file(self.cfg, self.cfg.filename)
+        try:
+            for value in self.cfg:
+                try:
+                    key = value[0]
+                    val = fields[key]["VAL"]
+                    setattr(self.cfg, key, val)
+                except KeyError:
+                    print(key, "is not handeld yet")
+            ConfigIO.to_file(self.cfg, self.cfg.filename)
+        except Exception as e:
+            raise ConfigError(f"Error putting options to config: {e}") from e
 
     def render(self) -> None:
         """Render the options menu and set up the event hooks."""
@@ -94,8 +100,6 @@ class Options:
             	and self._tics < 5):
                 self._tics += 1
             else:
-                print(self._tics)
-                print(self.opt_rend.scroll)
                 if button == 5 and self.opt_rend.scroll >= -500:
                     self.opt_rend.scroll -= 25 * self._tics
                     self.opt_rend.render_options()
@@ -106,8 +110,6 @@ class Options:
                     self.opt_rend.render_options()
                     self._deltatime = datetime.datetime.now().timestamp()
                     self._tics = 0
-            if button == 1:
-                self.opt_rend.check_click(Vec2(x, y), self)
 
 
 class Options_render:
@@ -630,5 +632,8 @@ class Options_render:
                     field_value["INPUT"] = field_value["INPUT"][:-1]
                     self.set_field(field_value, opt)
                 vars.append(field_value["VAL"])
-            opt.put_to_config(self.fields)
-            opt.save()
+            try:
+                opt.put_to_config(self.fields)
+                opt.save()
+            except Exception as e:
+                print("Error saving options:", e)

@@ -297,13 +297,13 @@ The `PERFECT` configuration parameter controls maze complexity:
 - **Imperfect Maze** (`PERFECT=False`): Multiple paths exist. The algorithm carves additional random walls after creating the spanning tree, calculated as: `(width * height)^0.7`
 
 ### Color Schemes
-
+-swann
 Multiple visual themes available via `COLOR` parameter (values 0-2):
 - TODO: Document each color scheme's visual characteristics
 - TODO: Explain how color schemes are implemented in the graphics library
 
 ### Picture Embedding (ASCII Art)
-
+-marcus
 Three predefined pictures can be embedded:
 - **PIC=0**: Custom small pattern (5x7 bits)
 - **PIC=1**: Medium 42 logo variant (5x24 bits)

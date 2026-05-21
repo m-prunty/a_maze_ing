@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:38:19 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/14 11:57:35 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/20 16:23:42 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Grid class to represent a 2D grid of Cell instances."""
@@ -34,6 +34,7 @@ class Grid:
         self.width, self.height = width, height
         self.path: list[Vec2] = []
         self.seq: list[Vec2] = []
+        self.pseq: list[Vec2] = []
         self.pic: list[int]
 
     def fill_empty_grid(self) -> None:
@@ -54,6 +55,9 @@ class Grid:
                         self[x, y].wall = Dir(int(i, 16))
                         if self[x, y].wall == Dir.A:
                             self[x, y].ispic = True
+                            self.pseq.append(Vec2(x, y))
+                        else:
+                            self.seq.append(Vec2(x, y))
         self.path_from_str(hexlist[-1])
 
     def path_from_str(self, s: str) -> None:
@@ -170,4 +174,6 @@ class Grid:
                 else:
                     r_str += "   "
             r_str += "+\n"
+        r_str += f"Path: {self.path}\n"
+        r_str += "".join(f"{cell}" for cell in self)
         return r_str

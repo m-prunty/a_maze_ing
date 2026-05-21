@@ -14,13 +14,13 @@ a-maze-ing = "a_maze_ing.main:main"
 
 [tool.uv.sources]
 graphics = { workspace = true }
-mazegen = { workspace = true }
+mazegen = { path = "mazegen-0.1.0-py3-none-any.whl" } 
 mlx = { workspace = true }
 
 [tool.uv.workspace]
 members = [
     "libs/graphics",
-    "libs/mazegen",
+    #"libs/mazegen",
     "libs/mlx/python"
 ]
 

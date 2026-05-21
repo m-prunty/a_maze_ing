@@ -13,6 +13,7 @@ class Animations:
     """Manage animation seq for rendering the grid and pathfinding."""
 
     _grid_steps: int
+    _p_steps: int
     _grid: Grid
     _canvas: Canvas
     _path_steps: int
@@ -26,10 +27,9 @@ class Animations:
         cls._canvas = Render_grid.grid_canva(
             Vec2(cls._grid.width, cls._grid.height), Vec2(0, 0)
         )
-        # show an empty grid at start
         Render_cell.render(
-                Render_grid._cfg.entry,
-                cls._canvas,
+            Render_grid._cfg.entry,
+            cls._canvas,
         )
         Animator.animate(cls.grid_step, tuple(), delay)
 
@@ -38,16 +38,38 @@ class Animations:
         """Render the next step in the grid animation."""
         if cls._grid_steps >= len(cls._grid.seq):
             Render_cell._is_genreated = True
+            cls._p_steps = 0
+            Animator.animate(cls.colour_pic, tuple(), delay=0)
             return -1
         current: Vec2 = cls._grid.seq[cls._grid_steps]
         Render_cell.render(
-                current,
-                cls._canvas,
+            current,
+            cls._canvas,
         )
         cls._grid_steps += 1
         cls._canvas.put_canva()
         return 1
-        
+
+    @classmethod
+    def colour_pic(cls) -> int:
+        """Render next step in the grid animation with the colored picture."""
+        x = cls._grid.height - 1
+        y = cls._grid.width - 1
+        ma = max(x, y)
+        mi = min(x, y)
+        if cls._p_steps == mi + ma + 1:
+            return -1
+        for i in range(min(mi, cls._p_steps) + min(0, ma - cls._p_steps) + 1):
+            Render_cell.render(
+                Vec2(
+                    max(cls._p_steps - x, 0) + i,
+                    min(cls._p_steps, x) - i,
+                ),
+                cls._canvas,
+            )
+        cls._canvas.put_canva()
+        cls._p_steps += 1
+        return 1
 
     @classmethod
     def path(cls, delay: float = 0.0) -> None:

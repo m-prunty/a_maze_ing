@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                               +#+#+#+#+#+   +#+             #
 #    Created: 2026/02/03 21:19:22 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/13 23:06:11 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/20 16:55:56 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Configuration module for maze generation and rendering."""
@@ -32,8 +32,8 @@ from ..grid_tools import Vec2
 class Config(BaseModel):
     """Configuration class for maze generation and rendering."""
 
-    width: int = Field(ge=5, le=30, default=10)
-    height: int = Field(ge=5, le=30, default=10)
+    width: int = Field(ge=5, le=100, default=10)
+    height: int = Field(ge=5, le=100, default=10)
     entry: Vec2 = Field(default_factory=lambda: Vec2(0, 0))
     exit: Vec2 = Field(default_factory=lambda: Vec2(5, 0))
     output_file: str = Field(default="maze.txt")

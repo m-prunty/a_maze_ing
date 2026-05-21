@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/01 08:05:00 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/12 22:10:19 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/16 10:25:42 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Staging classes for maze generation and pathfinding."""
@@ -36,6 +36,7 @@ class MazeEvent:
 
     edge: Edge | Cell
     etype: EventType = EventType.ENTER
+    carve_only: bool = False
 
     @property
     def cell(self) -> Cell:
@@ -77,6 +78,8 @@ class VisitStage:
                 return True
             elif e.etype == EventType.EDGE:
                 assert isinstance(e.edge, Edge)
+                if e.carve_only:
+                    return True
                 if e.edge.b and (e.edge.b.visited or e.edge.b.ispic):
                     return False
             return True

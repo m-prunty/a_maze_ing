@@ -11,11 +11,11 @@
 # *************************************************************************** #
 """A-Maze-ing is a maze generation and pathfinding visualization project."""
 
-from .graph import Edge, Graph, GridGraph
-from .mazegenerator import MazeGenerator
 from .config import Config, ConfigIO
 from .errors import ConfigError, MazeError, RenderError, StartError
+from .graph import Edge, Graph, GridGraph
 from .grid_tools import Cell, Dir, Grid, Vec2
+from .mazegenerator import MazeGenerator
 
 __all__ = ["MazeGenerator", "Graph", "GridGraph", "Edge", "Config", "ConfigIO"]
 
