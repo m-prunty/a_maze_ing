@@ -11,6 +11,7 @@ from typing import Any, Literal, get_args, get_origin
 from annotated_types import Ge, Le
 from mazegen import Config, ConfigError, ConfigIO, RenderError, Vec2
 from graphics import Event_loop, Renderer, Textures, Window
+import datetime
 
 
 class Options:
@@ -20,6 +21,8 @@ class Options:
         """Initialize the options menu with the given config."""
         self.cfg = config
         self.opt_rend = Options_render()
+        self._tics = 0
+        self._deltatime = datetime.datetime.now().timestamp()
         try:
             for field in self.cfg:
                 name = field[0]
@@ -86,12 +89,23 @@ class Options:
     def mouse_event(self, button: int, x: int, y: int, baa: None) -> None:
         """Handle mouse events for the options menu."""
         if self.is_active:
-            if button == 4:
-                self.opt_rend.scroll -= 10
-                self.opt_rend.render_options()
-            if button == 5:
-                self.opt_rend.scroll += 10
-                self.opt_rend.render_options()
+            now = datetime.datetime.now().timestamp()
+            if ((button == 5 or button == 4) and now - self._deltatime < 0.15
+            	and self._tics < 5):
+                self._tics += 1
+            else:
+                print(self._tics)
+                print(self.opt_rend.scroll)
+                if button == 5 and self.opt_rend.scroll >= -500:
+                    self.opt_rend.scroll -= 25 * self._tics
+                    self.opt_rend.render_options()
+                    self._deltatime = datetime.datetime.now().timestamp()
+                    self._tics = 0
+                if button == 4 and self.opt_rend.scroll < 20:
+                    self.opt_rend.scroll += 25 * self._tics
+                    self.opt_rend.render_options()
+                    self._deltatime = datetime.datetime.now().timestamp()
+                    self._tics = 0
             if button == 1:
                 self.opt_rend.check_click(Vec2(x, y), self)
 

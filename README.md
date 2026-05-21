@@ -109,7 +109,7 @@ make dev                # Install with development dependencies
 ### Selected Algorithm: Depth-First Search (DFS)
 
 **Why DFS was chosen:**
-- TODO: Document why DFS was selected as the primary generation algorithm
+- TODO : Document why DFS was selected as the primary generation algorithm
 - Efficient implementation with linear time complexity
 - Naturally creates long corridors which are aesthetically pleasing
 - Simple recursive implementation suitable for animation/visualization
@@ -126,9 +126,7 @@ DFS-based maze generation creates a spanning tree of the grid by randomly carvin
 ### Other Implemented Algorithms
 
 **Dijkstra's Algorithm** (Pathfinding):
-- Single-source shortest path algorithm
-- Finds optimal route from entry to exit
-- Implemented at: [libs/mazegen/mazegen/algos.py](libs/mazegen/mazegen/algos.py#L155-L213)
+<a src="./docs/mazegen.md#hello" id="hello">
 
 **Prim's Algorithm** (In Development):
 - Alternative maze generation using frontier expansion
@@ -233,10 +231,8 @@ A prebuilt Python binding for the MLX graphics library (C-based). Provides:
 
 ### Team Members and Roles
 
-TODO: Document each team member's login and role:
-- TODO: login1 - Role/responsibilities
-- TODO: login2 - Role/responsibilities
-- TODO: login3 - Role/responsibilities (if applicable)
+- maprunty / m-prunty - Mazegeneration / path finding / algorithms
+- sdeppe - Graphics / annimation 
 
 ### Planning & Evolution
 
@@ -264,13 +260,13 @@ TODO: Document successful aspects:
 
 ### What Could Be Improved
 
-TODO: Document limitations and improvement opportunities:
 - Performance bottlenecks
 - Code organization improvements
 - Testing coverage gaps
 - Algorithm implementation completions (Prim, Sidewinder, Wilson)
 - UI/UX enhancements
 - Documentation areas needing expansion
+- Implement proper double buffering
 
 ### Tools & Technologies Used
 
@@ -379,17 +375,12 @@ The direction sequence encodes the path from entry to exit as: N/S/E/W character
 
 ## AI Usage
 
-TODO: Specify which parts of the project utilized AI assistance:
+- Docstrings for most of the functions 
+- Debbuging
+- Learn mlx usages in python
 
-- Generation algorithms implementation
-- Graphics rendering pipeline
-- TODO: Document any other AI-assisted components
-- TODO: Describe specific tasks where AI was used and its effectiveness
-- TODO: Note limitations encountered with AI assistance
-- TODO: Specify which code sections were AI-generated vs. manually written
 
 ---
 
 **Last Updated**: May 14, 2026  
-**Repository**: [GitHub Link - TODO: Add repository URL]  
-**Contact**: TODO: Add team contact information
+**Repository**: [GitHub Link - [m-prunty github](https://github.com/m-prunty/a_maze_ing)]  

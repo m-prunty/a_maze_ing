@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: graphics
+Version: 0.1.0
+Requires-Python: >=3.11
+Requires-Dist: Pillow>=10.3.0
+Requires-Dist: mazegen
+Requires-Dist: types-Pillow
+Requires-Dist: Xlib
+Requires-Dist: mlx

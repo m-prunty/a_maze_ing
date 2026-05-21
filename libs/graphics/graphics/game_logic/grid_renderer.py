@@ -110,7 +110,7 @@ class Render_cell:
         cls._tile_siz = Render_grid._tile_siz
 
     @classmethod
-    def set_grid(cls, grid: Grid):
+    def set_grid(cls, grid: Grid) -> None:
         cls._grid = grid
 
     @classmethod
