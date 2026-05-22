@@ -6,7 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.de  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/01 13:25:26 by maprunty          #+#    #+#              #
-#    Updated: 2026/05/20 22:57:56 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/22 06:16:06 by maprunty        ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -20,8 +20,8 @@ MAZEGEN    := libs/mazegen
 install:
 	uv sync --no-dev
 
-dev: build-mazegen
-	uv sync --dev
+dev: fclean build-mazegen
+	uv sync --dev --reinstall-package mazegen
 
 run:
 	$(PYTHON) $(MAIN) $(CONFIG)
