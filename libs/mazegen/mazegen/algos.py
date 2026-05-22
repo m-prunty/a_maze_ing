@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/01 08:04:43 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/22 18:26:35 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/22 18:55:59 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Maze generation and pathfinding algorithms."""
@@ -17,6 +17,7 @@ import random
 import sys
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
+from typing import Any
 
 from .errors import AlgoError
 from .graph import Edge, Graph
@@ -31,7 +32,7 @@ from .staging import (
 class BaseStrat(ABC):
     """Base strategy for maze generation and pathfinding."""
 
-    def __init__(self, graph: Graph, cfg: "Config") -> None:
+    def __init__(self, graph: Graph, cfg: Any) -> None:
         """Initializes BaseStrat with a graph and config."""
         from .config import Config
 
