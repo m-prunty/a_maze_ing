@@ -110,14 +110,6 @@ class Render_cell:
         cls._tile_siz = Render_grid._tile_siz
 
     @classmethod
-    def set_grid(cls, grid: Grid) -> None:
-<<<<<<< HEAD
-=======
-        """Set the grid to be used for rendering the cells."""
->>>>>>> 182b173ef06a956d4f41e49e3271bd044d14aa50
-        cls._grid = grid
-
-    @classmethod
     def render_path(cls, iteration: int, canva: Canvas) -> None:
         """Render the path onto the canvas at the current iteration."""
         if not cls._is_genreated:

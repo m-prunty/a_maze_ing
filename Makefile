@@ -51,5 +51,6 @@ lint-strict:
 	$(PYTHON) -m mypy . --strict
 
 build-mazegen:
+	rm -f *.whl
 	cd $(MAZEGEN) && uv build --package mazegen --wheel --out-dir ../..
 

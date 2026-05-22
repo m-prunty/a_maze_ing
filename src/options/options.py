@@ -10,11 +10,8 @@ from typing import Any, Literal, get_args, get_origin
 
 from annotated_types import Ge, Le
 from graphics import Event_loop, Renderer, Textures, Window
-<<<<<<< HEAD
+from mazegen import Vec2, ConfigIO, Config, ConfigError, RenderError
 import datetime
-=======
-from mazegen import Config, ConfigError, ConfigIO, RenderError, Vec2
->>>>>>> 182b173ef06a956d4f41e49e3271bd044d14aa50
 
 
 class Options:
@@ -96,8 +93,9 @@ class Options:
         """Handle mouse events for the options menu."""
         if self.is_active:
             now = datetime.datetime.now().timestamp()
-            if ((button == 5 or button == 4) and now - self._deltatime < 0.15
-            	and self._tics < 5):
+            if ((button == 5 or button == 4)
+                    and now - self._deltatime < 0.15
+                    and self._tics < 5):
                 self._tics += 1
             else:
                 if button == 5 and self.opt_rend.scroll >= -500:
@@ -110,6 +108,8 @@ class Options:
                     self.opt_rend.render_options()
                     self._deltatime = datetime.datetime.now().timestamp()
                     self._tics = 0
+            if button == 1:
+                self.opt_rend.check_click(Vec2(x, y), self)
 
 
 class Options_render:

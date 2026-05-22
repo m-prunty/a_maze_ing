@@ -210,7 +210,7 @@ class Sidewinder(BaseStrat):
     def _sidewind(self) -> Iterable[Vec2]:
         """Sidewinder row-by-row passage carving."""
 
-        def e_bound(cell: Cell) -> bool:
+        def e_bound(cell: Cell) -> Edge | Cell | bool | None:
             east = next(
                 (edg for edg in self.graph.edges(cell) if edg.dir == Dir.E),
                 None,
@@ -219,7 +219,7 @@ class Sidewinder(BaseStrat):
                 east and east.b and east.b.ispic
             )
 
-        def n_bound(cell: Cell) -> bool:
+        def n_bound(cell: Cell) -> Edge | Cell | bool | None:
             north = next(
                 (edg for edg in self.graph.edges(cell) if edg.dir == Dir.N),
                 None,

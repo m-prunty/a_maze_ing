@@ -109,7 +109,6 @@ make dev                # Install with development dependencies
 ### Selected Algorithm: Depth-First Search (DFS)
 
 **Why DFS was chosen:**
-- TODO : Document why DFS was selected as the primary generation algorithm
 - Efficient implementation with linear time complexity
 - Naturally creates long corridors which are aesthetically pleasing
 - Simple recursive implementation suitable for animation/visualization
@@ -126,7 +125,6 @@ DFS-based maze generation creates a spanning tree of the grid by randomly carvin
 ### Other Implemented Algorithms
 
 **Dijkstra's Algorithm** (Pathfinding):
-<a src="./docs/mazegen.md#hello" id="hello">
 
 **Prim's Algorithm** (In Development):
 - Alternative maze generation using frontier expansion
@@ -232,15 +230,18 @@ A prebuilt Python binding for the MLX graphics library (C-based). Provides:
 ### Team Members and Roles
 
 - maprunty / m-prunty - Mazegeneration / path finding / algorithms
-- sdeppe - Graphics / annimation 
+- sdeppe / SWDeppe - Graphics / annimation 
 
 ### Planning & Evolution
 
 **Initial Planning**:
-TODO: Describe the initial project plan and goals
+ - We first planed to do the a simple mazegen in the terminal
+ - Add a graphical interface using mlx
+ - Do the pathfinding
+ - Add more mazegen / pathfinding algorithms
+ - Add some animations
 
 **Evolution During Development**:
-TODO: Document how the plan evolved as the project developed:
 - Changes in algorithm selection
 - Feature additions or removals
 - Technical challenges encountered
@@ -248,11 +249,10 @@ TODO: Document how the plan evolved as the project developed:
 
 **Timeline**:
 - Project Start: 2026/01/24
-- Last Update: 2026/05/14
+- Last Update: 2026/05/22
 
 ### What Worked Well
 
-TODO: Document successful aspects:
 - Architecture decisions that proved effective
 - Algorithms that performed as expected
 - Development practices that improved productivity
@@ -297,13 +297,13 @@ The `PERFECT` configuration parameter controls maze complexity:
 - **Imperfect Maze** (`PERFECT=False`): Multiple paths exist. The algorithm carves additional random walls after creating the spanning tree, calculated as: `(width * height)^0.7`
 
 ### Color Schemes
--swann
+
 Multiple visual themes available via `COLOR` parameter (values 0-2):
-- TODO: Document each color scheme's visual characteristics
-- TODO: Explain how color schemes are implemented in the graphics library
+- This is done using assets found on the internet for tilemaps 
+- Did so that each cell is 9 tiles util two neighbour cells should have the same walls the common shared walls will juste be one cell and the corners are shared between 4 cells
 
 ### Picture Embedding (ASCII Art)
--marcus
+
 Three predefined pictures can be embedded:
 - **PIC=0**: Custom small pattern (5x7 bits)
 - **PIC=1**: Medium 42 logo variant (5x24 bits)
