@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                               +#+#+#+#+#+   +#+             #
 #    Created: 2026/02/03 21:19:22 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/20 16:55:56 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/22 18:44:32 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Configuration module for maze generation and rendering."""
@@ -27,6 +27,7 @@ from pydantic import (
 
 from ..errors import ConfigError
 from ..grid_tools import Vec2
+from ..registry import ALGOS
 
 
 class Config(BaseModel):
@@ -35,7 +36,7 @@ class Config(BaseModel):
     width: int = Field(ge=5, le=100, default=10)
     height: int = Field(ge=5, le=100, default=10)
     entry: Vec2 = Field(default_factory=lambda: Vec2(0, 0))
-    exit: Vec2 = Field(default_factory=lambda: Vec2(5, 0))
+    exit: Vec2 = Field(default_factory=lambda: Vec2(9, 9))
     output_file: str = Field(default="maze.txt")
     perfect: bool = Field(default=True)
     seed: int = Field(default=0)
@@ -45,10 +46,8 @@ class Config(BaseModel):
     filename: str = Field(default="config.txt")
     model_config = ConfigDict(revalidate_instances="always")
     color: Literal[0, 1, 2] = 0
-    gen_algo: Literal["dfs", "prim", "swinder", "wilson", "dijkstra"] = "dfs"
-    path_algo: Literal["dfs", "prim", "swinder", "wilson", "dijkstra"] = (
-        "dijkstra"
-    )
+    gen_algo: Literal["dfs", "prim", "swinder", "wilson", "kruskal"] = "dfs"
+    path_algo: Literal["dijkstra"] = "dijkstra"
 
     def is_grid(self, vec: Vec2) -> Vec2:
         """Check if a Vec2 instance is within the grid bounds."""
@@ -123,13 +122,13 @@ class Config(BaseModel):
             return v if v in (0, 1, 2) else 0
         if isinstance(v, str):
             v = v.strip().lower()
-            if v in ("dfs", "prim", "swinder", "wilson", "dijkstra"):
+            if v in ALGOS:
                 return v
             if v in ("0", "1", "2"):
                 return int(v)
         raise ConfigError(
             "Expected a valid gen_algo/path_algo/color value,"
-            + " got {type(v).__name__}: {v}"
+            + f" got {type(v).__name__}: {v}"
         )
 
     @field_validator("width", "height", "seed", mode="before")
@@ -197,6 +196,8 @@ class ConfigIO:
         try:
             with open(path, "w") as f:
                 for k, v in vars(cfg).items():
+                    if isinstance(v, float):
+                        v = int(v)
                     f.write(f"{k.upper()}={v.__str__()}\n")
         except Exception as e:
             raise ConfigError(f"Error writing config to file: {e}") from e
