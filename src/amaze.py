@@ -6,7 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/24 07:55:50 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/20 16:50:14 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/22 15:30:21 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """First attempts at the A-Maze-ing project."""
@@ -59,7 +59,8 @@ class Start:
             try:
                 self.cfg = ConfigIO.from_file(sys.argv[1])
                 return
-            except (ConfigError, FileNotFoundError):
+            except (ConfigError, FileNotFoundError) as e:
+                print(f"Error loading config file: {e}")
                 pass
         self.no_cfg()
 

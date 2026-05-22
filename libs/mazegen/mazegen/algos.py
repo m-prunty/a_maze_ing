@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/01 08:04:43 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/20 17:28:10 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/22 18:26:35 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Maze generation and pathfinding algorithms."""
@@ -17,9 +17,7 @@ import random
 import sys
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
-from functools import lru_cache
 
-from .config import Config
 from .errors import AlgoError
 from .graph import Edge, Graph
 from .grid_tools import Cell, Dir, Vec2
@@ -33,8 +31,10 @@ from .staging import (
 class BaseStrat(ABC):
     """Base strategy for maze generation and pathfinding."""
 
-    def __init__(self, graph: Graph, cfg: Config) -> None:
+    def __init__(self, graph: Graph, cfg: "Config") -> None:
         """Initializes BaseStrat with a graph and config."""
+        from .config import Config
+
         self.config: Config = cfg
         print(f"Using seed: {cfg.seed}")
         self.rng = (
@@ -126,11 +126,9 @@ class Dfs(BaseStrat):
     def generate(self) -> Iterable[Vec2]:
         """Generates a maze using depth-first search."""
         self._imperfect()
-        start = self.config.entry
         sys.setrecursionlimit(max(1000, self.width * self.height * 2))
-        yield from self._dfs(start)
+        yield from self._dfs(self.config.entry)
 
-    @lru_cache
     def _dfs(self, pos: Vec2) -> Iterable[Vec2]:
         """Recursive depth-first search from a position."""
         try:
@@ -199,6 +197,41 @@ class Prim(BaseStrat):
             raise AlgoError(f"Error in {self.__class__.__name__}: {e}") from e
 
 
+class Kruskal(BaseStrat):
+    """Kruskal's algorithm."""
+
+    def generate(self) -> Iterable[Vec2]:
+        """Generates using Kruskal's algorithm."""
+        self._imperfect()
+        yield from self._kruskal()
+
+    def _kruskal(self) -> Iterable[Vec2]:
+        """Kruskal's algorithm for maze generation and pathfinding."""
+        try:
+            sets: dict[Cell, set[Cell]] = {c: {c} for c in self.grid}
+            edges: list[Edge] = [
+                e
+                for c in self.grid
+                if not c.ispic
+                for e in self.graph.edges(c)
+            ]
+            self.rng.shuffle(edges)
+            for edge in edges:
+                set_a = sets[edge.a]
+                set_b = sets[edge.b]
+                if set_a is not set_b:
+                    e = MazeEvent(edge, EventType.EDGE)
+                    if not self._dispatch(e):
+                        continue
+                    new_set = set_a.union(set_b)
+                    for cell in new_set:
+                        sets[cell] = new_set
+                    yield edge.a.loc
+                    yield edge.b.loc
+        except Exception as e:
+            raise AlgoError(f"Error in {self.__class__.__name__}: {e}") from e
+
+
 class Sidewinder(BaseStrat):
     """Sidewinder maze generation."""
 
@@ -226,6 +259,16 @@ class Sidewinder(BaseStrat):
             )
             return cell.loc.y == 0 or (north and north.b and north.b.ispic)
 
+        def next_edge(cell: Cell, direction: Dir) -> Edge | None:
+            return next(
+                (
+                    edg
+                    for edg in self.graph.edges(cell)
+                    if edg.dir == direction and edg.b and not edg.b.ispic
+                ),
+                None,
+            )
+
         try:
             run: list[Cell] = []
             for cell in self.grid:
@@ -250,16 +293,7 @@ class Sidewinder(BaseStrat):
                     ]
                     if candidates:
                         member = self.rng.choice(candidates)
-                        north_edge = next(
-                            (
-                                edg
-                                for edg in self.graph.edges(member)
-                                if edg.dir == Dir.N
-                                and edg.b
-                                and not edg.b.ispic
-                            ),
-                            None,
-                        )
+                        north_edge = next_edge(member, Dir.N)
                         if north_edge:
                             e = MazeEvent(
                                 north_edge, EventType.EDGE, carve_only=True
@@ -268,14 +302,7 @@ class Sidewinder(BaseStrat):
                                 north_edge.rm_walls()
                     run = []
                 else:
-                    east_edge = next(
-                        (
-                            edg
-                            for edg in self.graph.edges(cell)
-                            if (edg.dir == Dir.E and edg.b and not edg.b.ispic)
-                        ),
-                        None,
-                    )
+                    east_edge = next_edge(cell, Dir.E)
                     if east_edge:
                         e = MazeEvent(east_edge, EventType.EDGE)
                         if self._dispatch(e):
@@ -296,6 +323,28 @@ class Wilson(BaseStrat):
         yield from self._wilson()
 
     def _wilson(self) -> Iterable[Vec2]:
+        def _randow_walk(start: Cell) -> dict[Cell, Edge]:
+            path: dict[Cell, Edge] = {}
+            current = walk_start
+            while not current.visited:
+                edges = [
+                    e
+                    for e in self.graph.edges(current)
+                    if e.b and not e.b.ispic
+                ]
+                if not edges:
+                    break
+                edge = self.rng.choice(edges)
+                if current in path:
+                    keys = list(path)
+                    idx = keys.index(current)
+                    for k in keys[idx:]:
+                        del path[k]
+
+                path[current] = edge
+                current = edge.b
+            return path
+
         try:
             start = self.entry_cell
             if not self._dispatch(MazeEvent(start, etype=EventType.ENTER)):
@@ -308,25 +357,7 @@ class Wilson(BaseStrat):
                 if walk_start.visited:
                     unvisited.remove(walk_start)
                     continue
-                path: dict[Cell, Edge] = {}
-                current = walk_start
-                while not current.visited:
-                    edges = [
-                        e
-                        for e in self.graph.edges(current)
-                        if e.b and not e.b.ispic
-                    ]
-                    if not edges:
-                        break
-                    edge = self.rng.choice(edges)
-                    if current in path:
-                        keys = list(path)
-                        idx = keys.index(current)
-                        for k in keys[idx:]:
-                            del path[k]
-
-                    path[current] = edge
-                    current = edge.b
+                path = _randow_walk(walk_start)
                 current = walk_start
                 while current in path:
                     edge = path[current]
@@ -417,39 +448,7 @@ class Pic(BaseStrat):
 
     def generate(self) -> Iterable[Vec2]:
         """Generates a picture to place in the maze."""
-        print("Generating picture...")
         yield from self._gen_pic(self.config.pic_scalar)
-
-    @staticmethod
-    def get_pic(select: int) -> list[int]:
-        """Get the picture data for the maze based on the selected option."""
-        if select == 0:
-            pic = [
-                0b1010111,
-                0b1010001,
-                0b1110111,
-                0b0010100,
-                0b0010111,
-            ]
-        elif select == 1:
-            pic = [
-                0b001111010001011101110111,
-                0b001101011111010100010100,
-                0b001111010101011100100111,
-                0b001101010101010101000100,
-                0b001101010101010101110111,
-            ]
-        elif select == 2:
-            pic = [
-                0b000000011110000011111111,
-                0b000001111100001110000111,
-                0b000111001100000000011100,
-                0b011100111000000011100000,
-                0b111111111100011100000000,
-                0b000011100001110000000000,
-                0b000111000111111110110000,
-            ]
-        return pic
 
     def _gen_pic(self, pic_scalar: int | float) -> Iterable[Vec2]:
         """Prep for 42pic Check pic dimension against h / w.
@@ -461,7 +460,7 @@ class Pic(BaseStrat):
         """
         try:
             pic = self.grid.pic
-            wpic = int(math.log2(max(pic)) * (pic_scalar)) - 1
+            wpic = int(math.log2(max(pic)) * (pic_scalar))
             hpic = int(len(pic) * pic_scalar)
             mx = max(wpic, hpic)
             mn = min(self.height, self.width)

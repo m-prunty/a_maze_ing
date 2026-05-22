@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/01 08:04:28 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/11 09:03:42 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/22 04:38:01 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Graph classes for maze generation and pathfinding."""

@@ -4,14 +4,14 @@ It creates the menu and handles the interactions with it,
 it also updates the config file when the user saves the options.
 """
 
+import datetime
 import os
 import sys
 from typing import Any, Literal, get_args, get_origin
 
 from annotated_types import Ge, Le
 from graphics import Event_loop, Renderer, Textures, Window
-from mazegen import Vec2, ConfigIO, Config, ConfigError, RenderError
-import datetime
+from mazegen import Config, ConfigError, ConfigIO, RenderError, Vec2
 
 
 class Options:
@@ -93,9 +93,11 @@ class Options:
         """Handle mouse events for the options menu."""
         if self.is_active:
             now = datetime.datetime.now().timestamp()
-            if ((button == 5 or button == 4)
-                    and now - self._deltatime < 0.15
-                    and self._tics < 5):
+            if (
+                (button == 5 or button == 4)
+                and now - self._deltatime < 0.15
+                and self._tics < 5
+            ):
                 self._tics += 1
             else:
                 if button == 5 and self.opt_rend.scroll >= -500:

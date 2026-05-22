@@ -7,7 +7,7 @@
 #    By: sdeppe <sdeppe@student.42heilbronn.de>    +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:26:52 by sdeppe           #+#    #+#              #
-#    Updated: 2026/05/20 17:40:39 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/22 06:29:07 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Main file to run A-maze-ing."""
@@ -47,13 +47,13 @@ def main() -> None:
     venv_path, venv_name = os.path.split(os.getenv("VIRTUAL_ENV", "None"))
     if venv_path:
         print("Welcome to the Maze")
-        try:
-            from src import Start
+        # try:
+        from src import Start
 
-            start = Start()
-            start.render_start()
-        except Exception as e:
-            print(f"Error during main loop: {e}")
+        start = Start()
+        start.render_start()
+    #        except Exception as e:
+    #            print(f"Error during main loop: {e}")
     else:
         print(not_venv_warning())
 

@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/07 03:02:45 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/16 12:43:11 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/22 18:29:40 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """MazeGenerator class to generate a maze grid and a path through it."""
@@ -15,8 +15,11 @@
 from mazegen.config import Config
 from mazegen.grid_tools import Grid, Vec2
 
-from .algos import BaseStrat, Dfs, Dijkstra, Pic, Prim, Sidewinder, Wilson
+from .algos import (
+    Pic,
+)
 from .graph import GridGraph, MazeGraph
+from .registry import ALGOS, PICS
 from .staging import (
     GoalStage,
     PathStage,
@@ -29,14 +32,6 @@ from .staging import (
 class MazeGenerator:
     """Generate a maze grid and a path through it."""
 
-    ALGOS: dict[str, type[BaseStrat]] = {
-        "dfs": Dfs,
-        "prim": Prim,
-        "swinder": Sidewinder,
-        "wilson": Wilson,
-        "dijkstra": Dijkstra,
-    }
-
     def __init__(self, grid: Grid, cfg: Config) -> None:
         """Initializes MazeGenerator with a grid and a config."""
         self.grid: Grid = grid
@@ -48,7 +43,8 @@ class MazeGenerator:
 
     def gen_path(self, algo: str) -> None:
         """Generate a path through the maze using the specified algorithm."""
-        path_algo = self.ALGOS.get(algo.lower())
+        path_algo = ALGOS.get(algo.lower())
+        print("Finding path with ... ", self.config.path_algo)
         if not path_algo:
             raise ValueError(f"Algorithm '{algo}' not recognized.")
         path = path_algo(MazeGraph(self.grid), self.config)
@@ -63,8 +59,8 @@ class MazeGenerator:
 
     def gen_grid(self, algo: str = "dfs") -> None:
         """Generate the maze grid using the specified algorithm."""
-        print("Generating with ... ", self.config.gen_algo)
-        gen_algo = self.ALGOS.get(algo.lower())
+        print("Generating maze with ... ", self.config.gen_algo)
+        gen_algo = ALGOS.get(algo.lower())
         if not gen_algo:
             raise ValueError(f"Algorithm '{algo}' not recognized.")
         generator = gen_algo(GridGraph(self.grid), self.config)
@@ -83,7 +79,8 @@ class MazeGenerator:
 
     def gen_pic(self, select: int) -> None:
         """Generate the maze grid based on the picture data."""
-        self.grid.pic = Pic.get_pic(select)
+        self.grid.pic = PICS.get(select, [])
+        print("Mapping picture with layout ... ", self.config.pic)
         if not self.grid.pic:
             raise ValueError(f"Picture selection '{select}' not recognized.")
         pic = Pic(GridGraph(self.grid), self.config)
