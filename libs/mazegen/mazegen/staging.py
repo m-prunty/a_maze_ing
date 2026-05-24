@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/01 08:05:00 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/16 10:25:42 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/24 02:54:17 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Staging classes for maze generation and pathfinding."""
@@ -28,6 +28,7 @@ class EventType(Enum):
     ENTER = auto()
     EDGE = auto()
     EXIT = auto()
+    PATH = auto()
 
 
 @dataclass
@@ -93,13 +94,8 @@ class PathStage:
     def process(self, e: MazeEvent) -> bool:
         """Marks path cells."""
         try:
-            if e.etype == EventType.ENTER or e.etype == EventType.EXIT:
-                e.cell.ispath = False
-            elif e.etype == EventType.EDGE:
-                assert isinstance(e.edge, Edge)
-                if e.edge.b and e.edge.b.ispath:
-                    return False
-                e.edge.a.ispath = True
+            if e.etype == EventType.PATH:
+                e.cell.ispath = True
             return True
         except Exception as e:
             raise StageError(f"Error in {self.__class__.__name__}: {e}") from e

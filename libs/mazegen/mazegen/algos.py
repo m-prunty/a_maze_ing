@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/01 08:04:43 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/22 18:55:59 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/24 02:55:27 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Maze generation and pathfinding algorithms."""
@@ -242,8 +242,6 @@ class Sidewinder(BaseStrat):
         yield from self._sidewind()
 
     def _sidewind(self) -> Iterable[Vec2]:
-        """Sidewinder row-by-row passage carving."""
-
         def e_bound(cell: Cell) -> Edge | Cell | bool | None:
             east = next(
                 (edg for edg in self.graph.edges(cell) if edg.dir == Dir.E),
@@ -397,7 +395,6 @@ class Dijkstra(BaseStrat):
     def _dijks(self, start: Cell) -> Iterable[Vec2]:
         try:
             frontier: list[tuple[int, Cell]] = [(0, start)]
-
             cell: Cell | None = None
             dist: dict[Cell, int] = {start: 0}
             parent: dict[Cell, Cell | None] = {start: None}
@@ -438,6 +435,7 @@ class Dijkstra(BaseStrat):
             cell = parent.get(self.exit_cell, None)
             while cell and cell != self.entry_cell:
                 assert cell is not None, "No path found from entry to exit."
+                self._dispatch(MazeEvent(cell, etype=EventType.PATH))
                 yield cell.loc
                 cell = parent[cell]
         except Exception as e:
