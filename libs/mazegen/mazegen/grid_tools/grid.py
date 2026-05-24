@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/31 01:38:19 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/20 16:23:42 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/24 02:57:46 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Grid class to represent a 2D grid of Cell instances."""
@@ -32,6 +32,7 @@ class Grid:
     def __init__(self, width: int, height: int):
         """Init a grid with the given width and height of Cell instances."""
         self.width, self.height = width, height
+        self.fill_empty_grid()
         self.path: list[Vec2] = []
         self.seq: list[Vec2] = []
         self.pseq: list[Vec2] = []
@@ -68,6 +69,18 @@ class Grid:
             delta = Dir.from_str(c).v()
             pos = Vec2(pos.x + delta.x, pos.y + delta.y)
             self.path.append(pos)
+
+    def path_to_str(self) -> str:
+        """Create a string of directions from a path."""
+        return "".join(
+            list(
+                map(
+                    lambda p, q: f"{Dir.from_vec(q - p)}",
+                    self.path,
+                    self.path[1:],
+                )
+            )
+        )
 
     def isvalid(self, v: Vec2 | tuple[int, int] | Cell) -> bool:
         """Check if a Vec2 instance is within the bounds of the grid."""
@@ -111,19 +124,6 @@ class Grid:
             for cell in row:
                 cell.visited = False
 
-    def debug(self) -> str:
-        """Debug string representation of a Grid instance."""
-        r_str = ""
-        tmp = ""
-        for k, v in vars(self).items():
-            if k == "grid":
-                for row in v:
-                    row = list(map(lambda c: f"{c.debug()}\n", row))
-                    tmp += "".join(row)
-                v = tmp
-            r_str += f"{k}, {v}\n"
-        return r_str
-
     def __getitem__(self, key: tuple[int, int] | Vec2 | Cell) -> Cell:
         """Get a cell from the grid using a tuple of (x, y) or a Vec2 instance.
 
@@ -164,7 +164,16 @@ class Grid:
                     r_str += "|"
                 else:
                     r_str += " "
-                r_str += "   " if not cell.ispic else " X "
+
+                if cell.ispath:
+                    r_str += " ° "
+                    print(f"Cell {cell.loc} is in the path")
+                elif cell.ispic:
+                    r_str += " X "
+                    print(f"Cell {cell.loc} is pic")
+                else:
+                    r_str += "   "
+                    print(f"Cell {cell} ")
             r_str += "|\n" if cell.has_wall(Dir.E) else " \n"
             for x in range(self.width):
                 cell = self[x, y]
@@ -174,6 +183,5 @@ class Grid:
                 else:
                     r_str += "   "
             r_str += "+\n"
-        r_str += f"Path: {self.path}\n"
-        r_str += "".join(f"{cell}" for cell in self)
+        r_str += f"Path: {self.path_to_str()}"
         return r_str

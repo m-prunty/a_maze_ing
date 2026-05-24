@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/07 03:02:45 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/22 18:29:40 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/24 03:24:40 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """MazeGenerator class to generate a maze grid and a path through it."""
@@ -56,6 +56,7 @@ class MazeGenerator:
             *self.to_path([*path.generate()])
             + [self.grid[self.config.exit].loc]
         ]
+        self.grid.reset()
 
     def gen_grid(self, algo: str = "dfs") -> None:
         """Generate the maze grid using the specified algorithm."""
@@ -67,6 +68,7 @@ class MazeGenerator:
         generator.add_stage(VisitStage())
         generator.add_stage(RmStage())
         self.grid.seq = [*generator.generate()]
+        self.grid.reset()
 
     @staticmethod
     def retryIO(loc: Vec2, config: Config, neg: int) -> Vec2:
@@ -102,7 +104,6 @@ class MazeGenerator:
         try:
             self.gen_pic(self.config.pic)
             self.gen_grid(self.config.gen_algo)
-            self.grid.reset()
             self.gen_path(self.config.path_algo)
         except Exception as e:
             print(f"Error during maze generation: {e}")

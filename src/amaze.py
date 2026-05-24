@@ -6,7 +6,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/24 07:55:50 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/22 15:30:21 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/24 01:14:10 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """First attempts at the A-Maze-ing project."""
@@ -27,7 +27,6 @@ from mazegen import (
     Config,
     ConfigError,
     ConfigIO,
-    Dir,
     Grid,
     MazeGenerator,
     StartError,
@@ -175,7 +174,6 @@ class AMaze:
         """Start the maze generation and animation."""
         try:
             c = cls(cfg)
-            c.grid.fill_empty_grid()
             g = MazeGenerator(c.grid, c.config)
             g.driver()
             return c
@@ -188,7 +186,6 @@ class AMaze:
         try:
             cfg = ConfigIO.from_filemap(filename)
             c = cls(cfg)
-            c.grid.fill_empty_grid()
             with open(filename) as f:
                 hexlist = f.read().split("\n")
             c.grid.path = [c.grid[c.config.entry].loc]
@@ -210,17 +207,7 @@ class AMaze:
                 f.write("\n")
                 f.write(f"\n{self.config.entry}\n")
                 f.write(f"{self.config.exit}\n")
-                f.write(
-                    "".join(
-                        list(
-                            map(
-                                lambda p, q: f"{Dir.from_vec(q - p)}",
-                                self.grid.path,
-                                self.grid.path[1:],
-                            )
-                        )
-                    )
-                )
+                f.write(self.grid.path_to_str())
             print(f"{filename} created with maze data.")
         except Exception as e:
             print(f"Error writing maze to file: {e}")

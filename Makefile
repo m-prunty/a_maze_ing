@@ -1,12 +1,12 @@
 # **************************************************************************** #
 #                                                                              #
 #                                                         :::      ::::::::    #
-#    Makefile                                          :+:      :+:    :+:    #
+#    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
 #    By: maprunty <maprunty@student.42heilbronn.de  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/01 13:25:26 by maprunty          #+#    #+#              #
-#    Updated: 2026/05/22 18:54:44 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/24 03:15:48 by maprunty         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -37,10 +37,14 @@ clean:
 	find . -type d -name "build" -exec rm -rf {} +
 	find . -type d -name "resized" -exec rm -rf {} +
 	find . -type f -name "*.pyc"       -delete
-	rm -rf dist/
 
 fclean: clean
-	rm -rf .venv uv.lock wheels/ *.whl
+	find . -type d -name ".venv" -exec rm -rf {} +
+	find . -type d -name "wheels" -exec rm -rf {} +
+	find . -type d -name "dist" -exec rm -rf {} +
+	find . -type f -name ".whl" -exec rm -rf {} +
+	find . -type f -name "uv.lock" -exec rm -rf {} +
+	find . -type f -name "*.sw*" -exec rm -rf {} +
 
 lint:
 	$(PYTHON) -m flake8 .

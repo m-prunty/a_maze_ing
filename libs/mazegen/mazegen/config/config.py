@@ -7,7 +7,7 @@
 #    By: maprunty <maprunty@student.42heilbronn.d  +#+  +:+       +#+         #
 #                                               +#+#+#+#+#+   +#+             #
 #    Created: 2026/02/03 21:19:22 by maprunty         #+#    #+#              #
-#    Updated: 2026/05/22 18:44:32 by maprunty        ###   ########.fr        #
+#    Updated: 2026/05/24 01:11:20 by maprunty        ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 """Configuration module for maze generation and rendering."""
@@ -192,7 +192,7 @@ class ConfigIO:
     def to_file(cfg: Config, path: str | None = None) -> None:
         """Write the Config instance to a configuration file."""
         if path is None:
-            path = cfg.filename
+            path = "config.txt"
         try:
             with open(path, "w") as f:
                 for k, v in vars(cfg).items():
