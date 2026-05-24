@@ -32,6 +32,7 @@ The primary goal of A-Maze-ing is to implement multiple maze generation and path
 
 2. **Install dependencies** (using uv package manager):
    ```bash
+   make build-mazegen  # Build the mazegen library wheel
    make install
    ```
    
@@ -106,36 +107,35 @@ make dev                # Install with development dependencies
 
 ## Maze Generation Algorithms
 
-### Selected Algorithm: Depth-First Search (DFS)
+- **Depth-First Search (DFS)**: Classic recursive backtracker, yielding long winding corridors.
+- **Prim's Algorithm**: Generates dense, cave-like mazes (randomized minimum spanning tree).
+- **Kruskal's Algorithm**: Randomized spanning tree; connects random walls without cycles.
+- **Sidewinder**: Row-wise bias, fast with strong visual "tunnels."
+- **Wilson's Algorithm**: Loop-erased random walks; highly uniform mazes.
 
-**Why DFS was chosen:**
-- Efficient implementation with linear time complexity
-- Naturally creates long corridors which are aesthetically pleasing
-- Simple recursive implementation suitable for animation/visualization
+**All algorithms** use an event-dispatch model, supporting animation, hooks, and extensibility.
 
-**Algorithm Overview:**
-DFS-based maze generation creates a spanning tree of the grid by randomly carving passages. The algorithm starts from the entry point and recursively visits neighboring cells, carving passages between them. This naturally creates mazes with a single path from any cell to any other cell (perfect mazes).
+**Selected default:** DFS (subject to config).
 
-**Implementation Details:**
-- Located in: [libs/mazegen/mazegen/algos.py](libs/mazegen/mazegen/algos.py#L99-L140)
-- Uses randomized edges for non-deterministic maze variations
-- Supports event dispatching for animation stages (ENTER, EDGE, EXIT events)
-- Can be made imperfect by carving additional random walls
+**Why these?:**  
+Each covers a distinct class of maze structure, enabling visually and algorithmically diverse outputs, useful for both educational/benchmarking and demonstration.
 
-### Other Implemented Algorithms
+#### Pathfinding:
+- **Dijkstra's Algorithm** (default, always enabled if invoked)
 
-**Dijkstra's Algorithm** (Pathfinding):
+## Features
 
-**Prim's Algorithm** (In Development):
-- Alternative maze generation using frontier expansion
-- TODO: Complete implementation details when Prim is fully implemented
-- Planned reference: https://en.wikipedia.org/wiki/Prim%27s_algorithm
-
-**Sidewinder Algorithm** (Stubbed):
-- TODO: Complete Sidewinder implementation and documentation
-
-**Wilson's Algorithm** (Stubbed):
-- TODO: Complete Wilson's implementation and documentation
+- Multiple classic maze gen algorithms with easy selection at runtime
+- 100% reproducibility with supplied seeds
+- Arbitrary maze dimensions, entry/exit
+- ASCII/graphical rendering (MLX, or pure terminal)
+- Embedded ASCII art ("42" logo pattern) if size permits
+- Color themes and animation
+- Configurable, type-hinted, pydantic-checked config
+- Save/load maze to/from file (custom hex format)
+- Modular, pip-installable `mazegen` library: reusable in other projects
+- Clean separation of UI, logic, animation
+- Robust error handling and parameter validation
 
 ## Reusable Components
 
@@ -229,8 +229,8 @@ A prebuilt Python binding for the MLX graphics library (C-based). Provides:
 
 ### Team Members and Roles
 
-- maprunty / m-prunty - Mazegeneration / path finding / algorithms
-- sdeppe / SWDeppe - Graphics / annimation 
+- [maprunty](https://profile.intra.42.fr/users/maprunty) / [m-prunty](https://github.com/m-prunty)- Mazegeneration / path finding / algorithms
+- [sdeppe](https://profile.intra.42.fr/users/sdeppe) / [SWDeppe](https://github.com/SWDeppe) - Graphics / annimation / UI
 
 ### Planning & Evolution
 
@@ -350,6 +350,7 @@ The direction sequence encodes the path from entry to exit as: N/S/E/W character
 ## Resources & References
 
 ### Maze Generation Theory
+- [Maze Theory and Concepts](https://www.astrolog.org/labyrnth/algrithm.htm)
 - [Maze Generation Algorithms - Wikipedia](https://en.wikipedia.org/wiki/Maze_generation_algorithm)
 - [Depth-First Search - Wikipedia](https://en.wikipedia.org/wiki/Depth-first_search)
 - [Prim's Algorithm - Wikipedia](https://en.wikipedia.org/wiki/Prim%27s_algorithm)
